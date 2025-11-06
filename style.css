@@ -1,1 +1,196 @@
-style.css
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f0f2f5; 
+}
+/* Page switching */
+.page {
+    display: none;
+}
+.page.active {
+    display: block;
+}
+
+/* Mobile Fixed Bottom Navigation */
+@media (max-width: 767px) {
+    body {
+        /* Add padding to the whole body to make space for the fixed nav bar */
+        /* This ensures content can scroll up from behind the bar */
+        padding-bottom: 64px; 
+    }
+    .mobile-nav-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 50;
+        background-color: white;
+        box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+        height: 64px; /* Given a fixed height */
+        display: flex; /* Has flex */
+        justify-content: around; /* Has justify-around */
+        align-items: center; /* Vertically center links */
+    }
+}
+
+/* Admin Tab Styles (Kept for logic, but hidden) */
+.admin-tab-button.hidden {
+    display: none;
+}
+
+/* NEW Admin Dropdown Styles */
+.admin-menu-link {
+    display: block;
+    padding: 0.75rem 1.25rem;
+    font-medium: 500;
+    color: #374151; /* gray-700 */
+    transition: all 0.2s;
+}
+.admin-menu-link:hover {
+    background-color: #f3f4f6; /* gray-100 */
+    color: #4f46e5; /* indigo-600 */
+}
+.admin-menu-link.active {
+    background-color: #eef2ff; /* indigo-50 */
+    color: #4f46e5; /* indigo-600 */
+    font-weight: 600;
+}
+
+/* Image Slider/Carousel Styles */
+.carousel-container {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 50vh; 
+    background-color: #f3f4f6;
+}
+.carousel-track {
+    display: flex;
+    transition: transform 0.3s ease-in-out;
+    height: 100%;
+}
+.carousel-slide {
+    flex: 0 0 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.carousel-dots {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+}
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+.dot.active {
+    background-color: #3b82f6; /* blue-500 */
+}
+
+/* Carousel Navigation Buttons */
+.carousel-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 20; 
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 1rem 0.5rem;
+    border-radius: 0.5rem;
+    opacity: 0.8;
+    transition: opacity 0.2s, background-color 0.2s;
+    font-size: 1.25rem; 
+}
+.carousel-nav-btn:hover {
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+@media (max-width: 640px) {
+    .carousel-nav-btn {
+        padding: 0.75rem 0.4rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* Comments Bottom Sheet Styles */
+#comments-modal {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    /* Height: 70% of the viewport height */
+    height: 70vh; 
+    z-index: 50;
+    background-color: white;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
+    border-top-left-radius: 1.5rem; 
+    border-top-right-radius: 1.5rem; 
+    transition: transform 0.4s ease-out;
+    /* Start off-screen at the bottom */
+    transform: translateY(100%); 
+    display: flex; 
+    flex-direction: column;
+}
+#comments-modal.show {
+    /* Slide in to cover 70% of the screen */
+    transform: translateY(0); 
+}
+
+/* Overlay backdrop */
+.backdrop-blur {
+    backdrop-filter: blur(2px);
+}
+
+/* Category Filter Chip Styles (MODIFIED) */
+.category-chip {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem; /* Changed from rounded-full */
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+    /* Added for icon alignment */
+    display: inline-flex;
+    align-items: center;
+}
+.category-chip.active {
+    background-color: #2563eb; /* blue-600 (Changed from indigo-600) */
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+}
+.category-chip:not(.active) {
+    background-color: #ffffff;
+    color: #374151; /* gray-700 */
+    /* border: 1px solid #d1d5db; (REMOVED BORDER) */
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* Added shadow-sm */
+}
+
+/* NEW: Tailwind plugin for line-clamp */
+/* This is now built-in to Tailwind, but we can add a fallback */
+.line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+
+/* NEW: Hide scrollbar for horizontal lists (but still scrollable) */
+#category-filters::-webkit-scrollbar,
+#product-list-container::-webkit-scrollbar {
+    display: none; /* Hide scrollbar for WebKit browsers */
+}
+#category-filters,
+#product-list-container {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
