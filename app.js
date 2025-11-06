@@ -13,7 +13,7 @@ let categoriesCache = [];
 let whatsappNumber = '';
 let infoContent = {}; 
 let headerSettings = { shopName: 'SocialShop', iconClass: 'fas fa-camera-retro' }; // Default header
-let cart = []; // [സൂചന] കാർട്ടിനായി പുതിയ അറേ
+let cart = []; // കാർട്ടിനായി പുതിയ അറേ
 
 // Firestore References
 let productsCollectionRef;
@@ -41,8 +41,9 @@ let activeCategoryId = 'all';
 let pages, loadingSpinner, messageModal, messageModalText, confirmModal, confirmModalText, confirmModalButton, commentsModal, commentsBackdrop;
 let $shopHeaderIcon, $shopHeaderName;
 let $accountUID, $accountCopyright, $infoTitle, $infoContent;
-let $cartBadgeDesktop, $cartBadgeMobile, $cartBadgeBottomNav; // [സൂചന] കാർട്ട് ബാഡ്ജുകൾ
-let $cartItemsContainer, $cartEmptyMsg, $cartSummarySection, $cartSubtotal, $cartTotal; // [സൂചന] കാർട്ട് പേജ് ഘടകങ്ങൾ
+// [സൂചന] ഡെസ്ക്ടോപ്പ്, ടോപ്പ്-മൊബൈൽ ബാഡ്ജുകൾ നീക്കം ചെയ്തു
+let $cartBadgeBottomNav; 
+let $cartItemsContainer, $cartEmptyMsg, $cartSummarySection, $cartSubtotal, $cartTotal;
 
 
 // ========= App Initialization & Setup =========
@@ -68,9 +69,8 @@ document.addEventListener('DOMContentLoaded', () => {
     $infoTitle = document.getElementById('info-title');
     $infoContent = document.getElementById('info-content');
     
-    // [സൂചന] കാർട്ട് DOM ഘടകങ്ങൾ
-    $cartBadgeDesktop = document.getElementById('cart-item-count-desktop');
-    $cartBadgeMobile = document.getElementById('cart-item-count-mobile');
+    // കാർട്ട് DOM ഘടകങ്ങൾ
+    // [സൂചന] മുകളിലെ ബാഡ്ജുകൾ നീക്കം ചെയ്തു, താഴെയുള്ളത് മാത്രം നിലനിർത്തി
     $cartBadgeBottomNav = document.getElementById('cart-item-count-bottom-nav');
     $cartItemsContainer = document.getElementById('cart-items-container');
     $cartEmptyMsg = document.getElementById('cart-empty-msg');
@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         
-        // [സൂചന] കാർട്ട് ലോക്കൽ സ്റ്റോറേജിൽ നിന്ന് ലോഡ് ചെയ്യുന്നു
+        // കാർട്ട് ലോക്കൽ സ്റ്റോറേജിൽ നിന്ന് ലോഡ് ചെയ്യുന്നു
         loadCartFromStorage();
         updateCartUI();
 
@@ -117,28 +117,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // --- AUTH ---
 function setupAuthListener() {
-    onSnapshot(doc(db, 'noop', 'noop'), 
-        { includeMetadataChanges: true },
-        () => {}, 
-        (error) => {
-            console.warn("Firestore connection check failed, possibly offline:", error);
-        }
-    );
-
+    // [സൂചന] അനാവശ്യമായ 'noop' സ്നാപ്പ്ഷോട്ട് നീക്കം ചെയ്തു.
     auth.onAuthStateChanged(async (user) => {
         if (user) {
             currentUserId = user.uid;
             if ($accountUID) $accountUID.textContent = currentUserId;
             
+            // Firestore റഫറൻസുകൾ ഇവിടെ സെറ്റ് ചെയ്യുന്നു
             productsCollectionRef = collection(db, `artifacts/${APP_ID}/public/data/products`);
             categoriesCollectionRef = collection(db, `artifacts/${APP_ID}/public/data/categories`); 
             settingsDocRef = doc(db, `artifacts/${APP_ID}/public/data/settings/admin`);
             infoDocRef = doc(db, `artifacts/${APP_ID}/public/data/content/info`); 
             
+            // യൂസർ ലോഗിൻ ആയതിനു ശേഷം മാത്രം ഡാറ്റ ലോഡ് ചെയ്യുന്നു
             loadInitialData();
         } else {
             currentUserId = null;
             try {
+                // യൂസർ ലോഗിൻ അല്ലെങ്കിൽ, അനോണിമസ് ആയി സൈൻ ഇൻ ചെയ്യുന്നു
                 await signInAnonymously(auth);
             } catch (error) {
                 console.error("Anonymous authentication failed:", error);
@@ -148,8 +144,6 @@ function setupAuthListener() {
     });
 }
 
-// ... (loadInitialData, updateAppHeader, showInfoSection, renderAccountPageExtras എന്നിവ മാറ്റമില്ലാതെ തുടരുന്നു) ...
-// (ഈ ഫംഗ്ഷനുകൾ മുകളിലത്തെ കോഡ് ബ്ലോക്കിൽ ഉള്ളതുപോലെ തന്നെ)
 // --- Data Header Updater ---
 function updateAppHeader(settings) {
     headerSettings = {
@@ -179,7 +173,7 @@ function loadInitialData() {
     if (unsubscribeCategories) unsubscribeCategories();
     unsubscribeCategories = onSnapshot(categoriesCollectionRef, (snapshot) => {
         categoriesCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderProductPage(); 
+        renderProductPage(); // കാറ്റഗറി ലോഡ് ആയ ശേഷം പ്രൊഡക്റ്റ് പേജ് റെൻഡർ ചെയ്യുന്നു
     }, (error) => {
         console.error("Error fetching categories (Check Firestore Security Rules):", error);
         showMessage("Failed to load categories. Permission Denied.", 'error');
@@ -203,9 +197,12 @@ function loadInitialData() {
             p.likes = p.likes || [];
             p.commentCount = p.commentCount || 0;
         });
-        filterAndRenderHomeProducts(''); // Render with no search term
-        renderProductList(allProducts); 
         
+        // ഡാറ്റ ലോഡ് ആയ ശേഷം മാത്രം റെൻഡർ ചെയ്യുന്നു
+        filterAndRenderHomeProducts(''); // ഹോം പേജ് റെൻഡർ ചെയ്യുന്നു
+        renderProductList(allProducts); // പ്രൊഡക്റ്റ് ലിസ്റ്റ് (കാറ്റഗറി പേജിനായി) തയ്യാറാക്കുന്നു
+        
+        // നിലവിലെ പേജ് 'products' ആണെങ്കിൽ ഫിൽറ്റർ അപ്ലൈ ചെയ്യുന്നു
         const productsPageEl = document.getElementById('products-page');
         if (productsPageEl && productsPageEl.classList.contains('active')) {
             filterProductsByCategory(activeCategoryId);
@@ -225,7 +222,7 @@ function loadInitialData() {
         
         renderAccountPageExtras(infoContent); 
         
-        showInfoSection('about');
+        showInfoSection('about'); // ഡിഫോൾട്ട് ആയി 'about' കാണിക്കുന്നു
         if ($accountCopyright) $accountCopyright.textContent = infoContent.copyrightText || '© 2024 SocialShop. All rights reserved.';
 
     }, (error) => {
@@ -337,6 +334,7 @@ window.showPage = function(pageId) {
         targetPage.classList.add('active');
     }
 
+    // പ്രൊഡക്റ്റ് ഡീറ്റെയിൽ പേജിൽ മാത്രം താഴത്തെ നാവിഗേഷൻ ബാർ മറയ്ക്കുന്നു
     const mainMobileNav = document.getElementById('main-mobile-nav');
     if (mainMobileNav) {
         if (pageId === 'product-detail') {
@@ -352,7 +350,6 @@ window.showPage = function(pageId) {
     if (pageId === 'account') {
         showInfoSection('about');
     }
-    // [സൂചന] കാർട്ട് പേജ് കാണിക്കുമ്പോൾ renderCartPage() വിളിക്കുന്നു
     if (pageId === 'cart') {
         renderCartPage();
     }
@@ -376,12 +373,12 @@ window.showPage = function(pageId) {
     window.scrollTo(0, 0);
 }
 
-// ... (navigateToCategory, getDiscountedPrice, copyTextToClipboard, getCategoryIcon എന്നിവ മാറ്റമില്ലാതെ തുടരുന്നു) ...
-// (ഈ ഫംഗ്ഷനുകൾ മുകളിലത്തെ കോഡ് ബ്ലോക്കിൽ ഉള്ളതുപോലെ തന്നെ)
+// ഹോം പേജിൽ നിന്ന് കാറ്റഗറി പേജിലേക്ക് പോകാൻ
 window.navigateToCategory = function(categoryId) {
     if (!categoryId) return;
     showPage('products');
     filterProductsByCategory(categoryId);
+    // ചിപ്പ് സ്ക്രോൾ ചെയ്ത് കാണിക്കുന്നു
     setTimeout(() => {
         const chip = document.querySelector(`#category-filters .category-chip[data-id="${categoryId}"]`);
         if (chip) {
@@ -389,11 +386,15 @@ window.navigateToCategory = function(categoryId) {
         }
     }, 100);
 }
+
+// ഡിസ്‌കൗണ്ട് വില നൽകുന്നു
 function getDiscountedPrice(product) {
     const price = product.price || 0;
     const retailPrice = product.retailPrice || price; 
     return retailPrice;
 }
+
+// ക്ലിപ്പ്ബോർഡിലേക്ക് കോപ്പി ചെയ്യാൻ
 function copyTextToClipboard(text) {
     const textarea = document.createElement('textarea');
     textarea.value = text;
@@ -411,6 +412,8 @@ function copyTextToClipboard(text) {
         document.body.removeChild(textarea);
     }
 }
+
+// കാറ്റഗറി ഐക്കൺ നൽകുന്നു
 function getCategoryIcon(categoryId) {
     if (!categoryId) return 'fas fa-tag'; // Default
     const category = categoriesCache.find(c => c.id === categoryId);
@@ -419,6 +422,7 @@ function getCategoryIcon(categoryId) {
 
 
 // --- Product List Renderers (Home - Social Feed Style) ---
+// "Show More" / "Show Less" ബട്ടൺ
 window.toggleDescription = function(productId, buttonElement) {
     const descEl = document.getElementById(`desc-${productId}`);
     if (!descEl || !buttonElement) return;
@@ -430,8 +434,9 @@ window.toggleDescription = function(productId, buttonElement) {
         buttonElement.textContent = 'Show More';
     }
 }
+
+// ഹോം പേജിലെ പ്രൊഡക്റ്റ് ലിസ്റ്റ് റെൻഡർ ചെയ്യുന്നു
 function renderHomeProductList(productsToRender) {
-    // ... (ഈ ഫംഗ്ഷനിൽ മാറ്റമില്ല) ...
     const container = document.getElementById('home-product-list-container');
     if (!container) return;
     container.innerHTML = '';
@@ -462,6 +467,8 @@ function renderHomeProductList(productsToRender) {
                 ${isLong ? `<button class="text-sm font-medium text-indigo-600 hover:text-indigo-800 mt-1" onclick="toggleDescription('${product.id}', this)">Show More</button>` : ''}
             </div>`;
         }
+        
+        // [സൂചന] കാർട്ട് ഐക്കൺ (ബുക്ക്മാർക്ക്) താഴെ ചേർത്തു
         const card = `
             <div class="bg-white rounded-lg shadow-md overflow-hidden pb-4">
                 <div class="flex items-center p-3">
@@ -488,6 +495,11 @@ function renderHomeProductList(productsToRender) {
                             <i class="far fa-comment text-2xl"></i>
                             <span class="ml-2 text-sm font-semibold">${product.commentCount || 0}</span>
                         </button>
+                        
+                        <!-- [സൂചന] പുതിയ ബുക്ക്മാർക്ക് (Add to Cart) ബട്ടൺ -->
+                        <button class="text-gray-600 hover:text-indigo-500 transition duration-150 ml-auto p-2" onclick="addToCart('${product.id}')" title="Add to Cart">
+                            <i class="far fa-bookmark text-2xl"></i>
+                        </button>
                     </div>
                     <div class="cursor-pointer" onclick="showProductDetail('${product.id}')">
                         ${brandHtml} 
@@ -504,6 +516,8 @@ function renderHomeProductList(productsToRender) {
         container.innerHTML += card;
     });
 }
+
+// ഹോം പേജിലെ സെർച്ച് ഫിൽറ്റർ
 function filterAndRenderHomeProducts(searchTerm) {
     const filteredProducts = allProducts.filter(product => 
         product.name.toLowerCase().includes(searchTerm) || 
@@ -515,8 +529,8 @@ function filterAndRenderHomeProducts(searchTerm) {
 }
 
 // --- Category Filtering Logic for Products Page (Client Side) ---
+// കാറ്റഗറി ചിപ്പുകൾ റെൻഡർ ചെയ്യുന്നു
 function renderProductPage() {
-    // ... (ഈ ഫംഗ്ഷനിൽ മാറ്റമില്ല) ...
     const filterContainer = document.getElementById('category-filters');
     if (!filterContainer) return;
     filterContainer.innerHTML = '';
@@ -535,8 +549,9 @@ function renderProductPage() {
     });
     filterProductsByCategory(activeCategoryId);
 }
+
+// കാറ്റഗറി അനുസരിച്ച് പ്രൊഡക്റ്റുകൾ ഫിൽറ്റർ ചെയ്യുന്നു
 window.filterProductsByCategory = function(categoryId) {
-    // ... (ഈ ഫംഗ്ഷനിൽ മാറ്റമില്ല) ...
     activeCategoryId = categoryId;
     document.querySelectorAll('#category-filters .category-chip').forEach(chip => {
         chip.classList.toggle('active', chip.dataset.id === categoryId);
@@ -549,8 +564,9 @@ window.filterProductsByCategory = function(categoryId) {
     }
     renderProductList(filteredProducts);
 }
+
+// 'All Products' പേജിലെ പ്രൊഡക്റ്റ് ഗ്രിഡ് റെൻഡർ ചെയ്യുന്നു
 function renderProductList(productsToRender) {
-    // ... (ഈ ഫംഗ്ഷനിൽ മാറ്റമില്ല) ...
     const container = document.getElementById('product-list-container');
     if (!container) return;
     container.innerHTML = '';
@@ -571,6 +587,8 @@ function renderProductList(productsToRender) {
              deliveryBadge = `<span class="bg-black bg-opacity-70 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center"><i class="fas fa-shipping-fast mr-1 text-xs"></i> ₹${product.deliveryCharge.toFixed(0)}</span>`;
         }
         const brandBadge = product.brand ? `<span class="bg-black bg-opacity-70 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">${product.brand}</span>` : '';
+        
+        // [സൂചന] 'w-full' ബട്ടൺ മാറ്റി രണ്ട് ബട്ടണുകൾ ചേർത്തു
         const card = `
             <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition duration-300 flex flex-col">
                 <div onclick="showProductDetail('${product.id}')" class="relative cursor-pointer">
@@ -584,9 +602,16 @@ function renderProductList(productsToRender) {
                         <span class="text-lg sm:text-xl font-bold text-gray-900 mr-2">₹${discountedPrice}</span>
                         ${discount > 0 ? `<span class="text-gray-500 line-through text-xs sm:text-sm mr-1">₹${originalPrice.toFixed(0)}</span><span class="text-green-600 text-xs sm:text-sm font-semibold">${discount}% Off</span>` : ''}
                     </div>
-                    <button class="w-full mt-auto bg-green-500 text-white font-bold py-2 px-3 rounded-lg hover:bg-green-600 transition duration-300 text-sm" onclick="openWhatsAppChat('${product.name}', '${product.id}')">
-                        <i class="fab fa-whatsapp mr-1 sm:mr-2"></i> Chat
-                    </button>
+                    
+                    <!-- [സൂചന] പുതിയ ബട്ടൺ ഗ്രൂപ്പ് -->
+                    <div class="flex gap-2 mt-auto">
+                        <button class="w-1/2 bg-green-500 text-white font-bold py-2 px-3 rounded-lg hover:bg-green-600 transition duration-300 text-sm" onclick="openWhatsAppChat('${product.name}', '${product.id}')">
+                            <i class="fab fa-whatsapp mr-1 sm:mr-2"></i> Chat
+                        </button>
+                        <button class="w-1/2 bg-indigo-600 text-white font-bold py-2 px-3 rounded-lg hover:bg-indigo-700 transition duration-300 text-sm" onclick="addToCart('${product.id}')">
+                            <i class="fas fa-cart-plus mr-1 sm:mr-2"></i> Add
+                        </button>
+                    </div>
                 </div>
             </div>`;
         container.innerHTML += card;
@@ -668,7 +693,6 @@ window.showProductDetail = function(productId) {
             ` : ''}
         </div>
         
-        <!-- [സൂചന] ബട്ടണുകൾ അപ്ഡേറ്റ് ചെയ്തു: Add to Cart, Chat -->
         <div class="fixed bottom-0 left-0 right-0 p-3 z-30 flex justify-center w-full max-w-xl mx-auto md:px-4 space-x-2 bg-white border-t border-gray-200">
             <button class="w-1/2 flex items-center justify-center bg-indigo-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:bg-indigo-700 transition duration-300 transform hover:scale-[1.01]" id="add-to-cart-btn">
                 <i class="fas fa-cart-plus text-lg mr-2"></i>
@@ -713,12 +737,10 @@ window.showProductDetail = function(productId) {
     showPage('product-detail');
     updateCarousel(); 
     
-    // [സൂചന] Add to Cart ബട്ടണിൽ onclick ഇവന്റ് ചേർക്കുന്നു
     document.getElementById('add-to-cart-btn').onclick = () => addToCart(product.id);
 }
 
 // --- CAROUSEL FUNCTIONS ---
-// ... (ഈ ഫംഗ്ഷനുകളിൽ മാറ്റമില്ല) ...
 function updateCarousel() {
     const track = document.getElementById('image-carousel-track');
     const dotsContainer = document.querySelector('#product-detail-container .carousel-dots');
@@ -763,7 +785,6 @@ window.nextSlide = function() {
     
 // --- WHATSAPP CHAT FUNCTION ---
 window.openWhatsAppChat = function(productName, productId) {
-    // ... (ഈ ഫംഗ്ഷനിൽ മാറ്റമില്ല) ...
     if (!whatsappNumber) {
         showMessage("Admin WhatsApp number is not set. Please set it in the Admin Panel.", 'error');
         return;
@@ -773,7 +794,7 @@ window.openWhatsAppChat = function(productName, productId) {
     window.open(url, '_blank');
 }
 
-// [സൂചന] കാർട്ടിലെ സാധനങ്ങൾ ചേർത്ത് WhatsApp-ലേക്ക് പോകാനുള്ള പുതിയ ഫംഗ്ഷൻ
+// കാർട്ടിലെ സാധനങ്ങൾ ചേർത്ത് WhatsApp-ലേക്ക് പോകാനുള്ള ഫംഗ്ഷൻ
 window.openWhatsAppChatForCart = function() {
     if (!whatsappNumber) {
         showMessage("Admin WhatsApp number is not set.", 'error');
@@ -798,8 +819,7 @@ window.openWhatsAppChatForCart = function() {
     window.open(url, '_blank');
 }
 
-// --- SHARE PRODUCT FUNCTION ---
-// (ഈ ഫംഗ്ഷൻ ഇപ്പോൾ ഉപയോഗിക്കുന്നില്ല, പക്ഷെ ഭാവിയിൽ ആവശ്യം വന്നേക്കാം)
+// (Share function - ഇപ്പോൾ ഉപയോഗിക്കുന്നില്ല)
 window.shareProductLink = function(productName, productId) {
     const linkText = `Check out this product: ${productName}! (ID: ${productId}).`;
     if (copyTextToClipboard(linkText)) {
@@ -811,7 +831,6 @@ window.shareProductLink = function(productName, productId) {
 
 // --- LIKE FUNCTION ---
 window.toggleLike = async function(productId) {
-    // ... (ഈ ഫംഗ്ഷനിൽ മാറ്റമില്ല) ...
     if (!currentUserId) {
         showMessage("You must be signed in to like a product.", 'error');
         return;
@@ -833,7 +852,6 @@ window.toggleLike = async function(productId) {
 }
 
 // --- COMMENT FUNCTIONS (Overlay) ---
-// ... (ഈ ഫംഗ്ഷനുകളിൽ മാറ്റമില്ല) ...
 window.showCommentsOverlay = function(productId, productName) {
     const prod = allProducts.find(p => p.id === productId);
     if (!prod) { showMessage("Product not found.", 'error'); return; }
@@ -955,7 +973,7 @@ async function handleAddComment(e) {
     
 
 // ---------------------------------------------------
-// [സൂചന] കാർട്ടിന് വേണ്ടിയുള്ള പുതിയ ഫംഗ്ഷനുകൾ
+// കാർട്ടിന് വേണ്ടിയുള്ള ഫംഗ്ഷനുകൾ
 // ---------------------------------------------------
 
 // 1. ലോക്കൽ സ്റ്റോറേജിൽ നിന്ന് കാർട്ട് ലോഡ് ചെയ്യുന്നു
@@ -972,7 +990,8 @@ function saveCartToStorage() {
 function updateCartUI() {
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-    const badges = [$cartBadgeDesktop, $cartBadgeMobile, $cartBadgeBottomNav];
+    // [സൂചന] താഴത്തെ നാവിഗേഷൻ ബാഡ്ജ് മാത്രം അപ്‌ഡേറ്റ് ചെയ്യുന്നു
+    const badges = [$cartBadgeBottomNav];
     
     badges.forEach(badge => {
         if (badge) {
