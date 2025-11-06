@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SocialShop - Admin Panel</title>
-    
-    <!-- Tailwind CSS -->
+    <title>Admin Panel - SocialShop</title>
+
+    <!-- Tailwind CSS (അഡ്മിൻ പാനലിലെ ചില പഴയ ക്ലാസുകൾക്ക് വേണ്ടി) -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Google Fonts -->
@@ -21,40 +21,37 @@
 </head>
 <body class="bg-gray-100 text-gray-800">
 
-    <!-- അഡ്മിൻ ഹെഡർ -->
+    <!-- അഡ്മിൻ പേജിന് പ്രത്യേകമായ ഹെഡർ -->
     <header class="bg-white shadow-md sticky top-0 z-50 border-b border-gray-200">
         <nav class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-            <!-- അഡ്മിൻ പാനൽ ടൈറ്റിൽ -->
+            
+            <!-- ഷോപ്പ് ടൈറ്റിൽ -->
             <div id="shop-header-title" class="text-2xl font-bold text-indigo-600">
-                <i id="shop-header-icon" class="fas fa-cog mr-2"></i><span id="shop-header-name">Admin Panel</span>
+                <i id="shop-header-icon" class="fas fa-tools mr-2"></i><span id="shop-header-name">Admin Panel</span>
             </div>
             
-            <!-- പബ്ലിക് സൈറ്റിലേക്കുള്ള ലിങ്ക് -->
-            <div class="flex space-x-6">
-                <a href="index.html" class="nav-link text-gray-600 hover:text-indigo-600 font-medium">View Public Site</a>
-            </div>
+            <!-- (അഡ്മിൻ പേജിൽ മറ്റ് നാവിഗേഷൻ ലിങ്കുകൾ ഇല്ല) -->
         </nav>
     </header>
 
-    <!-- പ്രധാന ഉള്ളടക്കം (Admin Page മാത്രം) -->
-    <main class="container mx-auto px-0 sm:px-6 lg:px-8 py-0 sm:py-4">
+    <!-- പ്രധാന ഉള്ളടക്കം -->
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        <!-- അഡ്മിൻ പേജ് സെക്ഷൻ -->
-        <section id="admin-page" class="page active px-4 sm:px-0">
+        <!-- [സൂചന] ഇത് admin-page എന്ന ഒരൊറ്റ സെക്ഷനാണ് -->
+        <section id="admin-page" class="page active">
             
-            <!-- അഡ്മിൻ മെനു ബാർ -->
-            <div class="bg-white rounded-lg shadow-md p-4 mb-6 relative">
+            <!-- [സൂചന] പഴയ ക്ലാസുകൾ മാറ്റി പുതിയ '.card' ക്ലാസ് ചേർത്തു -->
+            <div class="card p-4 mb-6 relative">
                 <div class="flex justify-between items-center">
-                    <!-- നിലവിലെ വ്യൂ ടൈറ്റിൽ -->
+                    
                     <h2 id="admin-current-view-title" class="text-xl font-semibold text-gray-800">Add/Edit Product</h2>
                     
-                    <!-- 3-ഡോട്ട് മെനു ബട്ടൺ -->
                     <button id="admin-menu-button" class="text-gray-600 hover:text-indigo-600 p-2 rounded-full hover:bg-gray-100 transition">
                         <i class="fas fa-ellipsis-v text-xl"></i>
                     </button>
                 </div>
 
-                <!-- അഡ്മിൻ മെനു ഡ്രോപ്പ്ഡൗൺ -->
+                <!-- ഡ്രോപ്പ്ഡൗൺ മെനു -->
                 <div id="admin-menu-dropdown" class="absolute right-4 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-100 z-30 hidden">
                     <ul class="py-1">
                         <li><a href="#" class="admin-menu-link active" data-view="add-product">Add/Edit Product</a></li>
@@ -66,69 +63,55 @@
                 </div>
             </div>
             
-            <!-- പഴയ ടാബുകൾ (JS ലോജിക്കിനായി മറച്ചുവെച്ചിരിക്കുന്നു) -->
-            <div class="hidden">
-                <button id="tab-add-product"></button>
-                <button id="tab-manage-products"></button>
-                <button id="tab-control-category"></button>
-                <button id="tab-manage-content"></button>
-            </div>
+            <p id="user-id-display" class="text-sm text-center text-white mb-6 -mt-2 font-medium"></p>
             
-            <p id="user-id-display" class="text-sm text-center text-gray-500 mb-6 -mt-2"></p>
-            
-            <!-- അഡ്മിൻ കണ്ടന്റ് ലേഔട്ട് -->
             <div class="flex flex-col lg:flex-row gap-8">
                 
-                <!-- ഇടത് ഭാഗം: ഉൽപ്പന്നം ചേർക്കാനുള്ള ഫോം -->
-                <div id="view-add-product" class="w-full bg-white p-6 rounded-lg shadow-lg h-fit sticky top-24 hidden">
-                    <h2 id="admin-form-title" class="2xl font-bold mb-6">Product Details</h2>
+                <!-- ഇടത് ഭാഗം: പ്രൊഡക്റ്റ് ഫോം -->
+                <!-- [സൂചന] പഴയ ക്ലാസുകൾ മാറ്റി പുതിയ '.card' ക്ലാസ് ചേർത്തു -->
+                <div id="view-add-product" class="w-full lg:w-1/3 card p-6 h-fit sticky top-24 hidden">
+                    <h2 id="admin-form-title" class="text-2xl font-bold mb-6 text-gray-900">Product Details</h2>
                     <form id="admin-product-form" class="space-y-4">
                         <input type="hidden" id="product-edit-id">
                         
-                        <!-- Product Name -->
                         <div>
                             <label for="product-name" class="block text-sm font-medium text-gray-700 mb-1">Product Name <span class="text-red-500">*</span></label>
-                            <input type="text" id="product-name" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                            <input type="text" id="product-name" class="w-full" required>
                         </div>
                         
-                        <!-- Category Select -->
                         <div class="mb-4">
                             <label for="product-category-select" class="block text-sm font-medium text-gray-700 mb-1">Select Category <span class="text-red-500">*</span></label>
-                            <select id="product-category-select" required class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white disabled:bg-gray-50">
+                            <select id="product-category-select" required class="w-full bg-white disabled:bg-gray-50">
                                 <option value="" disabled selected>Select a Category</option>
                             </select>
-                            <p id="category-help-message" class="text-xs text-red-500 mt-1 hidden">No categories available. Add new ones in the 'Manage Categories' tab.</p>
+                            <p id="category-help-message" class="text-xs text-red-500 mt-1 hidden">No categories available. Add new ones in 'Manage Categories'.</p>
                         </div>
 
-                        <!-- Price Fields -->
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label for="product-price" class="block text-sm font-medium text-gray-700 mb-1">Original Price (MRP) (₹) <span class="text-red-500">*</span></label>
-                                <input type="number" id="product-price" placeholder="e.g., 249" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                                <input type="number" id="product-price" placeholder="e.g., 249" class="w-full" required>
                             </div>
                             <div>
                                 <label for="product-retail-price" class="block text-sm font-medium text-gray-700 mb-1">Retail Price (Selling Price) (₹)</label>
-                                <input type="number" id="product-retail-price" placeholder="e.g., 220" min="0" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <input type="number" id="product-retail-price" placeholder="e.g., 220" min="0" class="w-full">
                                 <p id="discount-display" class="text-xs text-green-600 mt-1 h-3"></p>
                             </div>
                         </div>
 
-                        <!-- Main Image URL -->
                         <div>
                             <label for="product-image" class="block text-sm font-medium text-gray-700 mb-1">Main Image URL <span class="text-red-500">*</span></label>
                             <div class="flex items-center space-x-3">
-                                <input type="url" id="product-image" class="flex-grow border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="https://placehold.co/600x400" required oninput="renderMainImagePreview(this.value)">
+                                <input type="url" id="product-image" class="flex-grow" placeholder="https://placehold.co/600x400" required oninput="renderMainImagePreview(this.value)">
                                 <img id="main-image-preview" src="https://placehold.co/60x60/f0f0f0/999?text=Main" class="w-16 h-16 object-cover rounded-lg border border-gray-300 flex-shrink-0" onerror="this.src='https://placehold.co/60x60/f0f0f0/999?text=Error'">
                             </div>
                         </div>
 
-                        <!-- Description -->
                         <div>
                             <label for="product-description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                            <textarea id="product-description" rows="4" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
+                            <textarea id="product-description" rows="4" class="w-full"></textarea>
                         </div>
                         
-                        <!-- Delivery Option -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Delivery Option</label>
                             <div class="flex items-center space-x-6">
@@ -144,25 +127,23 @@
                             
                             <div id="delivery-charge-input-container" class="hidden mt-3">
                                 <label for="product-delivery-charge" class="block text-sm font-medium text-gray-700 mb-1">Delivery Charge Amount (₹)</label>
-                                <input type="number" id="product-delivery-charge" min="0" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="e.g., 50">
+                                <input type="number" id="product-delivery-charge" min="0" class="w-full" placeholder="e.g., 50">
                             </div>
                         </div>
                         
-                        <!-- Advanced Options Toggle -->
                         <button type="button" id="toggle-advanced-options-btn" class="w-full text-sm text-indigo-600 font-medium hover:text-indigo-800 transition py-2 border-t border-b">
                             <span>Show Advanced Options</span> <i class="fas fa-chevron-down ml-1 text-xs"></i>
                         </button>
                         
-                        <!-- Advanced Options Content -->
                         <div id="advanced-product-options" class="space-y-4 hidden pt-4">
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label for="product-brand" class="block text-sm font-medium text-gray-700 mb-1">Brand</label>
-                                    <input type="text" id="product-brand" placeholder="e.g., MyShop Basics" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <input type="text" id="product-brand" placeholder="e.g., MyShop Basics" class="w-full">
                                 </div>
                                 <div>
                                     <label for="product-sku" class="block text-sm font-medium text-gray-700 mb-1">SKU / Code</label>
-                                    <input type="text" id="product-sku" placeholder="Optional" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <input type="text" id="product-sku" placeholder="Optional" class="w-full">
                                 </div>
                             </div>
                             
@@ -179,202 +160,198 @@
 
                             <div>
                                 <label for="product-specifications" class="block text-sm font-medium text-gray-700 mb-1">Specifications (Optional)</label>
-                                <textarea id="product-specifications" rows="3" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Enter specifications or key points (one per line)..."></textarea>
+                                <textarea id="product-specifications" rows="3" class="w-full" placeholder="Enter specifications or key points (one per line)..."></textarea>
                             </div>
                         </div>
-
-                        <!-- Form Buttons -->
+                        
                         <div class="grid grid-cols-2 gap-4 pt-4 border-t">
-                             <button type="button" class="w-full bg-gray-500 text-white font-bold py-3 rounded-lg hover:bg-gray-600 transition duration-300" onclick="resetAdminForm()">
+                             <button type="button" class="w-full bg-gray-500 text-white font-bold py-3 hover:bg-gray-600 transition duration-300" onclick="resetAdminForm()">
                                 Clear Form
                             </button>
-                            <button type="submit" id="admin-form-submit-btn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition duration-300">
+                            <button type="submit" id="admin-form-submit-btn" class="w-full bg-indigo-600 text-white font-bold py-3 hover:bg-indigo-700 transition duration-300">
                                 Add Product
                             </button>
                         </div>
-                        <button type="button" id="admin-form-cancel-btn" class="w-full mt-2 bg-gray-200 text-gray-800 font-bold py-2 rounded-lg hover:bg-gray-300 transition duration-300 hidden" onclick="resetAdminForm()">
+                        <button type="button" id="admin-form-cancel-btn" class="w-full mt-2 bg-gray-200 text-gray-800 font-bold py-2 hover:bg-gray-300 transition duration-300 hidden" onclick="resetAdminForm()">
                             Cancel Edit
                         </button>
                     </form>
                 </div>
                 
-                <!-- വലതു ഭാഗം: മറ്റ് അഡ്മിൻ വ്യൂകൾ -->
-                <!-- മാനേജ് പ്രൊഡക്റ്റ്സ് വ്യൂ -->
-                <div id="view-manage-products" class="w-full hidden">
-                    <h2 class="2xl font-bold mb-6">Manage Existing Products</h2>
-                    <div class="bg-white p-4 rounded-lg shadow-md mb-6">
-                        <label for="admin-product-category-filter" class="block text-sm font-medium text-gray-700 mb-2">Filter by Category:</label>
-                        <select id="admin-product-category-filter" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white">
-                            <!-- JS വഴി കാറ്റഗറി ഫിൽറ്റർ ഇവിടെ വരും -->
-                        </select>
-                    </div>
-
-                    <div id="admin-products-list-container" class="bg-white rounded-lg shadow-md overflow-hidden">
-                        <div class="overflow-x-auto">
-                            <table class="w-full min-w-max">
-                                <thead class="bg-gray-50 border-b border-gray-200">
-                                    <tr>
-                                        <th class="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
-                                        <th class="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                        <th class="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                                        <th class="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                                        <th class="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="admin-product-list-body" class="divide-y divide-gray-200">
-                                    <!-- JS വഴി പ്രൊഡക്റ്റ് ലിസ്റ്റ് ഇവിടെ വരും -->
-                                </tbody>
-                            </table>
-                        </div>
-                        <div id="admin-product-list-empty" class="hidden text-center p-8 text-gray-500">
-                            No products currently available.
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- മാനേജ് കാറ്റഗറീസ് വ്യൂ -->
-                <div id="view-control-category" class="w-full card p-6 sm:p-8 hidden">
-                    <h2 class="2xl font-semibold mb-6 text-gray-700">Manage Categories</h2>
+                <!-- വലത് ഭാഗം: മറ്റ് അഡ്മിൻ വ്യൂകൾ -->
+                <div class="w-full lg:w-2/3 space-y-8">
                     
-                    <!-- പുതിയ കാറ്റഗറി ഫോം -->
-                    <form id="add-category-form" class="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
-                        <div>
-                            <label for="new-category-name" class="block text-sm font-medium text-gray-700 mb-1">New Category Name</label>
-                            <input type="text" id="new-category-name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Electronics">
+                    <!-- മാനേജ് പ്രൊഡക്റ്റ്സ് -->
+                    <!-- [സൂചന] പഴയ ക്ലാസുകൾ മാറ്റി പുതിയ '.card' ക്ലാസ് ചേർത്തു -->
+                    <div id="view-manage-products" class="w-full hidden space-y-6">
+                        <div class="card p-4">
+                            <label for="admin-product-category-filter" class="block text-sm font-medium text-gray-700 mb-2">Filter by Category:</label>
+                            <select id="admin-product-category-filter" class="w-full bg-white">
+                                <!-- JS വഴി കാറ്റഗറികൾ ഇവിടെ വരും -->
+                            </select>
                         </div>
-                        
-                        <div>
-                            <label for="new-category-icon" class="block text-sm font-medium text-gray-700 mb-1">Category Icon (Font Awesome)</label>
-                            <div class="flex items-center space-x-3">
-                                <input type="text" id="new-category-icon" class="flex-grow border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="e.g., fas fa-mobile-alt">
-                                <i id="new-category-icon-preview" class="fas fa-tag text-2xl text-indigo-600 flex-shrink-0"></i>
-                            </div>
-                            <p class="text-xs text-gray-500 mt-1">Find icons at <a href="https://fontawesome.com/v6/search?o=r&m=free" target="_blank" class="text-blue-500 hover:underline">Font Awesome</a> (e.g., "fas fa-tag").</p>
-                        </div>
-                        
-                        <button type="submit" class="w-full sm:w-auto bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-150 font-semibold shadow-md">
-                            Add Category
-                        </button>
-                    </form>
 
-                    <!-- നിലവിലുള്ള കാറ്റഗറികൾ -->
-                    <h3 class="xl font-semibold mb-4 text-gray-700">Existing Categories (Public)</h3>
-                    <div id="category-list-container" class="space-y-3">
-                        <p id="no-categories" class="text-gray-500 italic">No categories have been added yet.</p>
+                        <!-- [സൂചന] ഈ കണ്ടെയ്നറിന് CSS-ൽ നിന്ന് സ്റ്റൈൽ ലഭിക്കും -->
+                        <div id="admin-products-list-container">
+                            <div class="overflow-x-auto">
+                                <table class="w-full min-w-max">
+                                    <thead>
+                                        <tr>
+                                            <th class="p-4 text-left text-xs font-medium uppercase tracking-wider">Image</th>
+                                            <th class="p-4 text-left text-xs font-medium uppercase tracking-wider">Name</th>
+                                            <th class="p-4 text-left text-xs font-medium uppercase tracking-wider">Category</th>
+                                            <th class="p-4 text-left text-xs font-medium uppercase tracking-wider">Price</th>
+                                            <th class="p-4 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="admin-product-list-body" class="divide-y divide-gray-200">
+                                        <!-- JS വഴി പ്രൊഡക്റ്റ് ലിസ്റ്റ് ഇവിടെ വരും -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="admin-product-list-empty" class="hidden text-center p-8 text-gray-500">
+                                No products currently available.
+                            </div>
+                        </div>
                     </div>
-                </div>
-                
-                <!-- മാനേജ് കണ്ടന്റ് വ്യൂ -->
-                <div id="view-manage-content" class="w-full card p-6 sm:p-8 hidden">
-                    <h2 class="2xl font-semibold mb-6 text-gray-700">Manage Account Page Content</h2>
-                    <form id="content-form" class="space-y-6">
-
-                        <!-- ഹെഡർ കസ്റ്റമൈസേഷൻ -->
-                        <div class="border p-4 rounded-lg bg-indigo-50/50 space-y-3">
-                            <h3 class="text-xl font-medium mb-3 text-indigo-700 border-b pb-2">Header Customization</h3>
-                            
+                    
+                    <!-- മാനേജ് കാറ്റഗറി -->
+                    <!-- [സൂചന] പഴയ ക്ലാസുകൾ മാറ്റി പുതിയ '.card' ക്ലാസ് ചേർത്തു -->
+                    <div id="view-control-category" class="w-full card p-6 sm:p-8 hidden">
+                        <h2 class="text-2xl font-semibold mb-6 text-gray-700">Manage Categories</h2>
+                        
+                        <form id="add-category-form" class="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
                             <div>
-                                <label for="shop-name" class="block text-sm font-medium text-gray-700 mb-1">Shop Name</label>
-                                <input type="text" id="shop-name" placeholder="e.g., Your Online Store" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                <p class="text-xs text-gray-500 mt-1">This name appears next to the icon in the header.</p>
+                                <label for="new-category-name" class="block text-sm font-medium text-gray-700 mb-1">New Category Name</label>
+                                <input type="text" id="new-category-name" required class="w-full px-4 py-2" placeholder="e.g., Electronics">
                             </div>
                             
                             <div>
-                                <label for="shop-icon-class" class="block text-sm font-medium text-gray-700 mb-1">Header Icon (Font Awesome Class)</label>
+                                <label for="new-category-icon" class="block text-sm font-medium text-gray-700 mb-1">Category Icon (Font Awesome)</label>
                                 <div class="flex items-center space-x-3">
-                                    <input type="text" id="shop-icon-class" placeholder="e.g., fas fa-shopping-bag or fas fa-store" class="flex-grow border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                    <i id="shop-icon-preview" class="fas fa-camera-retro text-2xl text-indigo-600 flex-shrink-0"></i>
+                                    <input type="text" id="new-category-icon" class="flex-grow" placeholder="e.g., fas fa-mobile-alt">
+                                    <i id="new-category-icon-preview" class="fas fa-tag text-2xl text-indigo-600 flex-shrink-0"></i>
                                 </div>
-                                <p class="text-xs text-gray-500 mt-1">Use standard Font Awesome 6 classes (e.g., fas fa-camera-retro). <a href="https://fontawesome.com/v6/search?o=r&m=free" target="_blank" class="text-blue-500 hover:underline">Find icons here</a></p>
+                                <p class="text-xs text-gray-500 mt-1">Find icons at <a href="https://fontawesome.com/v6/search?o=r&m=free" target="_blank" class="text-blue-500 hover:underline">Font Awesome</a> (e.g., "fas fa-tag").</p>
                             </div>
-                        </div>
-
-                        <!-- ഫോളോ അസ് ലിങ്കുകൾ -->
-                        <div class="border p-4 rounded-lg bg-gray-50/50 space-y-3">
-                            <h3 class="text-xl font-medium mb-3 text-gray-700 border-b pb-2">Follow Us Links</h3>
-                            <div>
-                                <label for="follow-whatsapp" class="block text-sm font-medium text-gray-700 mb-1">WhatsApp Channel URL</label>
-                                <input type="url" id="follow-whatsapp" placeholder="https://whatsapp.com/channel/..." class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            </div>
-                            <div>
-                                <label for="follow-instagram" class="block text-sm font-medium text-gray-700 mb-1">Instagram URL</label>
-                                <input type="url" id="follow-instagram" placeholder="https://instagram.com/..." class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            </div>
-                            <div>
-                                <label for="follow-facebook" class="block text-sm font-medium text-gray-700 mb-1">Facebook URL</label>
-                                <input type="url" id="follow-facebook" placeholder="https://facebook.com/..." class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            </div>
-                            <div>
-                                <label for="follow-youtube" class="block text-sm font-medium text-gray-700 mb-1">YouTube URL</label>
-                                <input type="url" id="follow-youtube" placeholder="https://youtube.com/..." class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            </div>
-                        </div>
-                        
-                        <!-- കോൺടാക്റ്റ് വിവരങ്ങൾ -->
-                        <div class="border p-4 rounded-lg bg-gray-50/50 space-y-3">
-                            <h3 class="text-xl font-medium mb-3 text-gray-700 border-b pb-2">Contact Information</h3>
-                            <div>
-                                <label for="contact-phone" class="block text-sm font-medium text-gray-700 mb-1">Contact Phone</label>
-                                <input type="tel" id="contact-phone" placeholder="e.g., +919876543210" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            </div>
-                            <div>
-                                <label for="contact-email" class="block text-sm font-medium text-gray-700 mb-1">Contact Email</label>
-                                <input type="email" id="contact-email" placeholder="e.g., support@shop.com" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            </div>
-                        </div>
-
-                        <!-- എബൗട്ട് അസ് -->
-                        <div class="border-b pb-4">
-                            <h3 class="xl font-medium mb-3">About Us Content</h3>
-                            <input type="text" id="about-title" placeholder="Title for About Us" class="w-full mb-2 border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            <textarea id="about-content" rows="6" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Enter detailed 'About Us' information..."></textarea>
-                        </div>
-
-                        <!-- ടേംസ് & കണ്ടീഷൻസ് -->
-                        <div class="border-b pb-4">
-                            <h3 class="xl font-medium mb-3">Terms & Conditions</h3>
-                             <input type="text" id="conditions-title" placeholder="Title for Terms & Conditions" class="w-full mb-2 border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            <textarea id="conditions-content" rows="6" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Enter full Terms &Conditions text..."></textarea>
-                        </div>
-
-                        <!-- കോപ്പിറൈറ്റ് -->
-                        <div>
-                            <h3 class="xl font-medium mb-3">Copyright & Footer Text</h3>
-                            <input type="text" id="copyright-text" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="e.g., © 2024 My Social Shop. All Rights Reserved.">
-                        </div>
-
-                        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition duration-300">
-                            Save All Content Changes
-                        </button>
-                    </form>
-                </div>
-                
-                <!-- വാട്ട്സ്ആപ്പ് സെറ്റിംഗ്സ് വ്യൂ -->
-                <div id="view-whatsapp-settings" class="w-full card p-6 sm:p-8 hidden">
-                    <h2 class="2xl font-semibold mb-6 text-gray-700">WhatsApp Settings</h2>
-                    
-                    <div class="border p-4 rounded-lg bg-yellow-50/50 space-y-3 max-w-lg mx-auto">
-                        <label for="whatsapp-number" class="block text-sm font-medium text-gray-700">WhatsApp Default Number</label>
-                        <div class="flex space-x-2">
-                            <input type="text" id="whatsapp-number" class="flex-grow border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="e.g., 919876543210 (with country code)">
-                            <button type="button" id="whatsapp-save-btn" class="bg-indigo-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-indigo-700 transition duration-300 flex-shrink-0" onclick="updateWhatsAppNumber()">
-                                Save
+                            
+                            <button type="submit" class="w-full sm:w-auto bg-blue-600 text-white py-2 px-4 font-semibold shadow-md">
+                                Add Category
                             </button>
+                        </form>
+
+                        <h3 class="text-xl font-semibold mb-4 text-gray-700">Existing Categories (Public)</h3>
+                        <div id="category-list-container" class="space-y-3">
+                            <p id="no-categories" class="text-gray-500 italic">No categories have been added yet.</p>
                         </div>
-                        <p class="text-xs text-gray-500">This number will be used for 'Chat on WhatsApp' button.</p>
+                    </div>
+                    
+                    <!-- മാനേജ് കണ്ടന്റ് -->
+                    <!-- [സൂചന] പഴയ ക്ലാസുകൾ മാറ്റി പുതിയ '.card' ക്ലാസ് ചേർത്തു -->
+                    <div id="view-manage-content" class="w-full card p-6 sm:p-8 hidden">
+                        <h2 class="text-2xl font-semibold mb-6 text-gray-700">Manage Account Page Content</h2>
+                        <form id="content-form" class="space-y-6">
+
+                            <div class="border p-4 rounded-lg bg-indigo-50/50 space-y-3">
+                                <h3 class="text-xl font-medium mb-3 text-indigo-700 border-b pb-2">Header Customization</h3>
+                                <div>
+                                    <label for="shop-name" class="block text-sm font-medium text-gray-700 mb-1">Shop Name</label>
+                                    <input type="text" id="shop-name" placeholder="e.g., Your Online Store" class="w-full">
+                                    <p class="text-xs text-gray-500 mt-1">This name appears next to the icon in the header.</p>
+                                </div>
+                                <div>
+                                    <label for="shop-icon-class" class="block text-sm font-medium text-gray-700 mb-1">Header Icon (Font Awesome Class)</label>
+                                    <div class="flex items-center space-x-3">
+                                        <input type="text" id="shop-icon-class" placeholder="e.g., fas fa-shopping-bag or fas fa-store" class="flex-grow">
+                                        <i id="shop-icon-preview" class="fas fa-camera-retro text-2xl text-indigo-600 flex-shrink-0"></i>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-1">Use standard Font Awesome 6 classes. <a href="https://fontawesome.com/v6/search?o=r&m=free" target="_blank" class="text-blue-500 hover:underline">Find icons here</a></p>
+                                </div>
+                            </div>
+
+                            <div class="border p-4 rounded-lg bg-gray-50/50 space-y-3">
+                                <h3 class="text-xl font-medium mb-3 text-gray-700 border-b pb-2">Follow Us Links</h3>
+                                <div>
+                                    <label for="follow-whatsapp" class="block text-sm font-medium text-gray-700 mb-1">WhatsApp Channel URL</label>
+                                    <input type="url" id="follow-whatsapp" placeholder="https://whatsapp.com/channel/..." class="w-full">
+                                </div>
+                                <div>
+                                    <label for="follow-instagram" class="block text-sm font-medium text-gray-700 mb-1">Instagram URL</label>
+                                    <input type="url" id="follow-instagram" placeholder="https://instagram.com/..." class="w-full">
+                                </div>
+                                <div>
+                                    <label for="follow-facebook" class="block text-sm font-medium text-gray-700 mb-1">Facebook URL</label>
+                                    <input type="url" id="follow-facebook" placeholder="https://facebook.com/..." class="w-full">
+                                </div>
+                                <div>
+                                    <label for="follow-youtube" class="block text-sm font-medium text-gray-700 mb-1">YouTube URL</label>
+                                    <input type="url" id="follow-youtube" placeholder="https://youtube.com/..." class="w-full">
+                                </div>
+                            </div>
+                            
+                            <div class="border p-4 rounded-lg bg-gray-50/50 space-y-3">
+                                <h3 class="text-xl font-medium mb-3 text-gray-700 border-b pb-2">Contact Information</h3>
+                                <div>
+                                    <label for="contact-phone" class="block text-sm font-medium text-gray-700 mb-1">Contact Phone</label>
+                                    <input type="tel" id="contact-phone" placeholder="e.g., +919876543210" class="w-full">
+                                </div>
+                                <div>
+                                    <label for="contact-email" class="block text-sm font-medium text-gray-700 mb-1">Contact Email</label>
+                                    <input type="email" id="contact-email" placeholder="e.g., support@shop.com" class="w-full">
+                                </div>
+                            </div>
+
+                            <div class="border-b pb-4">
+                                <h3 class="text-xl font-medium mb-3">About Us Content</h3>
+                                <input type="text" id="about-title" placeholder="Title for About Us" class="w-full mb-2">
+                                <textarea id="about-content" rows="6" class="w-full" placeholder="Enter detailed 'About Us' information..."></textarea>
+                            </div>
+
+                            <div class="border-b pb-4">
+                                <h3 class="text-xl font-medium mb-3">Terms & Conditions</h3>
+                                 <input type="text" id="conditions-title" placeholder="Title for Terms & Conditions" class="w-full mb-2">
+                                <textarea id="conditions-content" rows="6" class="w-full" placeholder="Enter full Terms & Conditions text..."></textarea>
+                            </div>
+
+                            <div>
+                                <h3 class="text-xl font-medium mb-3">Copyright & Footer Text</h3>
+                                <input type="text" id="copyright-text" class="w-full" placeholder="e.g., © 2024 My Social Shop. All Rights Reserved.">
+                            </div>
+
+                            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3">
+                                Save All Content Changes
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- വാട്ട്സ്ആപ്പ് സെറ്റിംഗ്സ് -->
+                    <!-- [സൂചന] പഴയ ക്ലാസുകൾ മാറ്റി പുതിയ '.card' ക്ലാസ് ചേർത്തു -->
+                    <div id="view-whatsapp-settings" class="w-full card p-6 sm:p-8 hidden">
+                        <h2 class="text-2xl font-semibold mb-6 text-gray-700">WhatsApp Settings</h2>
+                        
+                        <div class="border p-4 rounded-lg bg-yellow-50/50 space-y-3 max-w-lg mx-auto">
+                            <label for="whatsapp-number" class="block text-sm font-medium text-gray-700">WhatsApp Default Number</label>
+                            <div class="flex space-x-2">
+                                <input type="text" id="whatsapp-number" class="flex-grow" placeholder="e.g., 919876543210 (with country code)">
+                                <button type="button" id="whatsapp-save-btn" class="bg-indigo-600 text-white font-semibold px-4 py-2 flex-shrink-0" onclick="updateWhatsAppNumber()">
+                                    Save
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-500">This number will be used for 'Chat on WhatsApp' button.</p>
+                        </div>
                     </div>
                 </div>
-                
             </div>
         </section>
 
     </main>
 
-    <!-- പൊതുവായ മോഡലുകൾ (അഡ്മിൻ പാനലിന് ആവശ്യമായവ) -->
+    <!-- പൊതുവായ മോഡലുകൾ -->
     <div id="message-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
             <p id="message-modal-text" class="lg mb-4"></p>
             <button class="bg-indigo-600 text-white py-2 px-6 rounded-lg hover:bg-indigo-700 transition" onclick="closeModal()">OK</button>
+
         </div>
     </div>
 
@@ -393,9 +370,7 @@
     </div>
     
     <!-- അഡ്മിൻ പേജിന് ആവശ്യമായ സ്ക്രിപ്റ്റുകൾ -->
-    <!-- (1) ഫയർബേസ് കോൺഫിഗറേഷൻ ആദ്യം ലോഡ് ചെയ്യണം -->
     <script src="firebase-config.js" type="module"></script>
-    <!-- (2) അതിനുശേഷം അഡ്മിൻ സ്ക്രിപ്റ്റ് ലോഡ് ചെയ്യണം -->
     <script src="admin.js" type="module"></script>
 </body>
 </html>
