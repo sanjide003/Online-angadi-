@@ -3,242 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>dsdoo3 - Online Shopping App</title>
+    <title>SocialShop - Online Shopping</title>
     
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS (ചില യൂട്ടിലിറ്റി ക്ലാസുകൾക്ക് വേണ്ടി) -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts (പഴയ ഫോണ്ട് നീക്കം ചെയ്തു, സിസ്റ്റം ഫോണ്ട് ഉപയോഗിക്കുന്നു) -->
     
-    <!-- Font Awesome -->
+    <!-- Font Awesome (ഐക്കണുകൾക്ക് വേണ്ടി) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
-    <!-- പൊതുവായ CSS ഫയൽ -->
+    <!-- [സൂചന] നമ്മുടെ പുതിയ ഇൻസ്റ്റാഗ്രാം സ്റ്റൈൽ CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-gray-100 text-gray-800">
 
-    <!-- ഹെഡർ -->
+    <!-- [സൂചന] പുതിയ ഇൻസ്റ്റാഗ്രാം സ്റ്റൈൽ ഹെഡർ -->
     <header class="bg-white shadow-md sticky top-0 z-50 border-b border-gray-200">
-        <nav class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center max-w-4xl">
             
-            <!-- ഷോപ്പ് ടൈറ്റിൽ -->
+            <!-- ലോഗോ -->
             <div id="shop-header-title" class="text-2xl font-bold text-indigo-600 cursor-pointer" onclick="showPage('home')">
-                <i id="shop-header-icon" class="fas fa-camera-retro mr-2"></i><span id="shop-header-name">dsdoo3</span>
+                <span id="shop-header-name">SocialShop</span>
             </div>
             
-            <!-- ഡെസ്ക്ടോപ്പ് നാവിഗേഷൻ (കാർട്ട് നീക്കം ചെയ്തു) -->
-            <div class="hidden md:flex items-center space-x-6">
-                <a href="#" class="nav-link" onclick="showPage('home')">Home</a>
-                <a href="#" class="nav-link" onclick="showPage('products')">All Products</a>
-                <!-- [സൂചന] ഡെസ്ക്ടോപ്പ് കാർട്ട് ലിങ്ക് ഇവിടെ നിന്ന് നീക്കം ചെയ്തു -->
-                <a href="#" class="nav-link" onclick="showPage('account')">Account</a>
+            <!-- ഡെസ്ക്ടോപ്പ് നാവിഗേഷൻ (ഐക്കണുകൾ) -->
+            <div class="hidden md:flex space-x-6">
+                <a href="#" class="nav-link" onclick="showPage('home')"><i class="fas fa-home"></i></a>
+                <a href="#" class="nav-link" onclick="showPage('products')"><i class="fas fa-search"></i></a>
+                <a href="#" class="nav-link relative" onclick="showPage('cart')">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span id="cart-item-count-desktop" class="cart-badge hidden">0</span>
+                </a>
+                <a href="#" class="nav-link" onclick="showPage('account')"><i class="fas fa-user-circle"></i></a>
             </div>
 
-            <!-- മൊബൈൽ ഐക്കണുകൾ (കാർട്ട് നീക്കം ചെയ്തു) -->
-            <div class="md:hidden flex items-center space-x-4">
-                 <!-- [സൂചന] മുകളിൽ വലതുവശത്തെ മൊബൈൽ കാർട്ട് ഐക്കൺ നീക്കം ചെയ്തു -->
-                <button class="nav-link relative" onclick="showPage('account')">
-                    <i class="fas fa-user text-xl"></i>
-                </button>
-            </div>
+            <!-- മൊബൈൽ ഐക്കണുകൾ (താഴെയുള്ള ബാറിൽ) -->
         </nav>
     </header>
 
     <!-- പ്രധാന ഉള്ളടക്കം -->
-    <main class="container mx-auto px-0 sm:px-6 lg:px-8 py-0 sm:py-4">
+    <main class="container mx-auto px-0 sm:px-6 lg:px-8 py-0 sm:py-6">
 
-        <!-- ഹോം പേജ് -->
-        <section id="home-page" class="page active px-4 sm:px-0">
-            
-            <!-- സെർച്ച് ബാർ -->
-            <div class="bg-white p-4 rounded-b-lg shadow-sm mb-6 flex items-center md:rounded-lg">
-                <i class="fas fa-search text-gray-400 mr-3"></i>
-                <input type="text" placeholder="Search products or categories..." class="flex-grow focus:outline-none text-gray-700" id="search-input">
-            </div>
-
-            <!-- ഹോം പ്രൊഡക്റ്റ് ഫീഡ് -->
-            <div id="home-product-list-container" class="space-y-6">
-                <!-- JS വഴി പ്രൊഡക്റ്റുകൾ ഇവിടെ വരും -->
-            </div>
-        </section>
-
-        <!-- പ്രൊഡക്റ്റ്സ് പേജ് -->
-        <section id="products-page" class="page px-4 sm:px-0">
-            
-            <!-- കാറ്റഗറി ഫിൽറ്ററുകൾ -->
-            <div id="category-filters" class="flex overflow-x-auto space-x-3 pb-4 mb-6 sticky top-16 bg-gray-100 z-10 p-2 -mx-4 sm:p-0 sm:mx-0">
-                <!-- JS വഴി കാറ്റഗറി ചിപ്പുകൾ ഇവിടെ വരും -->
-            </div>
-            
-            <!-- പ്രൊഡക്റ്റ് ഗ്രിഡ് -->
-            <div id="product-list-container" class="grid grid-cols-2 gap-4 p-4 -mx-4 sm:mx-0">
-                <!-- JS വഴി പ്രൊഡക്റ്റുകൾ ഇവിടെ വരും -->
-            </div>
-        </section>
-
-        <!-- പ്രൊഡക്റ്റ് ഡീറ്റെയിൽ പേജ് -->
-        <section id="product-detail-page" class="page bg-white min-h-screen relative overflow-hidden">
-            <div id="product-detail-container" class="max-w-xl mx-auto">
-                <!-- JS വഴി പ്രൊഡക്റ്റ് ഡീറ്റെയിൽസ് ഇവിടെ വരും -->
-            </div>
-        </section>
-
-        <!-- അക്കൗണ്ട് പേജ് -->
-        <section id="account-page" class="page px-4 sm:px-0">
-            <h1 class="text-3xl font-bold mb-8">Account & Information</h1>
-            <div class="bg-white rounded-lg shadow-lg p-6 space-y-6">
-                
-                <!-- ഇൻഫോ ലിങ്കുകൾ -->
-                <div class="space-y-2 border-b pb-4">
-                    <h2 class="text-xl font-semibold text-gray-700">Information</h2>
-                    <a href="#" onclick="showInfoSection('about')" class="flex justify-between items-center p-3 hover:bg-gray-50 rounded-lg transition duration-150">
-                        <span class="font-medium text-indigo-600"><i class="fas fa-info-circle mr-3"></i> About Us</span>
-                        <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
-                    </a>
-                    <a href="#" onclick="showInfoSection('conditions')" class="flex justify-between items-center p-3 hover:bg-gray-50 rounded-lg transition duration-150">
-                        <span class="font-medium text-indigo-600"><i class="fas fa-file-contract mr-3"></i> Terms & Conditions</span>
-                        <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
-                    </a>
-                    <a href="#" onclick="showInfoSection('copyright')" class="flex justify-between items-center p-3 hover:bg-gray-50 rounded-lg transition duration-150">
-                        <span class="font-medium text-indigo-600"><i class="fas fa-copyright mr-3"></i> Copyright</span>
-                        <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
-                    </a>
+        <!-- ===== ഹോം പേജ് (ഫീഡ്) ===== -->
+        <section id="home-page" class="page active">
+            <div class="feed-container">
+                <!-- [സൂചന] പുതിയ സെർച്ച് ബാർ -->
+                <div class="search-container mx-4 sm:mx-0">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search products..." class="flex-grow focus:outline-none" id="search-input">
                 </div>
 
-                <!-- ഫോളോ അസ് സെക്ഷൻ -->
-                <div id="follow-us-section" class="space-y-2 border-b pb-4 hidden">
-                    <h2 class="text-xl font-semibold text-gray-700">Follow Us</h2>
-                    <a id="follow-whatsapp-link" href="#" target="_blank" class="hidden flex justify-between items-center p-3 hover:bg-gray-50 rounded-lg transition duration-150">
-                        <span class="font-medium text-green-600"><i class="fab fa-whatsapp mr-3"></i> WhatsApp Channel</span>
+                <!-- [സൂചന] പുതിയ സ്റ്റോറീസ് (കാറ്റഗറികൾ) -->
+                <div class="stories-container">
+                    <div id="category-stories-scroll" class="stories-scroll">
+                        <!-- JS വഴി കാറ്റഗറികൾ ഇവിടെ വരും -->
+                        <p class="text-gray-500">Loading categories...</p>
+                    </div>
+                </div>
+                
+                <!-- [സൂചന] പുതിയ ഫീഡ് (പ്രൊഡക്ടുകൾ) -->
+                <div id="home-product-list-container" class="space-y-6">
+                    <!-- JS വഴി പ്രൊഡക്റ്റ് ഫീഡ് പോസ്റ്റുകൾ ഇവിടെ വരും -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== 'എല്ലാ പ്രൊഡക്ടുകളും' പേജ് (ഗ്രിഡ്) ===== -->
+        <section id="products-page" class="page">
+            <div class="max-w-4xl mx-auto">
+                <!-- [സൂചന] പുതിയ സ്റ്റൈൽ ലഭിക്കുന്ന കാറ്റഗറി ചിപ്പുകൾ -->
+                <div id="category-filters" class="flex overflow-x-auto space-x-3 p-4 no-scrollbar">
+                    <!-- JS വഴി കാറ്റഗറി ചിപ്പുകൾ ഇവിടെ വരും -->
+                </div>
+                
+                <!-- [സൂചന] പുതിയ ഇൻസ്റ്റാഗ്രാം സ്റ്റൈൽ ഗ്രിഡ് -->
+                <div id="product-list-container" class="mt-4">
+                    <!-- JS വഴി പ്രൊഡക്റ്റ് ഗ്രിഡ് ഐറ്റംസ് ഇവിടെ വരും -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== പ്രൊഡക്റ്റ് ഡീറ്റെയിൽ പേജ് ===== -->
+        <section id="product-detail-page" class="page">
+            <!-- [സൂചന] ഇതിനായി CSS-ൽ പുതിയ സ്റ്റൈലുകൾ ചേർത്തു -->
+            <div class="product-detail-container">
+                <div id="product-detail-content-wrapper">
+                    <!-- JS വഴി ഡീറ്റെയിൽസ് ഇവിടെ വരും -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== അക്കൗണ്ട് പേജ് ===== -->
+        <section id="account-page" class="page">
+            <!-- [സൂചന] ഇതിനായി CSS-ൽ പുതിയ സ്റ്റൈലുകൾ ചേർത്തു -->
+            <div class="account-page-container">
+                <div class="account-header">Account & Information</div>
+                <div class="account-links">
+                    <a href="#" onclick="showInfoSection('about')" class="account-list-item">
+                        <span><i class="fas fa-info-circle mr-3 text-gray-500"></i> About Us</span>
                         <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
                     </a>
-                    <a id="follow-instagram-link" href="#" target="_blank" class="hidden flex justify-between items-center p-3 hover:bg-gray-50 rounded-lg transition duration-150">
-                        <span class="font-medium text-pink-600"><i class="fab fa-instagram mr-3"></i> Instagram</span>
+                    <a href="#" onclick="showInfoSection('conditions')" class="account-list-item">
+                        <span><i class="fas fa-file-contract mr-3 text-gray-500"></i> Terms & Conditions</span>
                         <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
                     </a>
-                    <a id="follow-facebook-link" href="#" target="_blank" class="hidden flex justify-between items-center p-3 hover:bg-gray-50 rounded-lg transition duration-150">
-                        <span class="font-medium text-blue-700"><i class="fab fa-facebook mr-3"></i> Facebook</span>
-                        <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
-                    </a>
-                    <a id="follow-youtube-link" href="#" target="_blank" class="hidden flex justify-between items-center p-3 hover:bg-gray-50 rounded-lg transition duration-1A50">
-                        <span class="font-medium text-red-600"><i class="fab fa-youtube mr-3"></i> YouTube</span>
+                    <a href="#" onclick="showInfoSection('copyright')" class="account-list-item">
+                        <span><i class="fas fa-copyright mr-3 text-gray-500"></i> Copyright</span>
                         <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
                     </a>
                 </div>
                 
-                <!-- കോൺടാക്റ്റ് അസ് സെക്ഷൻ -->
-                <div id="contact-us-section" class="space-y-2 border-b pb-4 hidden">
-                    <h2 class="text-xl font-semibold text-gray-700">Contact Us</h2>
-                    <a id="contact-phone-link" href="#" class="hidden flex justify-between items-center p-3 hover:bg-gray-50 rounded-lg transition duration-150">
-                        <span class="font-medium text-gray-800"><i class="fas fa-phone mr-3"></i> <span id="contact-phone-text"></span></span>
-                        <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
-                    </a>
-                    <a id="contact-email-link" href="#" class="hidden flex justify-between items-center p-3 hover:bg-gray-50 rounded-lg transition duration-150">
-                        <span class="font-medium text-gray-800"><i class="fas fa-envelope mr-3"></i> <span id="contact-email-text"></span></span>
-                        <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
-                    </a>
+                <!-- സോഷ്യൽ ലിങ്കുകൾ (JS വഴി വരും) -->
+                <div id="follow-us-section" class="hidden pt-2">
+                    <h3 class="px-4 pt-2 text-sm font-semibold text-gray-500">Follow Us</h3>
+                    <div class="account-links">
+                        <a id="follow-whatsapp-link" href="#" target="_blank" class="account-list-item hidden">
+                            <span><i class="fab fa-whatsapp mr-3 text-green-500"></i> WhatsApp Channel</span>
+                            <i class="fas fa-external-link-alt text-gray-400 text-sm"></i>
+                        </a>
+                        <a id="follow-instagram-link" href="#" target="_blank" class="account-list-item hidden">
+                            <span><i class="fab fa-instagram mr-3 text-pink-500"></i> Instagram</span>
+                            <i class="fas fa-external-link-alt text-gray-400 text-sm"></i>
+                        </a>
+                        <a id="follow-facebook-link" href="#" target="_blank" class="account-list-item hidden">
+                            <span><i class="fab fa-facebook mr-3 text-blue-600"></i> Facebook</span>
+                            <i class="fas fa-external-link-alt text-gray-400 text-sm"></i>
+                        </a>
+                        <a id="follow-youtube-link" href="#" target="_blank" class="account-list-item hidden">
+                            <span><i class="fab fa-youtube mr-3 text-red-500"></i> YouTube</span>
+                            <i class="fas fa-external-link-alt text-gray-400 text-sm"></i>
+                        </a>
+                    </div>
                 </div>
-                
-                <!-- ഇൻഫോ കണ്ടന്റ് -->
-                <div id="info-content-display" class="pt-4 space-y-4">
+
+                <!-- കോൺടാക്റ്റ് ലിങ്കുകൾ (JS വഴി വരും) -->
+                <div id="contact-us-section" class="hidden pt-2">
+                    <h3 class="px-4 pt-2 text-sm font-semibold text-gray-500">Contact Us</h3>
+                    <div class="account-links">
+                        <a id="contact-phone-link" href="#" class="account-list-item hidden">
+                            <span><i class="fas fa-phone mr-3 text-gray-500"></i> <span id="contact-phone-text"></span></span>
+                            <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
+                        </a>
+                        <a id="contact-email-link" href="#" class="account-list-item hidden">
+                            <span><i class="fas fa-envelope mr-3 text-gray-500"></i> <span id="contact-email-text"></span></span>
+                            <i class="fas fa-chevron-right text-gray-400 text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- വിവരങ്ങൾ കാണിക്കാനുള്ള സ്ഥലം -->
+                <div id="info-content-display" class="account-content-display">
                     <h2 id="info-title" class="2xl font-bold text-gray-800 border-b pb-2">Welcome</h2>
                     <p id="info-content" class="text-gray-700 whitespace-pre-wrap">
                         Please click a link above to view the detailed information.
                     </p>
                 </div>
 
-                <!-- ഫൂട്ടർ ടെക്സ്റ്റ് -->
-                <div class="text-center pt-6 border-t">
-                    <p class="text-sm text-gray-500" id="account-copyright-display">© 2024 SocialShop. All rights reserved.</p>
-                    <p class="text-xs text-gray-400 mt-2">Logged in as Guest: <span id="current-auth-uid"></span></p>
+                <div class="account-footer">
+                    <p class="text-sm text-gray-500" id="account-copyright-display">© 2024 SocialShop.</p>
+                    <p class="text-xs text-gray-400 mt-2">UID: <span id="current-auth-uid"></span></p>
                 </div>
             </div>
         </section>
 
-        <!-- കാർട്ട് പേജ് -->
-        <section id="cart-page" class="page px-4 sm:px-0">
-            <h1 class="text-3xl font-bold mb-8">Your Cart</h1>
-            
-            <div class="lg:flex lg:gap-8">
-                <!-- കാർട്ട് ഐറ്റംസ് -->
-                <div class="lg:w-2/3">
-                    <!-- കാർട്ട് കാലിയാണെങ്കിൽ -->
-                    <div id="cart-empty-msg" class="hidden bg-white rounded-lg shadow-lg p-6 text-center text-gray-500">
-                        <i class="fas fa-shopping-cart text-4xl mb-4 text-gray-300"></i>
-                        <p class="text-xl font-semibold">Your cart is empty.</p>
-                        <p class="mt-2">Looks like you haven't added anything to your cart yet.</p>
-                        <button onclick="showPage('products')" class="mt-6 bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-indigo-700 transition">
-                            Start Shopping
-                        </button>
-                    </div>
-
-                    <!-- കാർട്ട് ഐറ്റംസ് കണ്ടെയ്നർ -->
-                    <div id="cart-items-container" class="space-y-4">
-                        <!-- JS വഴി കാർട്ട് ഐറ്റംസ് ഇവിടെ വരും -->
-                    </div>
+        <!-- ===== കാർട്ട് പേജ് ===== -->
+        <section id="cart-page" class="page">
+            <!-- [സൂചന] ഇതിനായി CSS-ൽ പുതിയ സ്റ്റൈലുകൾ ചേർത്തു -->
+            <div class="cart-page-container">
+                <div class="cart-header">Your Cart</div>
+                
+                <div id="cart-item-list-container" class="cart-item-list">
+                    <!-- JS വഴി കാർട്ട് ഐറ്റംസ് ഇവിടെ വരും -->
                 </div>
-
-                <!-- കാർട്ട് സമ്മറി -->
-                <div id="cart-summary-section" class="lg:w-1/3 mt-8 lg:mt-0 lg:sticky lg:top-24 h-fit">
-                    <div class="bg-white rounded-lg shadow-lg p-6">
-                        <h2 class="text-2xl font-bold border-b pb-4 mb-4">Order Summary</h2>
-                        <div class="space-y-3">
-                            <div class="flex justify-between text-gray-700">
-                                <span>Subtotal</span>
-                                <span id="cart-subtotal" class="font-medium">₹0.00</span>
-                            </div>
-                            <div class="flex justify-between text-gray-700">
-                                <span>Delivery</span>
-                                <span class="font-medium text-sm">Calculated at next step</span>
-                            </div>
-                            <div class="flex justify-between text-xl font-bold border-t pt-4 mt-4">
-                                <span>Total</span>
-                                <span id="cart-total">₹0.00</span>
-                            </div>
-                        </div>
-                        <button class="w-full mt-6 bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition duration-300 text-lg" onclick="openWhatsAppChatForCart()">
-                            <i class="fab fa-whatsapp mr-2"></i> Proceed to Checkout
-                        </button>
+                
+                <div id="cart-summary-container" class="cart-summary hidden">
+                    <div class="cart-summary-row">
+                        <span>Subtotal</span>
+                        <span id="cart-subtotal">₹0</span>
                     </div>
+                    <div class="cart-summary-row">
+                        <span>Delivery Charges</span>
+                        <span id="cart-delivery">₹0</span>
+                    </div>
+                    <div class="cart-summary-row total">
+                        <span>Total Amount</span>
+                        <span id="cart-total">₹0</span>
+                    </div>
+                    <button class="checkout-btn" onclick="checkout()">
+                        Proceed to Checkout
+                    </button>
                 </div>
+                
             </div>
         </section>
-
 
     </main>
 
-    <!-- മൊബൈൽ നാവിഗേഷൻ (കാർട്ട് നിലനിർത്തി) -->
-    <div id="main-mobile-nav" class="mobile-nav-bar md:hidden flex justify-around items-center">
-        
-        <a href="#" class="nav-link flex flex-col items-center p-1 text-xs text-indigo-600 active-mobile-link" onclick="showPage('home')">
-            <i class="fas fa-home text-xl"></i>
-            <span>Home</span>
+    <!-- [സൂചന] പുതിയ ഇൻസ്റ്റാഗ്രാം സ്റ്റൈൽ മൊബൈൽ നാവിഗേഷൻ -->
+    <div id="main-mobile-nav" class="mobile-nav-bar md:hidden">
+        <a href="#" class="nav-link flex flex-col items-center active-mobile-link" onclick="showPage('home')">
+            <i class="fas fa-home"></i>
         </a>
-        
-        <a href="#" class="nav-link flex flex-col items-center p-1 text-xs text-gray-500" onclick="showPage('products')">
-            <i class="fas fa-box text-xl"></i>
-            <span>Products</span>
+        <a href="#" class="nav-link flex flex-col items-center" onclick="showPage('products')">
+            <i class="fas fa-search"></i>
         </a>
-
-        <!-- മൊബൈൽ കാർട്ട് ഐക്കൺ (താഴെ) -->
-        <a href="#" class="nav-link flex flex-col items-center p-1 text-xs text-gray-500 relative" onclick="showPage('cart')">
-            <i class="fas fa-shopping-cart text-xl"></i>
-            <span id="cart-item-count-bottom-nav" class="cart-badge hidden">0</span>
-            <span>Cart</span>
+        <a href="#" class="nav-link flex flex-col items-center relative" onclick="showPage('cart')">
+            <i class="fas fa-shopping-bag"></i>
+            <span id="cart-item-count-mobile" class="cart-badge hidden">0</span>
         </a>
-        
-        <a href="#" class="nav-link flex flex-col items-center p-1 text-xs text-gray-500 relative" onclick="showPage('account')">
-            <i class="fas fa-user text-xl"></i>
-            <span>Account</span>
+        <a href="#" class="nav-link flex flex-col items-center" onclick="showPage('account')">
+            <i class="fas fa-user-circle"></i>
         </a>
-        
     </div>
 
-    <!-- പൊതുവായ മോഡലുകൾ -->
+    <!-- മോഡലുകൾ (മാറ്റമില്ല) -->
     <div id="message-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
             <p id="message-modal-text" class="lg mb-4"></p>
@@ -260,44 +239,33 @@
            <i class="fas fa-spinner fa-spin text-indigo-600 text-5xl"></i>
     </div>
     
-    <!-- കമന്റ്സ് ഓവർലേ -->
-    <div id="comments-backdrop" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden backdrop-blur" onclick="closeCommentsModal()"></div>
-
+    <!-- കമന്റ്സ് മോഡൽ (പുതിയ സ്റ്റൈൽ) -->
+    <div id="comments-backdrop" class="hidden" onclick="closeCommentsModal()"></div>
     <div id="comments-modal">
-        
         <div class="p-4 border-b flex justify-between items-center flex-shrink-0">
-            <h2 class="xl font-bold">Comments on <span id="comment-product-name" class="text-indigo-600"></span></h2>
+            <h2 class="text-base font-semibold">Comments</h2>
             <button class="text-gray-500 hover:text-gray-800 text-2xl" onclick="closeCommentsModal()">
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        
-        <!-- കമന്റ് ലിസ്റ്റ് -->
-        <div id="comments-list" class="flex-grow overflow-y-auto space-y-4 mb-4 p-4">
-            <p id="no-comments-msg" class="text-gray-500 italic text-center py-4">No comments yet. Be the first to share your feedback!</p>
+        <div id="comments-list" class="flex-grow overflow-y-auto">
+            <p id="no-comments-msg" class="text-gray-500 italic text-center py-4">No comments yet.</p>
         </div>
-        
-        <!-- പുതിയ കമന്റ് ഫോം -->
-        <form id="add-comment-form" class="mt-auto pt-4 p-4 border-t border-gray-200 flex-shrink-0">
+        <form id="add-comment-form" class="mt-auto p-4 border-t border-gray-200 flex-shrink-0">
             <input type="hidden" id="comment-product-id">
             <div class="space-y-3">
-                <div>
-                    <input type="text" id="comment-user-name" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2" placeholder="Enter Your Name">
-                </div>
-                
-                <div class="flex items-end space-x-2">
-                    <textarea id="comment-feedback" rows="2" required class="flex-grow border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2" placeholder="Share your feedback..."></textarea>
-                    
-                    <button type="submit" class="bg-indigo-600 text-white p-3 rounded-full h-10 w-10 flex items-center justify-center hover:bg-indigo-700 transition duration-150 flex-shrink-0">
-                        <i class="fas fa-arrow-right"></i>
+                <input type="text" id="comment-user-name" class="w-full" placeholder="Enter Your Name">
+                <div class="flex items-center space-x-2">
+                    <textarea id="comment-feedback" rows="1" required class="flex-grow" placeholder="Add a comment..."></textarea>
+                    <button type="submit" class="flex-shrink-0">
+                        <i class="fas fa-paper-plane"></i>
                     </button>
                 </div>
             </div>
         </form>
     </div>
 
-
-    <!-- പബ്ലിക് പേജിന് ആവശ്യമായ സ്ക്രിപ്റ്റുകൾ -->
+    <!-- സ്ക്രിപ്റ്റുകൾ -->
     <script src="firebase-config.js" type="module"></script>
     <script src="app.js" type="module"></script>
 </body>
