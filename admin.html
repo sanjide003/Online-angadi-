@@ -8,108 +8,55 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Google Fonts (Inter) -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Font Awesome Icons -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f2f5; 
-        }
-        
-        /* Ensure the admin page is always visible */
-        .page {
-            display: none;
-        }
-        .page.active {
-            display: block;
-        }
-
-        /* Admin Tab Styles (Kept for logic, but hidden) */
-        .admin-tab-button.hidden {
-            display: none;
-        }
-        
-        /* Admin Dropdown Styles */
-        .admin-menu-link {
-            display: block;
-            padding: 0.75rem 1.25rem;
-            font-medium: 500;
-            color: #374151; /* gray-700 */
-            transition: all 0.2s;
-        }
-        .admin-menu-link:hover {
-            background-color: #f3f4f6; /* gray-100 */
-            color: #4f46e5; /* indigo-600 */
-        }
-        .admin-menu-link.active {
-            background-color: #eef2ff; /* indigo-50 */
-            color: #4f46e5; /* indigo-600 */
-            font-weight: 600;
-        }
-
-        /* Hide scrollbar for horizontal lists */
-        #category-filters::-webkit-scrollbar,
-        #product-list-container::-webkit-scrollbar {
-            display: none;
-        }
-        #category-filters,
-        #product-list-container {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-    </style>
+    <!-- പൊതുവായ CSS ഫയൽ -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-gray-100 text-gray-800">
 
-    <!-- Header (Simplified for Admin) -->
+    <!-- അഡ്മിൻ ഹെഡർ -->
     <header class="bg-white shadow-md sticky top-0 z-50 border-b border-gray-200">
         <nav class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-            
-            <!-- Shop Title -->
-            <div id="shop-header-title" class="text-2xl font-bold text-indigo-600 flex items-center">
-                <img id="shop-header-icon" 
-                     src="https://placehold.co/32x32/6366f1/ffffff?text=S" 
-                     alt="Shop Logo" 
-                     class="w-8 h-8 mr-2 rounded-md object-cover flex-shrink-0">
-                <span id="shop-header-name">SocialShop</span>
+            <!-- അഡ്മിൻ പാനൽ ടൈറ്റിൽ -->
+            <div id="shop-header-title" class="text-2xl font-bold text-indigo-600">
+                <i id="shop-header-icon" class="fas fa-cog mr-2"></i><span id="shop-header-name">Admin Panel</span>
             </div>
             
-            <!-- Admin Panel Title -->
-            <div>
-                <span class="text-lg font-semibold text-gray-700">Admin Panel</span>
+            <!-- പബ്ലിക് സൈറ്റിലേക്കുള്ള ലിങ്ക് -->
+            <div class="flex space-x-6">
+                <a href="index.html" class="nav-link text-gray-600 hover:text-indigo-600 font-medium">View Public Site</a>
             </div>
         </nav>
     </header>
 
-    <!-- Main Content (Admin Page Only) -->
-    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <!-- പ്രധാന ഉള്ളടക്കം (Admin Page മാത്രം) -->
+    <main class="container mx-auto px-0 sm:px-6 lg:px-8 py-0 sm:py-4">
 
-        <!-- Admin Page (Set as active by default) -->
-        <section id="admin-page" class="page active">
+        <!-- അഡ്മിൻ പേജ് സെക്ഷൻ -->
+        <section id="admin-page" class="page active px-4 sm:px-0">
             
-            <!-- Admin Menu Header -->
+            <!-- അഡ്മിൻ മെനു ബാർ -->
             <div class="bg-white rounded-lg shadow-md p-4 mb-6 relative">
                 <div class="flex justify-between items-center">
-                    
-                    <!-- Current View Title -->
+                    <!-- നിലവിലെ വ്യൂ ടൈറ്റിൽ -->
                     <h2 id="admin-current-view-title" class="text-xl font-semibold text-gray-800">Add/Edit Product</h2>
                     
-                    <!-- Admin Menu Button (3-dot) -->
+                    <!-- 3-ഡോട്ട് മെനു ബട്ടൺ -->
                     <button id="admin-menu-button" class="text-gray-600 hover:text-indigo-600 p-2 rounded-full hover:bg-gray-100 transition">
                         <i class="fas fa-ellipsis-v text-xl"></i>
                     </button>
                 </div>
 
-                <!-- Admin Menu Dropdown -->
+                <!-- അഡ്മിൻ മെനു ഡ്രോപ്പ്ഡൗൺ -->
                 <div id="admin-menu-dropdown" class="absolute right-4 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-100 z-30 hidden">
                     <ul class="py-1">
-                        <!-- Admin Menu Links -->
                         <li><a href="#" class="admin-menu-link active" data-view="add-product">Add/Edit Product</a></li>
                         <li><a href="#" class="admin-menu-link" data-view="manage-products">Manage Products</a></li>
                         <li><a href="#" class="admin-menu-link" data-view="control-category">Manage Categories</a></li>
@@ -119,7 +66,7 @@
                 </div>
             </div>
             
-            <!-- Hidden elements for JS compatibility -->
+            <!-- പഴയ ടാബുകൾ (JS ലോജിക്കിനായി മറച്ചുവെച്ചിരിക്കുന്നു) -->
             <div class="hidden">
                 <button id="tab-add-product"></button>
                 <button id="tab-manage-products"></button>
@@ -129,10 +76,10 @@
             
             <p id="user-id-display" class="text-sm text-center text-gray-500 mb-6 -mt-2"></p>
             
-            <!-- Admin Views Container -->
+            <!-- അഡ്മിൻ കണ്ടന്റ് ലേഔട്ട് -->
             <div class="flex flex-col lg:flex-row gap-8">
                 
-                <!-- View: Add/Edit Product -->
+                <!-- ഇടത് ഭാഗം: ഉൽപ്പന്നം ചേർക്കാനുള്ള ഫോം -->
                 <div id="view-add-product" class="w-full bg-white p-6 rounded-lg shadow-lg h-fit sticky top-24 hidden">
                     <h2 id="admin-form-title" class="2xl font-bold mb-6">Product Details</h2>
                     <form id="admin-product-form" class="space-y-4">
@@ -144,7 +91,7 @@
                             <input type="text" id="product-name" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
                         </div>
                         
-                        <!-- Product Category -->
+                        <!-- Category Select -->
                         <div class="mb-4">
                             <label for="product-category-select" class="block text-sm font-medium text-gray-700 mb-1">Select Category <span class="text-red-500">*</span></label>
                             <select id="product-category-select" required class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white disabled:bg-gray-50">
@@ -153,7 +100,7 @@
                             <p id="category-help-message" class="text-xs text-red-500 mt-1 hidden">No categories available. Add new ones in the 'Manage Categories' tab.</p>
                         </div>
 
-                        <!-- Prices -->
+                        <!-- Price Fields -->
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label for="product-price" class="block text-sm font-medium text-gray-700 mb-1">Original Price (MRP) (₹) <span class="text-red-500">*</span></label>
@@ -166,7 +113,7 @@
                             </div>
                         </div>
 
-                        <!-- Main Image -->
+                        <!-- Main Image URL -->
                         <div>
                             <label for="product-image" class="block text-sm font-medium text-gray-700 mb-1">Main Image URL <span class="text-red-500">*</span></label>
                             <div class="flex items-center space-x-3">
@@ -206,7 +153,7 @@
                             <span>Show Advanced Options</span> <i class="fas fa-chevron-down ml-1 text-xs"></i>
                         </button>
                         
-                        <!-- Advanced Options Panel -->
+                        <!-- Advanced Options Content -->
                         <div id="advanced-product-options" class="space-y-4 hidden pt-4">
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
@@ -222,7 +169,7 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Other Image URLs (Optional)</label>
                                 <div id="other-images-list" class="space-y-2">
-                                    <!-- Dynamic image inputs go here -->
+                                    <!-- JS വഴി ഇമേജ് ഇൻപുട്ടുകൾ ഇവിടെ വരും -->
                                 </div>
                                 <button type="button" class="w-full mt-2 bg-gray-200 text-gray-800 font-bold py-2 rounded-lg hover:bg-gray-300 transition duration-300" onclick="addOtherImageInput()">
                                     <i class="fas fa-plus mr-2"></i> Add Image Link
@@ -235,7 +182,7 @@
                                 <textarea id="product-specifications" rows="3" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Enter specifications or key points (one per line)..."></textarea>
                             </div>
                         </div>
-                        
+
                         <!-- Form Buttons -->
                         <div class="grid grid-cols-2 gap-4 pt-4 border-t">
                              <button type="button" class="w-full bg-gray-500 text-white font-bold py-3 rounded-lg hover:bg-gray-600 transition duration-300" onclick="resetAdminForm()">
@@ -251,13 +198,14 @@
                     </form>
                 </div>
                 
-                <!-- View: Manage Products -->
+                <!-- വലതു ഭാഗം: മറ്റ് അഡ്മിൻ വ്യൂകൾ -->
+                <!-- മാനേജ് പ്രൊഡക്റ്റ്സ് വ്യൂ -->
                 <div id="view-manage-products" class="w-full hidden">
                     <h2 class="2xl font-bold mb-6">Manage Existing Products</h2>
                     <div class="bg-white p-4 rounded-lg shadow-md mb-6">
                         <label for="admin-product-category-filter" class="block text-sm font-medium text-gray-700 mb-2">Filter by Category:</label>
                         <select id="admin-product-category-filter" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white">
-                            <!-- Options populated by JS -->
+                            <!-- JS വഴി കാറ്റഗറി ഫിൽറ്റർ ഇവിടെ വരും -->
                         </select>
                     </div>
 
@@ -274,7 +222,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="admin-product-list-body" class="divide-y divide-gray-200">
-                                    <!-- Product list populated by JS -->
+                                    <!-- JS വഴി പ്രൊഡക്റ്റ് ലിസ്റ്റ് ഇവിടെ വരും -->
                                 </tbody>
                             </table>
                         </div>
@@ -284,18 +232,17 @@
                     </div>
                 </div>
                 
-                <!-- View: Manage Categories -->
+                <!-- മാനേജ് കാറ്റഗറീസ് വ്യൂ -->
                 <div id="view-control-category" class="w-full card p-6 sm:p-8 hidden">
                     <h2 class="2xl font-semibold mb-6 text-gray-700">Manage Categories</h2>
                     
-                    <!-- Add Category Form -->
+                    <!-- പുതിയ കാറ്റഗറി ഫോം -->
                     <form id="add-category-form" class="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
                         <div>
                             <label for="new-category-name" class="block text-sm font-medium text-gray-700 mb-1">New Category Name</label>
                             <input type="text" id="new-category-name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Electronics">
                         </div>
                         
-                        <!-- Category Icon -->
                         <div>
                             <label for="new-category-icon" class="block text-sm font-medium text-gray-700 mb-1">Category Icon (Font Awesome)</label>
                             <div class="flex items-center space-x-3">
@@ -310,41 +257,39 @@
                         </button>
                     </form>
 
-                    <!-- Existing Categories -->
+                    <!-- നിലവിലുള്ള കാറ്റഗറികൾ -->
                     <h3 class="xl font-semibold mb-4 text-gray-700">Existing Categories (Public)</h3>
                     <div id="category-list-container" class="space-y-3">
                         <p id="no-categories" class="text-gray-500 italic">No categories have been added yet.</p>
                     </div>
                 </div>
                 
-                <!-- View: Manage Content -->
+                <!-- മാനേജ് കണ്ടന്റ് വ്യൂ -->
                 <div id="view-manage-content" class="w-full card p-6 sm:p-8 hidden">
                     <h2 class="2xl font-semibold mb-6 text-gray-700">Manage Account Page Content</h2>
                     <form id="content-form" class="space-y-6">
 
-                        <!-- Header Customization -->
+                        <!-- ഹെഡർ കസ്റ്റമൈസേഷൻ -->
                         <div class="border p-4 rounded-lg bg-indigo-50/50 space-y-3">
                             <h3 class="text-xl font-medium mb-3 text-indigo-700 border-b pb-2">Header Customization</h3>
                             
-                            <!-- Shop Name -->
                             <div>
                                 <label for="shop-name" class="block text-sm font-medium text-gray-700 mb-1">Shop Name</label>
                                 <input type="text" id="shop-name" placeholder="e.g., Your Online Store" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <p class="text-xs text-gray-500 mt-1">This name appears next to the icon in the header.</p>
                             </div>
                             
-                            <!-- Shop Icon -->
                             <div>
-                                <label for="shop-icon-url" class="block text-sm font-medium text-gray-700 mb-1">Header Icon URL (Logo)</label>
+                                <label for="shop-icon-class" class="block text-sm font-medium text-gray-700 mb-1">Header Icon (Font Awesome Class)</label>
                                 <div class="flex items-center space-x-3">
-                                    <input type="url" id="shop-icon-url" placeholder="https://example.com/logo.png" class="flex-grow border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                    <img id="shop-icon-preview" src="https://placehold.co/40x40/f0f0f0/999?text=Logo" alt="Logo Preview" class="w-10 h-10 object-cover rounded-lg border border-gray-300 flex-shrink-0" onerror="this.src='https://placehold.co/40x40/f0f0f0/999?text=Error'">
+                                    <input type="text" id="shop-icon-class" placeholder="e.g., fas fa-shopping-bag or fas fa-store" class="flex-grow border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <i id="shop-icon-preview" class="fas fa-camera-retro text-2xl text-indigo-600 flex-shrink-0"></i>
                                 </div>
-                                <p class="text-xs text-gray-500 mt-1">Enter a direct URL to your logo (e.g., .png, .jpg, .svg).</p>
+                                <p class="text-xs text-gray-500 mt-1">Use standard Font Awesome 6 classes (e.g., fas fa-camera-retro). <a href="https://fontawesome.com/v6/search?o=r&m=free" target="_blank" class="text-blue-500 hover:underline">Find icons here</a></p>
                             </div>
                         </div>
 
-                        <!-- Follow Us Links -->
+                        <!-- ഫോളോ അസ് ലിങ്കുകൾ -->
                         <div class="border p-4 rounded-lg bg-gray-50/50 space-y-3">
                             <h3 class="text-xl font-medium mb-3 text-gray-700 border-b pb-2">Follow Us Links</h3>
                             <div>
@@ -365,7 +310,7 @@
                             </div>
                         </div>
                         
-                        <!-- Contact Information -->
+                        <!-- കോൺടാക്റ്റ് വിവരങ്ങൾ -->
                         <div class="border p-4 rounded-lg bg-gray-50/50 space-y-3">
                             <h3 class="text-xl font-medium mb-3 text-gray-700 border-b pb-2">Contact Information</h3>
                             <div>
@@ -378,21 +323,21 @@
                             </div>
                         </div>
 
-                        <!-- About Us -->
+                        <!-- എബൗട്ട് അസ് -->
                         <div class="border-b pb-4">
                             <h3 class="xl font-medium mb-3">About Us Content</h3>
                             <input type="text" id="about-title" placeholder="Title for About Us" class="w-full mb-2 border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                             <textarea id="about-content" rows="6" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Enter detailed 'About Us' information..."></textarea>
                         </div>
 
-                        <!-- Terms & Conditions -->
+                        <!-- ടേംസ് & കണ്ടീഷൻസ് -->
                         <div class="border-b pb-4">
                             <h3 class="xl font-medium mb-3">Terms & Conditions</h3>
                              <input type="text" id="conditions-title" placeholder="Title for Terms & Conditions" class="w-full mb-2 border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                            <textarea id="conditions-content" rows="6" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Enter full Terms & Conditions text..."></textarea>
+                            <textarea id="conditions-content" rows="6" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Enter full Terms &Conditions text..."></textarea>
                         </div>
 
-                        <!-- Copyright -->
+                        <!-- കോപ്പിറൈറ്റ് -->
                         <div>
                             <h3 class="xl font-medium mb-3">Copyright & Footer Text</h3>
                             <input type="text" id="copyright-text" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="e.g., © 2024 My Social Shop. All Rights Reserved.">
@@ -404,11 +349,10 @@
                     </form>
                 </div>
                 
-                <!-- View: WhatsApp Settings -->
+                <!-- വാട്ട്സ്ആപ്പ് സെറ്റിംഗ്സ് വ്യൂ -->
                 <div id="view-whatsapp-settings" class="w-full card p-6 sm:p-8 hidden">
                     <h2 class="2xl font-semibold mb-6 text-gray-700">WhatsApp Settings</h2>
                     
-                    <!-- WhatsApp Number Input -->
                     <div class="border p-4 rounded-lg bg-yellow-50/50 space-y-3 max-w-lg mx-auto">
                         <label for="whatsapp-number" class="block text-sm font-medium text-gray-700">WhatsApp Default Number</label>
                         <div class="flex space-x-2">
@@ -419,14 +363,14 @@
                         </div>
                         <p class="text-xs text-gray-500">This number will be used for 'Chat on WhatsApp' button.</p>
                     </div>
-                    
                 </div>
+                
             </div>
         </section>
 
     </main>
 
-    <!-- Message Modal -->
+    <!-- പൊതുവായ മോഡലുകൾ (അഡ്മിൻ പാനലിന് ആവശ്യമായവ) -->
     <div id="message-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
             <p id="message-modal-text" class="lg mb-4"></p>
@@ -434,7 +378,6 @@
         </div>
     </div>
 
-    <!-- Confirm Modal -->
     <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
             <p id="confirm-modal-text" class="lg mb-4 font-semibold text-gray-700"></p>
@@ -445,1012 +388,14 @@
         </div>
     </div>
     
-    <!-- Loading Spinner -->
     <div id="loading-spinner" class="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50 hidden">
            <i class="fas fa-spinner fa-spin text-indigo-600 text-5xl"></i>
     </div>
     
-
-    <!-- Firebase and Admin Logic Script -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot, collection, query, addDoc, updateDoc, deleteDoc, arrayRemove, arrayUnion, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        
-        // --- Global Configuration ---
-        // MODIFICATION: Replaced dynamic config with user's provided config
-        const firebaseConfig = {
-          apiKey: "AIzaSyCp-NKbL_kmB2nzlTv9fSisc2cVuE55p-Q",
-          authDomain: "online-angadi-003.firebaseapp.com",
-          projectId: "online-angadi-003",
-          storageBucket: "online-angadi-003.firebasestorage.app",
-          messagingSenderId: "873906876645",
-          appId: "1:873906876645:web:a730abef1e07da515f640c",
-          measurementId: "G-GH1DZXR5ZP"
-        };
-        
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        // MODIFICATION: Set a default APP_ID in case __app_id is not defined
-        const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'default-socialshop-app';
-        
-        // --- Global Instances & Caches ---
-        let app, db, auth;
-        let currentUserId = null;
-        let allProducts = [];
-        let categoriesCache = []; 
-        let whatsappNumber = '';
-        let infoContent = {}; 
-        
-        let headerSettings = { 
-            shopName: 'SocialShop', 
-            iconUrl: 'https://placehold.co/32x32/6366f1/ffffff?text=S' // Default URL
-        };
-        
-        // Firestore References
-        let productsCollectionRef;
-        let categoriesCollectionRef;
-        let settingsDocRef;
-        let infoDocRef; 
-
-        // Snapshot Unsubscribe Functions
-        let unsubscribeProducts = null;
-        let unsubscribeCategories = null; 
-        let unsubscribeSettings = null; 
-        let unsubscribeInfo = null; 
-
-        let confirmCallback = null; 
-        let activeProduct = null;
-        
-        // UI State
-        let adminFilterCategoryId = 'all';
-
-        // --- DOM Elements ---
-        let pages, loadingSpinner, messageModal, messageModalText, confirmModal, confirmModalText, confirmModalButton;
-        
-        // Admin Tab Elements
-        let $viewAddProduct, $viewManageProducts, $viewControlCategory, $viewManageContent, $viewWhatsAppSettings;
-        let $tabAddProduct, $tabManageProducts, $tabControlCategory, $tabManageContent;
-        
-        // NEW Admin Menu Elements
-        let $adminMenuButton, $adminMenuDropdown, $adminCurrentViewTitle;
-        
-        let $categorySelect, $categoryHelp, $addCategoryForm, $categoryListContainer, $noCategoriesMsg, $userIdDisplay, $whatsappInput, $contentForm, $adminProductFilterSelect, $shopNameInput;
-        
-        let $shopIconUrlInput, $shopIconPreview;
-
-        // Header Elements
-        let $shopHeaderIcon, $shopHeaderName;
-
-        // ========= App Initialization & Setup =========
-
-        document.addEventListener('DOMContentLoaded', () => {
-            
-            // Assign DOM elements
-            pages = document.querySelectorAll('.page');
-            loadingSpinner = document.getElementById('loading-spinner');
-            messageModal = document.getElementById('message-modal');
-            messageModalText = document.getElementById('message-modal-text');
-            confirmModal = document.getElementById('confirm-modal');
-            confirmModalText = document.getElementById('confirm-modal-text');
-            confirmModalButton = document.getElementById('confirm-modal-button');
-            
-            $viewAddProduct = document.getElementById('view-add-product');
-            $viewManageProducts = document.getElementById('view-manage-products');
-            $viewControlCategory = document.getElementById('view-control-category');
-            $viewManageContent = document.getElementById('view-manage-content'); 
-            $viewWhatsAppSettings = document.getElementById('view-whatsapp-settings');
-            
-            $tabAddProduct = document.getElementById('tab-add-product');
-            $tabManageProducts = document.getElementById('tab-manage-products');
-            $tabControlCategory = document.getElementById('tab-control-category');
-            $tabManageContent = document.getElementById('tab-manage-content');
-            
-            $adminMenuButton = document.getElementById('admin-menu-button');
-            $adminMenuDropdown = document.getElementById('admin-menu-dropdown');
-            $adminCurrentViewTitle = document.getElementById('admin-current-view-title');
-            
-            $categorySelect = document.getElementById('product-category-select');
-            $categoryHelp = document.getElementById('category-help-message');
-            $addCategoryForm = document.getElementById('add-category-form');
-            $categoryListContainer = document.getElementById('category-list-container');
-            $noCategoriesMsg = document.getElementById('no-categories');
-            $userIdDisplay = document.getElementById('user-id-display');
-            $whatsappInput = document.getElementById('whatsapp-number');
-            $contentForm = document.getElementById('content-form'); 
-            $adminProductFilterSelect = document.getElementById('admin-product-category-filter');
-            $shopNameInput = document.getElementById('shop-name');
-            
-            $shopIconUrlInput = document.getElementById('shop-icon-url');
-            $shopIconPreview = document.getElementById('shop-icon-preview');
-
-            $shopHeaderIcon = document.getElementById('shop-header-icon');
-            $shopHeaderName = document.getElementById('shop-header-name');
-
-            
-            if (!firebaseConfig) {
-                console.error("Firebase configuration is missing!");
-                showMessage("Firebase configuration is missing.", 'error');
-                return;
-            }
-            
-            try {
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-
-                setupAuthListener();
-
-                // Admin Form Event Listeners
-                document.getElementById('admin-product-form').addEventListener('submit', handleAdminFormSubmit);
-                document.getElementById('product-price').addEventListener('input', calculateDiscountDisplay);
-                document.getElementById('product-retail-price').addEventListener('input', calculateDiscountDisplay);
-                
-                document.getElementById('delivery-free').addEventListener('change', toggleDeliveryChargeInput);
-                document.getElementById('delivery-charge').addEventListener('change', toggleDeliveryChargeInput);
-                
-                document.getElementById('toggle-advanced-options-btn').addEventListener('click', () => {
-                    const advancedOptions = document.getElementById('advanced-product-options');
-                    const btn = document.getElementById('toggle-advanced-options-btn');
-                    const isHidden = advancedOptions.classList.toggle('hidden');
-                    
-                    if (isHidden) {
-                        btn.innerHTML = '<span>Show Advanced Options</span> <i class="fas fa-chevron-down ml-1 text-xs"></i>';
-                    } else {
-                        btn.innerHTML = '<span>Hide Advanced Options</span> <i class="fas fa-chevron-up ml-1 text-xs"></i>';
-                    }
-                });
-                
-                // Admin Tab Event Listeners 
-                $addCategoryForm.addEventListener('submit', handleAddCategory);
-                $categoryListContainer.addEventListener('click', handleDeleteCategoryClick);
-                $contentForm.addEventListener('submit', handleSaveContent); 
-                
-                $shopIconUrlInput.addEventListener('input', updateLogoPreview);
-                
-                document.getElementById('new-category-icon').addEventListener('input', updateCategoryIconPreview);
-
-                $adminProductFilterSelect.addEventListener('change', (e) => {
-                    adminFilterCategoryId = e.target.value;
-                    filterAdminProducts();
-                });
-                
-                $adminMenuButton.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    $adminMenuDropdown.classList.toggle('hidden');
-                });
-
-                $adminMenuDropdown.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const link = e.target.closest('.admin-menu-link');
-                    if (link) {
-                        const viewId = link.dataset.view;
-                        changeAdminView(viewId);
-                        $adminMenuDropdown.classList.add('hidden');
-                    }
-                });
-
-                window.addEventListener('click', (e) => {
-                    if ($adminMenuDropdown && !$adminMenuDropdown.classList.contains('hidden')) {
-                        if (!$adminMenuButton.contains(e.target) && !$adminMenuDropdown.contains(e.target)) {
-                            $adminMenuDropdown.classList.add('hidden');
-                        }
-                    }
-                });
-
-                changeAdminView('add-product');
-
-            } catch (error) {
-                console.error("Firebase initialization failed:", error);
-                showMessage("Application initialization failed: " + error.message, 'error');
-            }
-        });
-
-        // --- Header Live Preview ---
-        function updateLogoPreview() {
-            if (!$shopIconUrlInput || !$shopIconPreview) return;
-            const newUrl = $shopIconUrlInput.value.trim();
-            $shopIconPreview.src = newUrl || 'https://placehold.co/40x40/f0f0f0/999?text=Logo';
-        }
-        
-        // --- Category Icon Live Preview ---
-        function updateCategoryIconPreview() {
-            const newClass = document.getElementById('new-category-icon').value.trim();
-            const previewEl = document.getElementById('new-category-icon-preview');
-            previewEl.className = '';
-            if (newClass) {
-                previewEl.classList.add(...newClass.split(' '));
-            } else {
-                previewEl.classList.add('fas', 'fa-tag');
-            }
-            previewEl.classList.add('text-2xl', 'text-indigo-600', 'flex-shrink-0');
-        }
-        
-        // --- AUTH ---
-        function setupAuthListener() {
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    currentUserId = user.uid;
-                    if ($userIdDisplay) $userIdDisplay.textContent = `Current User ID: ${currentUserId}`;
-                    setupCollectionRefs();
-                    loadInitialData();
-                } else {
-                    currentUserId = null;
-                    try {
-                        // MODIFICATION:
-                        // Since we are using a custom, hardcoded firebaseConfig
-                        // (online-angadi-003), the __initial_auth_token from the 
-                        // Canvas environment is for a *different project* and will
-                        // cause a 'custom-token-mismatch' error.
-                        // We MUST ignore it and *only* use signInAnonymously,
-                        // which the user has enabled in their project.
-                        
-                        // We no longer check for initialAuthToken
-                        await signInAnonymously(auth);
-                        
-                    } catch (error) {
-                        console.error("Firebase Authentication Error:", error);
-                        
-                        if (error.code === 'auth/configuration-not-found') {
-                            const errorMsg = "Authentication failed: 'Anonymous' sign-in might be disabled in your Firebase project. \n\nPlease check your Firebase Console > Authentication > Sign-in method > and ensure 'Anonymous' sign-in is enabled.";
-                            console.error(errorMsg);
-                            showMessage(errorMsg, 'error');
-                        } else {
-                             console.error("Authentication failed:", error);
-                             showMessage(`Authentication failed: ${error.message}`, 'error');
-                        }
-                    }
-                }
-            });
-        }
-
-        // --- COLLECTION REFS ---
-        function setupCollectionRefs() {
-            productsCollectionRef = collection(db, `artifacts/${APP_ID}/public/data/products`);
-            categoriesCollectionRef = collection(db, `artifacts/${APP_ID}/public/data/categories`); 
-            settingsDocRef = doc(db, `artifacts/${APP_ID}/public/data/settings/admin`);
-            infoDocRef = doc(db, `artifacts/${APP_ID}/public/data/content/info`); 
-        }
-
-        // --- Data Header Updater ---
-        function updateAppHeader(settings) {
-            headerSettings = {
-                shopName: settings.shopName || 'SocialShop',
-                iconUrl: settings.iconUrl || 'https://placehold.co/32x32/6366f1/ffffff?text=S',
-                whatsappNumber: settings.whatsappNumber || ''
-            };
-            
-            if ($shopHeaderName) $shopHeaderName.textContent = headerSettings.shopName;
-            
-            if ($shopHeaderIcon) {
-                $shopHeaderIcon.src = headerSettings.iconUrl;
-                $shopHeaderIcon.onerror = function() {
-                    this.src = 'https://placehold.co/32x32/f00/ffffff?text=E'; // Error placeholder
-                };
-            }
-            
-            whatsappNumber = headerSettings.whatsappNumber;
-        }
-
-        // --- DATA LOADING ---
-        function loadInitialData() {
-            if (!currentUserId || !db) return;
-            showLoading(true);
-            
-            // 1. Load Categories
-            if (unsubscribeCategories) unsubscribeCategories();
-            unsubscribeCategories = onSnapshot(categoriesCollectionRef, (snapshot) => {
-                categoriesCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderCategoryList(categoriesCache); 
-                populateCategorySelect(categoriesCache); 
-                populateAdminFilterSelect(categoriesCache);
-            }, (error) => {
-                console.error("Error fetching categories:", error);
-                showMessage("Failed to load categories.", 'error');
-                showLoading(false);
-            });
-
-            // 2. Load Settings (WhatsApp, Header)
-            if (unsubscribeSettings) unsubscribeSettings();
-            unsubscribeSettings = onSnapshot(settingsDocRef, (docSnap) => {
-                const settings = docSnap.exists() ? docSnap.data() : {};
-                updateAppHeader(settings);
-                if ($whatsappInput) $whatsappInput.value = settings.whatsappNumber || '';
-            }, (error) => {
-                console.error("Error fetching settings:", error);
-            });
-            
-            // 3. Load Products
-            if (unsubscribeProducts) unsubscribeProducts();
-            unsubscribeProducts = onSnapshot(productsCollectionRef, (snapshot) => {
-                allProducts = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-                allProducts.forEach(p => {
-                    p.likes = p.likes || [];
-                    p.commentCount = p.commentCount || 0;
-                });
-                filterAdminProducts();
-                showLoading(false);
-            }, (error) => {
-                console.error("Error fetching products:", error);
-                showMessage("Failed to load products.", 'error');
-                showLoading(false);
-            });
-            
-            // 4. Load Info Content
-            if (unsubscribeInfo) unsubscribeInfo();
-            unsubscribeInfo = onSnapshot(infoDocRef, (docSnap) => {
-                infoContent = docSnap.exists() ? docSnap.data() : {};
-                if ($viewManageContent && $viewManageContent.classList.contains('active')) {
-                    prefillContentForm(infoContent);
-                }
-            }, (error) => {
-                console.error("Error fetching info content:", error);
-            });
-        }
-
-        // --- WHATSAPP UPDATE FUNCTION ---
-        window.updateWhatsAppNumber = async function() {
-            const newNumber = $whatsappInput.value.trim().replace(/[^0-9]/g, '');
-            if (!currentUserId) { showMessage('Authentication required.', 'error'); return; }
-
-            showLoading(true);
-            try {
-                await setDoc(settingsDocRef, { whatsappNumber: newNumber }, { merge: true });
-                showMessage("WhatsApp number updated.", 'success');
-            } catch (error) {
-                console.error("Error updating WhatsApp number:", error);
-                showMessage("Failed to update WhatsApp number.", 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-        
-        // --- Admin Content Handlers ---
-        function prefillContentForm(data) {
-            if (!$shopNameInput || !$shopIconUrlInput) return;
-            
-            // Header
-            $shopNameInput.value = data.shopName || headerSettings.shopName;
-            $shopIconUrlInput.value = data.iconUrl || headerSettings.iconUrl;
-            updateLogoPreview(); 
-
-            // Follow/Contact
-            document.getElementById('follow-whatsapp').value = data.followWhatsapp || '';
-            document.getElementById('follow-instagram').value = data.followInstagram || '';
-            document.getElementById('follow-facebook').value = data.followFacebook || '';
-            document.getElementById('follow-youtube').value = data.followYoutube || '';
-            document.getElementById('contact-phone').value = data.contactPhone || '';
-            document.getElementById('contact-email').value = data.contactEmail || '';
-            
-            // Content
-            document.getElementById('about-title').value = data.aboutTitle || '';
-            document.getElementById('about-content').value = data.aboutContent || '';
-            document.getElementById('conditions-title').value = data.conditionsTitle || '';
-            document.getElementById('conditions-content').value = data.conditionsContent || '';
-            document.getElementById('copyright-text').value = data.copyrightText || '';
-        }
-
-        async function handleSaveContent(e) {
-            e.preventDefault();
-            if (!currentUserId) { showMessage('Authentication required.', 'error'); return; }
-
-            const contentToSave = {
-                // Header Settings
-                shopName: $shopNameInput.value.trim() || 'SocialShop',
-                iconUrl: $shopIconUrlInput.value.trim() || 'https://placehold.co/32x32/6366f1/ffffff?text=S',
-
-                // Follow/Contact
-                followWhatsapp: document.getElementById('follow-whatsapp').value.trim(),
-                followInstagram: document.getElementById('follow-instagram').value.trim(),
-                followFacebook: document.getElementById('follow-facebook').value.trim(),
-                followYoutube: document.getElementById('follow-youtube').value.trim(),
-                contactPhone: document.getElementById('contact-phone').value.trim(),
-                contactEmail: document.getElementById('contact-email').value.trim(),
-
-                // Account Content
-                aboutTitle: document.getElementById('about-title').value.trim(),
-                aboutContent: document.getElementById('about-content').value.trim(),
-                conditionsTitle: document.getElementById('conditions-title').value.trim(),
-                conditionsContent: document.getElementById('conditions-content').value.trim(),
-                copyrightText: document.getElementById('copyright-text').value.trim(),
-                updatedAt: serverTimestamp()
-            };
-            
-            showLoading(true);
-            try {
-                // Save header settings to admin doc
-                await setDoc(settingsDocRef, { 
-                    shopName: contentToSave.shopName,
-                    iconUrl: contentToSave.iconUrl,
-                    updatedAt: serverTimestamp()
-                }, { merge: true });
-
-                // Save info content to info doc
-                const infoSaveData = { ...contentToSave };
-                delete infoSaveData.shopName; 
-                delete infoSaveData.iconUrl;
-                await setDoc(infoDocRef, infoSaveData, { merge: true });
-
-                showMessage("Content saved successfully!", 'success');
-            } catch (error) {
-                console.error("Error saving content:", error);
-                showMessage("Failed to save content.", 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-
-        // ========= UI NAVIGATION & RENDERING =========
-
-        // --- Admin Tab Navigation ---
-        window.changeAdminView = function(viewId) {
-            if (!$viewAddProduct || !$viewManageProducts || !$viewControlCategory || !$viewManageContent || !$viewWhatsAppSettings || !$tabAddProduct || !$tabManageProducts || !$tabControlCategory || !$tabManageContent || !$adminCurrentViewTitle) {
-                console.warn("Admin view elements not initialized.");
-                return;
-            }
-
-            // 1. Hide all view panels
-            $viewAddProduct.classList.add('hidden');
-            $viewManageProducts.classList.add('hidden');
-            $viewControlCategory.classList.add('hidden');
-            $viewManageContent.classList.add('hidden');
-            $viewWhatsAppSettings.classList.add('hidden');
-
-            // 2. (Old logic, kept for compatibility)
-            $tabAddProduct.classList.remove('admin-active-tab', 'admin-inactive-tab');
-            $tabManageProducts.classList.remove('admin-active-tab', 'admin-inactive-tab');
-            $tabControlCategory.classList.remove('admin-active-tab', 'admin-inactive-tab');
-            $tabManageContent.classList.remove('admin-active-tab', 'admin-inactive-tab');
-            
-            // 3. Update dropdown active states
-            document.querySelectorAll('.admin-menu-link').forEach(link => {
-                link.classList.remove('active');
-                if (link.dataset.view === viewId) {
-                    link.classList.add('active');
-                }
-            });
-
-            let currentTitle = '';
-
-            // 4. Show the correct view panel and set the title
-            if (viewId === 'add-product') {
-                $viewAddProduct.classList.remove('hidden');
-                $tabAddProduct.classList.add('admin-active-tab');
-                currentTitle = 'Add/Edit Product';
-                resetAdminForm();
-                
-            } else if (viewId === 'manage-products') {
-                $viewManageProducts.classList.remove('hidden');
-                $tabManageProducts.classList.add('admin-active-tab');
-                currentTitle = 'Manage Products';
-                filterAdminProducts();
-                
-            } else if (viewId === 'control-category') {
-                $viewControlCategory.classList.remove('hidden');
-                $tabControlCategory.classList.add('admin-active-tab');
-                currentTitle = 'Manage Categories';
-                
-            } else if (viewId === 'manage-content') {
-                $viewManageContent.classList.remove('hidden');
-                $tabManageContent.classList.add('admin-active-tab');
-                currentTitle = 'Manage Content';
-                prefillContentForm(infoContent); 
-            
-            } else if (viewId === 'whatsapp-settings') {
-                $viewWhatsAppSettings.classList.remove('hidden');
-                currentTitle = 'WhatsApp Settings';
-            }
-            
-            $adminCurrentViewTitle.textContent = currentTitle;
-        }
-        
-        // --- Category Icon Helper ---
-        function getCategoryIcon(categoryId) {
-            if (!categoryId) return 'fas fa-tag';
-            const category = categoriesCache.find(c => c.id === categoryId);
-            return category ? (category.iconClass || 'fas fa-tag') : 'fas fa-tag';
-        }
-
-        // --- Image Handling Functions ---
-
-        window.renderMainImagePreview = function(url) {
-            const previewEl = document.getElementById('main-image-preview');
-            if (previewEl) {
-                previewEl.src = url || 'https://placehold.co/60x60/f0f0f0/999?text=Main';
-            }
-        }
-
-        function createOtherImageInput(url = '') {
-            const container = document.createElement('div');
-            container.className = 'flex items-center space-x-2 other-image-input-group';
-            
-            const input = document.createElement('input');
-            input.type = 'url';
-            input.value = url;
-            input.placeholder = 'https://example.com/image.jpg';
-            input.className = 'flex-grow border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-2 image-url-input'; 
-            
-            const preview = document.createElement('img');
-            preview.src = url || 'https://placehold.co/40x40/f0f0f0/999?text=Img';
-            preview.className = 'w-10 h-10 object-cover rounded-lg border border-gray-300 flex-shrink-0';
-            preview.onerror = function() { this.src='https://placehold.co/40x40/f0f0f0/999?text=Error'; };
-
-            const deleteBtn = document.createElement('button');
-            deleteBtn.type = 'button';
-            deleteBtn.className = 'text-red-500 hover:text-red-700 p-2 flex-shrink-0';
-            deleteBtn.innerHTML = '<i class="fas fa-trash-alt text-lg"></i>';
-            deleteBtn.onclick = function() {
-                container.remove();
-            };
-
-            input.oninput = function() {
-                preview.src = this.value || 'https://placehold.co/40x40/f0f0f0/999?text=Img';
-            };
-
-            container.appendChild(input);
-            container.appendChild(preview);
-            container.appendChild(deleteBtn);
-            
-            return container;
-        }
-
-        window.addOtherImageInput = function(url = '') {
-            const container = document.getElementById('other-images-list');
-            if (container) {
-                container.appendChild(createOtherImageInput(url));
-            }
-        }
-
-        function renderOtherImageInputs(urls) {
-            const container = document.getElementById('other-images-list');
-            if (container) {
-                container.innerHTML = ''; 
-                if (urls && urls.length > 0) {
-                    urls.forEach(url => {
-                        container.appendChild(createOtherImageInput(url));
-                    });
-                }
-            }
-        }
-
-
-        // --- Admin Panel Functions (Product) ---
-        
-        function toggleDeliveryChargeInput() {
-            const chargeContainer = document.getElementById('delivery-charge-input-container');
-            const chargeInput = document.getElementById('product-delivery-charge');
-            if (!chargeContainer || !chargeInput) return;
-            
-            if (document.getElementById('delivery-charge').checked) {
-                chargeContainer.classList.remove('hidden');
-            } else {
-                chargeContainer.classList.add('hidden');
-                chargeInput.value = '';
-            }
-        }
-        
-        function calculateDiscountDisplay() { 
-            const priceEl = document.getElementById('product-price');
-            const retailPriceEl = document.getElementById('product-retail-price');
-            const displayEl = document.getElementById('discount-display');
-            
-            if (!priceEl || !retailPriceEl || !displayEl) return;
-            
-            const price = parseFloat(priceEl.value) || 0;
-            const retailPrice = parseFloat(retailPriceEl.value) || 0;
-
-            if (retailPrice > price && price > 0) {
-                displayEl.classList.remove('text-green-600');
-                displayEl.classList.add('text-red-500');
-                displayEl.textContent = "Retail price cannot be higher than MRP.";
-                return;
-            }
-
-            if (price > 0 && retailPrice < price) {
-                const discount = (((price - retailPrice) / price) * 100).toFixed(0);
-                displayEl.classList.remove('text-red-500');
-                displayEl.classList.add('text-green-600');
-                displayEl.textContent = `Discount: ${discount}%`;
-            } else if (price === retailPrice && price > 0) {
-                displayEl.classList.remove('text-red-500');
-                displayEl.classList.add('text-green-600');
-                displayEl.textContent = "Discount: 0%";
-            } else {
-                displayEl.textContent = "";
-            }
-        }
-        
-        function populateAdminFilterSelect(categories) {
-            if (!$adminProductFilterSelect) return;
-            $adminProductFilterSelect.innerHTML = '<option value="all">All Categories</option>';
-            categories.forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat.id;
-                option.textContent = cat.name;
-                $adminProductFilterSelect.appendChild(option);
-            });
-            $adminProductFilterSelect.value = adminFilterCategoryId;
-        }
-
-        window.filterAdminProducts = function() {
-            const categoryId = adminFilterCategoryId;
-            
-            let filteredProducts;
-            if (categoryId === 'all') {
-                filteredProducts = allProducts;
-            } else {
-                filteredProducts = allProducts.filter(p => p.categoryId === categoryId);
-            }
-            renderAdminProductList(filteredProducts);
-        }
-
-        function renderAdminProductList(products) { 
-            const tbody = document.getElementById('admin-product-list-body');
-            const emptyMsg = document.getElementById('admin-product-list-empty');
-            
-            if (!tbody || !emptyMsg) return;
-            tbody.innerHTML = '';
-
-            if (products.length === 0) {
-                emptyMsg.classList.remove('hidden');
-                return;
-            }
-            emptyMsg.classList.add('hidden');
-
-            products.forEach(product => {
-                const imageUrl = product.imageUrl || `https://placehold.co/40x40/E2E8F0/333?text=Img`;
-                const retailPrice = product.retailPrice || product.price || 0;
-                
-                const row = `
-                    <tr class="hover:bg-gray-50">
-                        <td class="p-4"><img src="${imageUrl}" alt="${product.name}" class="w-10 h-10 object-cover rounded" onerror="this.src='https://placehold.co/40x40/E2E8F0/333?text=Img'"></td>
-                        <td class="p-4 font-medium text-gray-900">${product.name}</td>
-                        <td class="p-4 text-sm text-gray-600">${product.categoryName || 'N/A'}</td>
-                        <td class="p-4 text-sm font-semibold text-green-600">₹${retailPrice.toFixed(0)}</td>
-                        <td class="p-4 whitespace-nowrap space-x-2">
-                            <button class="text-indigo-600 hover:text-indigo-900" onclick="editProduct('${product.id}')">Edit</button>
-                            <button class="text-red-600 hover:text-red-900" onclick="showDeleteProductConfirm('${product.id}')">Delete</button>
-                        </td>
-                    </tr>
-                `;
-                tbody.innerHTML += row;
-            });
-        }
-        
-        async function handleAdminFormSubmit(event) { 
-            event.preventDefault();
-            if (!currentUserId) { showMessage("Authentication is required.", 'error'); return; }
-
-            const id = document.getElementById('product-edit-id').value;
-            const name = document.getElementById('product-name').value;
-            const categoryId = $categorySelect.value;
-            const categoryName = $categorySelect.options[$categorySelect.selectedIndex].text;
-            const price = parseFloat(document.getElementById('product-price').value);
-            const retailPriceInput = document.getElementById('product-retail-price').value;
-            const retailPrice = parseFloat(retailPriceInput) || price; 
-            const imageUrl = document.getElementById('product-image').value;
-            
-            const brand = document.getElementById('product-brand').value;
-            const sku = document.getElementById('product-sku').value;
-            const otherImageInputs = document.querySelectorAll('#other-images-list .image-url-input');
-            const otherImages = Array.from(otherImageInputs)
-                .map(input => input.value.trim())
-                .filter(url => url.length > 0);
-            const specifications = document.getElementById('product-specifications').value;
-            
-            const description = document.getElementById('product-description').value;
-            
-            const deliveryOption = document.querySelector('input[name="delivery-option"]:checked').value;
-            const freeDelivery = (deliveryOption === 'free');
-            let deliveryCharge = 0;
-            
-            if (deliveryOption === 'charge') {
-                const chargeVal = document.getElementById('product-delivery-charge').value;
-                deliveryCharge = parseFloat(chargeVal) || 0;
-                
-                if (deliveryCharge <= 0) {
-                     showMessage("Please enter a valid delivery charge.", 'error');
-                     return;
-                }
-            }
-            
-            if (retailPrice > price) {
-                 showMessage("Retail Price cannot be higher than MRP.", 'error');
-                 return;
-            }
-
-            const discountPercentage = price > 0 && retailPrice < price 
-                ? Math.round(((price - retailPrice) / price) * 100) 
-                : 0;
-
-            let productData = {
-                name,
-                categoryId,
-                categoryName,
-                brand: brand || null,
-                sku: sku || null,
-                price: price || 0,
-                retailPrice: retailPrice,
-                discountPercentage,
-                imageUrl,
-                otherImages, 
-                description: description || '',
-                specifications,
-                freeDelivery,
-                deliveryCharge,
-                updatedAt: serverTimestamp(),
-            };
-            
-            showLoading(true);
-
-            try {
-                if (id) {
-                    const productRef = doc(db, productsCollectionRef.path, id);
-                    await updateDoc(productRef, productData);
-                    showMessage("Product updated!", 'success');
-                } else {
-                    productData.createdAt = serverTimestamp();
-                    productData.likes = [];
-                    productData.commentCount = 0;
-                    await addDoc(productsCollectionRef, productData);
-                    showMessage("Product added!", 'success');
-                }
-                resetAdminForm();
-                changeAdminView('manage-products');
-            } catch (error) {
-                console.error("Error saving product:", error);
-                showMessage(`Failed to save product: ${error.message}`, 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        window.editProduct = function(productId) { 
-            const product = allProducts.find(p => p.id === productId);
-            if (!product) { showMessage("Product not found.", 'error'); return; }
-
-            changeAdminView('add-product');
-            
-            document.getElementById('product-edit-id').value = product.id;
-            document.getElementById('product-name').value = product.name;
-            document.getElementById('product-price').value = product.price || '';
-            document.getElementById('product-retail-price').value = product.retailPrice || product.price || '';
-            document.getElementById('product-image').value = product.imageUrl || '';
-            window.renderMainImagePreview(product.imageUrl || ''); 
-            document.getElementById('product-description').value = product.description || '';
-            $categorySelect.value = product.categoryId || '';
-            
-            document.getElementById('product-brand').value = product.brand || '';
-            document.getElementById('product-sku').value = product.sku || '';
-            renderOtherImageInputs(product.otherImages || []); 
-            document.getElementById('product-specifications').value = product.specifications || '';
-            
-            const advancedOptions = document.getElementById('advanced-product-options');
-            const btn = document.getElementById('toggle-advanced-options-btn');
-            if (product.brand || product.sku || (product.otherImages && product.otherImages.length > 0) || product.specifications) {
-                advancedOptions.classList.remove('hidden');
-                btn.innerHTML = '<span>Hide Advanced Options</span> <i class="fas fa-chevron-up ml-1 text-xs"></i>';
-            } else {
-                advancedOptions.classList.add('hidden');
-                btn.innerHTML = '<span>Show Advanced Options</span> <i class="fas fa-chevron-down ml-1 text-xs"></i>';
-            }
-
-            const freeDeliveryRadio = document.getElementById('delivery-free');
-            const chargeDeliveryRadio = document.getElementById('delivery-charge');
-            const chargeInput = document.getElementById('product-delivery-charge');
-            
-            if (product.freeDelivery) {
-                freeDeliveryRadio.checked = true;
-                chargeDeliveryRadio.checked = false;
-                chargeInput.value = '';
-            } else {
-                freeDeliveryRadio.checked = false;
-                chargeDeliveryRadio.checked = true;
-                chargeInput.value = product.deliveryCharge || '';
-            }
-            toggleDeliveryChargeInput();
-
-            document.getElementById('admin-form-title').textContent = "Edit Product";
-            document.getElementById('admin-form-submit-btn').textContent = "Update Product";
-            document.getElementById('admin-form-cancel-btn').classList.remove('hidden');
-            
-            calculateDiscountDisplay();
-            window.scrollTo(0, 0); 
-        }
-
-        window.resetAdminForm = function() { 
-            document.getElementById('admin-product-form').reset();
-            document.getElementById('product-edit-id').value = '';
-            document.getElementById('admin-form-title').textContent = "Add Product";
-            document.getElementById('admin-form-submit-btn').textContent = "Add Product";
-            document.getElementById('admin-form-cancel-btn').classList.add('hidden');
-            document.getElementById('discount-display').textContent = "";
-            
-            document.getElementById('delivery-free').checked = true;
-            document.getElementById('delivery-charge').checked = false;
-            document.getElementById('product-delivery-charge').value = '';
-            toggleDeliveryChargeInput();
-            
-            const advancedOptions = document.getElementById('advanced-product-options');
-            const btn = document.getElementById('toggle-advanced-options-btn');
-            if (advancedOptions && btn) {
-                advancedOptions.classList.add('hidden');
-                btn.innerHTML = '<span>Show Advanced Options</span> <i class="fas fa-chevron-down ml-1 text-xs"></i>';
-            }
-            
-            window.renderMainImagePreview('');
-            renderOtherImageInputs([]); 
-        }
-
-        window.showDeleteProductConfirm = function(productId) {
-            showConfirmModal(`Are you sure you want to delete this product?`, async (confirmed) => {
-                if (confirmed) {
-                    await deleteProduct(productId);
-                }
-            }, 'Delete Product');
-        }
-
-        async function deleteProduct(productId) { 
-            if (!currentUserId) { showMessage("Authentication is required.", 'error'); return; }
-
-            showLoading(true);
-            try {
-                const productRef = doc(db, productsCollectionRef.path, productId);
-                await deleteDoc(productRef);
-                showMessage("Product deleted!", 'success');
-            } catch (error) {
-                console.error("Error deleting product:", error);
-                showMessage(`Failed to delete product: ${error.message}`, 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // --- Admin Panel Functions (Category) ---
-        function populateCategorySelect(categories) { 
-            if (!$categorySelect) return;
-            $categorySelect.innerHTML = '<option value="" disabled selected>Select a Category</option>';
-            if (categories.length === 0) {
-                $categoryHelp.classList.remove('hidden');
-                $categorySelect.setAttribute('disabled', 'true');
-            } else {
-                $categoryHelp.classList.add('hidden');
-                $categorySelect.removeAttribute('disabled');
-                categories.forEach(cat => {
-                    const option = document.createElement('option');
-                    option.value = cat.id;
-                    option.textContent = cat.name;
-                    $categorySelect.appendChild(option);
-                });
-            }
-        }
-        
-        function renderCategoryList(categories) { 
-            if (!$categoryListContainer || !$noCategoriesMsg) return;
-
-            $categoryListContainer.innerHTML = '';
-            
-            if (categories.length === 0) {
-                $noCategoriesMsg.classList.remove('hidden');
-                $categoryListContainer.appendChild($noCategoriesMsg);
-                return;
-            }
-            $noCategoriesMsg.classList.add('hidden');
-
-            categories.forEach(cat => {
-                const div = document.createElement('div');
-                const iconClass = cat.iconClass || 'fas fa-tag';
-                div.className = 'flex justify-between items-center p-3 bg-white border rounded-lg shadow-sm';
-                div.innerHTML = `
-                    <div class="flex items-center">
-                        <i class="${iconClass} text-indigo-600 text-lg mr-3"></i>
-                        <span class="font-medium text-gray-800">${cat.name}</span>
-                    </div>
-                    <button data-category-id="${cat.id}" class="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition duration-150">
-                        <i class="fas fa-trash-alt pointer-events-none"></i>
-                    </button>
-                `;
-                $categoryListContainer.appendChild(div);
-            });
-        }
-        
-        async function handleAddCategory(e) { 
-            e.preventDefault();
-            if (!currentUserId) { showMessage("Authentication is required.", 'error'); return; }
-
-            const name = document.getElementById('new-category-name').value.trim();
-            const iconClassInput = document.getElementById('new-category-icon').value.trim();
-            const iconClass = iconClassInput || 'fas fa-tag';
-            
-            if (!name) return;
-            
-            showLoading(true);
-            try {
-                await addDoc(categoriesCollectionRef, { 
-                    name, 
-                    iconClass,
-                    createdAt: serverTimestamp() 
-                });
-                document.getElementById('new-category-name').value = '';
-                document.getElementById('new-category-icon').value = '';
-                updateCategoryIconPreview();
-                showMessage(`Category '${name}' added!`, 'success');
-            } catch (error) {
-                console.error("Error adding category:", error);
-                showMessage(`Failed to add category: ${error.message}`, 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        function handleDeleteCategoryClick(e) { 
-            const categoryButton = e.target.closest('button');
-            const categoryId = categoryButton?.dataset.categoryId;
-            if (!categoryId) return;
-
-            showConfirmModal(`Are you sure? Products in this category won't be deleted.`, async (confirmed) => {
-                if (confirmed) {
-                    await deleteCategory(categoryId);
-                }
-            }, 'Delete Category');
-        }
-
-        async function deleteCategory(categoryId) { 
-            if (!currentUserId) { showMessage("Authentication is required.", 'error'); return; }
-            
-            showLoading(true);
-            try {
-                const categoryRef = doc(db, categoriesCollectionRef.path, categoryId);
-                await deleteDoc(categoryRef);
-                showMessage("Category deleted.", 'success');
-            } catch (error) {
-                console.error("Error deleting category:", error);
-                showMessage(`Failed to delete category: ${error.message}`, 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // --- Utility Functions ---
-        function showLoading(show) { 
-            if (loadingSpinner) loadingSpinner.classList.toggle('hidden', !show);
-        }
-
-        function showMessage(message, type = 'info') { 
-            if (!messageModal || !messageModalText) return;
-            
-            messageModalText.innerText = message;
-            messageModalText.classList.remove('text-red-500', 'text-green-600', 'text-gray-700');
-            
-            let colorClass = 'text-gray-700';
-            if (type === 'error') colorClass = 'text-red-500';
-            else if (type === 'success') colorClass = 'text-green-600';
-            
-            messageModalText.classList.add(colorClass);
-            messageModal.classList.remove('hidden');
-        }
-
-        window.closeModal = function() { 
-            if (messageModal) messageModal.classList.add('hidden');
-        }
-
-        function showConfirmModal(message, callback, buttonText = 'Confirm') {
-            if (!confirmModal || !confirmModalText || !confirmModalButton) return;
-            
-            confirmModalText.textContent = message;
-            confirmModalButton.textContent = buttonText;
-            confirmCallback = callback;
-            confirmModal.classList.remove('hidden');
-        }
-
-        window.closeConfirmModal = function(isConfirmed) {
-            if (confirmModal) confirmModal.classList.add('hidden');
-            if (confirmCallback) {
-                confirmCallback(isConfirmed);
-                confirmCallback = null; 
-            }
-        }
-        
-    </script>
+    <!-- അഡ്മിൻ പേജിന് ആവശ്യമായ സ്ക്രിപ്റ്റുകൾ -->
+    <!-- (1) ഫയർബേസ് കോൺഫിഗറേഷൻ ആദ്യം ലോഡ് ചെയ്യണം -->
+    <script src="firebase-config.js" type="module"></script>
+    <!-- (2) അതിനുശേഷം അഡ്മിൻ സ്ക്രിപ്റ്റ് ലോഡ് ചെയ്യണം -->
+    <script src="admin.js" type="module"></script>
 </body>
 </html>
