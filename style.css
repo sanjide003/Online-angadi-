@@ -1,1045 +1,249 @@
 /* ================================
-    SOCIALSHOP - INSTAGRAM STYLE
+    SOCIALSHOP - ULTRA MODERN STYLES
+    മോഡേൺ ആയ ഡിസൈൻ
     ================================ */
 
 /* --- BASE STYLES --- */
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    background: #fafafa;
-    min-height: 100vh;
-    margin: 0;
-    padding: 0;
+* {
+    scroll-behavior: smooth;
 }
 
-/* Page switching */
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3), transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(238, 130, 238, 0.3), transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(147, 197, 253, 0.3), transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+main {
+    position: relative;
+    z-index: 1;
+}
+
+/* Page switching with animations */
 .page {
     display: none;
-    animation: fadeIn 0.3s ease-in;
+    animation: fadeSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .page.active {
     display: block;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+@keyframes fadeSlideIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(20px) scale(0.98);
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0) scale(1);
+    }
 }
 
-/* --- INSTAGRAM HEADER STYLES --- */
-header {
-    background: #ffffff;
-    border-bottom: 1px solid #dbdbdb;
-    box-shadow: none;
-}
-
-/* [സൂചന] ഹെഡറിലെ പേരിന് ഒരു ഫോണ്ട് ഇല്ലാത്തതിനാൽ താൽക്കാലികമായി മാറ്റുന്നു */
-#shop-header-title {
-    /* font-family: 'Billabong', 'Brush Script MT', cursive; */
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-size: 24px;
-    font-weight: 700;
-    color: #262626;
-    letter-spacing: 0.5px;
-}
-
-.nav-link {
-    color: #262626;
-    font-weight: 600;
-    font-size: 14px;
-    transition: opacity 0.2s ease;
-}
-.nav-link:hover {
-    opacity: 0.5;
-    background-color: transparent;
-}
-.nav-link i {
-    font-size: 22px; /* ഐക്കണുകൾക്ക് വലിപ്പം നൽകുന്നു */
-}
-
-/* --- INSTAGRAM STORIES SECTION --- */
-/* [സൂചന] ഇതിപ്പോൾ കാറ്റഗറികൾ കാണിക്കാൻ ഉപയോഗിക്കുന്നു */
-.stories-container {
-    background: white;
-    border: 1px solid #dbdbdb;
-    border-radius: 8px;
-    padding: 16px 0;
-    margin-bottom: 24px;
-    overflow-x: auto;
-    scrollbar-width: none;
-}
-
-.stories-container::-webkit-scrollbar {
-    display: none;
-}
-
-.stories-scroll {
-    display: flex;
-    gap: 16px;
-    padding: 0 16px;
-}
-
-.story-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    cursor: pointer;
-    flex-shrink: 0;
-    text-decoration: none;
-}
-
-.story-circle {
-    width: 66px;
-    height: 66px;
-    border-radius: 50%;
-    padding: 2px;
-    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-}
-
-.story-circle:hover {
-    transform: scale(1.05);
-}
-
-.story-circle-inner {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    border: 3px solid white;
-    overflow: hidden;
-    background: #fafafa;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #262626; /* ഐക്കൺ നിറം */
-}
-
-.story-circle-inner i {
-    font-size: 28px; /* ഐക്കൺ വലിപ്പം */
-}
-
-.story-username {
-    font-size: 12px;
-    margin-top: 8px;
-    color: #262626;
-    max-width: 74px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-/* --- INSTAGRAM FEED POST STYLES --- */
-.feed-container {
-    max-width: 614px;
-    margin: 0 auto;
-}
-
-.feed-post {
-    background: white;
-    border: 1px solid #dbdbdb;
-    border-radius: 8px;
-    margin-bottom: 24px;
-    overflow: hidden; /* റൗണ്ടഡ് കോർണറുകൾ ശരിയാക്കാൻ */
-}
-
-.post-header {
-    display: flex;
-    align-items: center;
-    padding: 14px 16px;
-    /* border-bottom: 1px solid #efefef; */
-}
-
-.post-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-right: 12px;
-    border: 1px solid #dbdbdb;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #fafafa;
-    color: #262626;
-}
-.post-avatar i {
-    font-size: 16px;
-}
-
-.post-user-info {
-    flex: 1;
-}
-
-.post-username {
-    font-size: 14px;
-    font-weight: 600;
-    color: #262626;
-    display: block;
-    margin-bottom: 2px;
-}
-
-.post-category {
-    font-size: 12px;
-    color: #8e8e8e;
-}
-
-.post-menu-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 8px;
-    color: #262626;
-}
-
-.post-image-container {
-    width: 100%;
-    position: relative;
-    background: #efefef;
-}
-
-.post-image {
-    width: 100%;
-    display: block;
-    aspect-ratio: 1 / 1;
-    object-fit: cover;
-}
-
-/* Post Actions */
-.post-actions {
-    display: flex;
-    align-items: center;
-    padding: 12px 16px;
-    gap: 16px;
-}
-
-.action-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    transition: opacity 0.2s ease;
-}
-
-.action-btn:hover {
-    opacity: 0.5;
-}
-
-.action-btn i {
-    font-size: 24px;
-    color: #262626;
-}
-
-.action-btn.liked i {
-    color: #ed4956;
-}
-
-.action-btn-bookmark {
-    margin-left: auto; /* വലത്തേക്ക് മാറ്റുന്നു */
-}
-
-.post-likes {
-    padding: 0 16px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #262626;
-    margin-bottom: 8px;
-}
-
-.post-caption {
-    padding: 0 16px;
-    font-size: 14px;
-    color: #262626;
-    margin-bottom: 8px;
-}
-
-.post-caption .username {
-    font-weight: 600;
-    margin-right: 8px;
-}
-
-.post-price-info {
-    padding: 0 16px;
-    margin-bottom: 12px;
-}
-
-.price-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 4px;
-}
-
-.original-price {
-    font-size: 16px;
-    font-weight: 700;
-    color: #262626;
-}
-
-.retail-price {
-    font-size: 14px;
-    color: #8e8e8e;
-    text-decoration: line-through;
-}
-
-.discount-badge {
-    background: #0095f6;
-    color: white;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 2px 6px;
-    border-radius: 4px;
-}
-
-.view-comments {
-    padding: 0 16px;
-    font-size: 14px;
-    color: #8e8e8e;
-    cursor: pointer;
-    margin-bottom: 8px;
-}
-
-.view-comments:hover {
-    color: #262626;
-}
-
-.post-timestamp {
-    padding: 0 16px 12px;
-    font-size: 10px;
-    color: #8e8e8e;
-    text-transform: uppercase;
-    letter-spacing: 0.2px;
-}
-
-/* Add to Cart Button in Feed (All Products പേജിലെ ബട്ടൺ) */
-.post-cart-btn {
-    margin: 12px 16px;
-    background: #0095f6;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    width: calc(100% - 32px);
-    transition: background 0.2s ease;
-}
-
-.post-cart-btn:hover {
-    background: #0081db;
-}
-
-/* WhatsApp Button */
-.post-whatsapp-btn {
-    margin: 0 16px 16px;
-    background: #25D366;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    width: calc(100% - 32px);
-    transition: background 0.2s ease;
-}
-
-.post-whatsapp-btn:hover {
-    background: #20ba5a;
-}
-
-/* --- MOBILE NAVIGATION --- */
+/* --- MOBILE NAVIGATION - GLASSMORPHISM --- */
 @media (max-width: 767px) {
     body {
-        padding-bottom: 60px;
+        padding-bottom: 80px; 
     }
-    
     .mobile-nav-bar {
         position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
         z-index: 50;
-        background: white;
-        border-top: 1px solid #dbdbdb;
-        height: 50px;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        box-shadow: 0 -8px 32px rgba(31, 38, 135, 0.15);
+        height: 72px;
         display: flex;
         justify-content: space-around;
         align-items: center;
+        border-top: 1px solid rgba(255, 255, 255, 0.3);
     }
-    
+    .mobile-nav-bar::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(147, 197, 253, 0.5), transparent);
+    }
     .mobile-nav-bar .nav-link {
-        padding: 8px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        font-size: 12px;
-        color: #262626; /* ഇൻസ്റ്റാഗ്രാം ഐക്കൺ നിറം */
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 0.625rem;
+        border-radius: 1rem;
+        position: relative;
     }
-    
-    .mobile-nav-bar .nav-link i {
-        font-size: 22px;
-        margin-bottom: 2px;
+    .mobile-nav-bar .nav-link:active {
+        transform: scale(0.92);
     }
-    
     .mobile-nav-bar .active-mobile-link {
-        color: #262626;
+        color: #6366f1 !important;
+        font-weight: 700;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
     }
-    
-    .mobile-nav-bar .active-mobile-link i {
-        font-weight: 900; /* ആക്ടീവ് ഐക്കൺ */
+    .mobile-nav-bar .active-mobile-link::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 24px;
+        height: 3px;
+        background: linear-gradient(90deg, #6366f1, #8b5cf6);
+        border-radius: 0 0 3px 3px;
     }
 }
 
-/* --- SEARCH BAR INSTAGRAM STYLE --- */
-.search-container {
-    background: white;
-    border: 1px solid #dbdbdb;
-    border-radius: 8px;
-    padding: 8px 16px;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
+/* --- HEADER STYLES - GLASSMORPHISM --- */
+header {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.search-container i {
-    color: #8e8e8e;
-    font-size: 14px;
-    margin-right: 12px;
+#shop-header-title {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+#shop-header-title:hover {
+    transform: scale(1.05) translateY(-2px);
+    filter: brightness(1.2);
 }
 
-.search-container input {
-    border: none;
-    outline: none;
-    flex: 1;
-    font-size: 14px;
-    color: #262626;
-    background: transparent;
-}
-
-.search-container input::placeholder {
-    color: #8e8e8e;
-}
-
-/* --- CATEGORY CHIPS INSTAGRAM STYLE --- */
-.category-chip {
-    padding: 8px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-weight: 600;
-    font-size: 14px;
-    white-space: nowrap;
-    flex-shrink: 0;
-    border: 1px solid #dbdbdb;
-    background: white;
-    color: #262626;
-    display: inline-flex; /* ഐക്കൺ ചേർക്കാൻ */
-    align-items: center; /* ഐക്കൺ ചേർക്കാൻ */
-}
-.category-chip i {
-    margin-right: 6px; /* ഐക്കൺ സ്പേസിംഗ് */
-}
-
-.category-chip.active {
-    background: #262626;
-    color: white;
-    border-color: #262626;
-}
-
-.category-chip:hover {
-    background: #fafafa;
-}
-
-.category-chip.active:hover {
-    background: #000;
-}
-
-/* --- PRODUCT GRID INSTAGRAM STYLE --- */
-#product-list-container {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 3px;
-    padding: 0;
-    margin: 0;
-}
-
-.grid-product-item {
-    aspect-ratio: 1 / 1;
-    overflow: hidden;
+/* Nav Links - Enhanced */
+.nav-link {
     position: relative;
-    cursor: pointer;
-    background: #fafafa;
-}
-
-.grid-product-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-}
-
-.grid-product-item:hover img {
-    transform: scale(1.05);
-}
-
-.grid-product-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    color: white;
-    font-size: 14px;
+    color: #64748b;
     font-weight: 600;
-    gap: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 0.625rem 1rem;
+    border-radius: 0.75rem;
 }
-
-.grid-product-item:hover .grid-product-overlay {
-    opacity: 1;
-}
-
-/* --- COMMENTS MODAL INSTAGRAM STYLE --- */
-#comments-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.65);
-    z-index: 40;
-    transition: opacity 0.3s ease;
-    backdrop-filter: blur(2px); /* [സൂചന] ഒരു ചെറിയ ബ്ലർ ചേർത്തു */
-}
-
-#comments-modal {
-    position: fixed;
+.nav-link::before {
+    content: '';
+    position: absolute;
     bottom: 0;
-    left: 0;
-    right: 0;
-    height: 75vh;
-    max-height: 800px;
-    z-index: 50;
-    background: white;
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
-    transition: transform 0.3s ease;
-    transform: translateY(100%);
-    display: flex;
-    flex-direction: column;
-}
-#comments-modal.show {
-    transform: translateY(0);
-}
-
-#comments-modal .border-b {
-    border-color: #efefef;
-}
-
-#comments-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px;
-}
-
-/* [സൂചന] കമന്റ് ഐറ്റത്തിന്റെ സ്റ്റൈൽ മാറ്റി */
-.comment-item {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 16px;
-}
-.comment-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: #efefef;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    color: #262626;
-}
-.comment-content {
-    flex: 1;
-}
-.comment-username {
-    font-size: 14px;
-    font-weight: 600;
-    color: #262626;
-    margin-right: 8px;
-}
-.comment-text {
-    font-size: 14px;
-    color: #262626;
-    line-height: 1.4;
-    white-space: pre-wrap; /* പുതിയ ലൈനുകൾ കാണിക്കാൻ */
-}
-.comment-time {
-    font-size: 12px;
-    color: #8e8e8e;
-    margin-top: 4px;
-}
-/* [സൂചന] കമന്റ് ഫോം സ്റ്റൈൽ ചെയ്തു */
-#add-comment-form {
-    background: #fafafa;
-    border-top: 1px solid #dbdbdb;
-}
-#add-comment-form input,
-#add-comment-form textarea {
-    border: 1px solid #dbdbdb;
-    border-radius: 20px;
-    padding: 10px 16px;
-    background: white;
-    font-size: 14px;
-}
-#add-comment-form button {
-    background: #0095f6;
-    color: white;
-    font-size: 14px;
-    font-weight: 600;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    border: none;
-}
-#add-comment-form button:hover {
-    background: #0081db;
-}
-
-
-/* --- CART BADGE --- */
-.cart-badge {
-    position: absolute;
-    top: -6px;
-    right: -8px;
-    background: #ed4956;
-    color: white;
-    font-size: 11px;
-    font-weight: 700;
-    min-width: 18px;
-    height: 18px;
-    padding: 0 4px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid white; /* ബോർഡർ മാറ്റി */
-}
-/* മൊബൈൽ നാവിഗേഷനിലെ ബാഡ്ജ് */
-.mobile-nav-bar .cart-badge {
-    top: 2px;
-    right: 24px;
-}
-
-/* --- LOADING SPINNER --- */
-#loading-spinner i {
-    color: #262626;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-/* --- MODALS --- */
-#message-modal,
-#confirm-modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.65);
-    z-index: 50;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-#message-modal > div,
-#confirm-modal > div {
-    background: white;
-    border-radius: 12px;
-    max-width: 400px;
-    width: 90%;
-    padding: 1.5rem; /* പാഡിംഗ് ചേർത്തു */
-}
-/* മോഡൽ ബട്ടണുകൾ */
-#message-modal button,
-#confirm-modal button {
-    border-radius: 8px;
-    padding-top: 0.75rem;
-    padding-bottom: 0.75rem;
-    font-size: 14px;
-    font-weight: 600;
-}
-#message-modal button {
-    background-color: #0095f6;
-}
-#confirm-modal button.bg-red-600 {
-    background-color: #ed4956;
-}
-#confirm-modal button.bg-gray-300 {
-    background-color: #efefef;
-    color: #262626;
-}
-
-
-/* --- [സൂചന] വിട്ടുപോയ പേജുകൾക്കുള്ള സ്റ്റൈലുകൾ --- */
-
-/* --- 1. PRODUCT DETAIL PAGE --- */
-.product-detail-container {
-    max-width: 614px;
-    margin: 24px auto;
-}
-
-/* ഡീറ്റെയിൽ പേജിലെ കറൗസൽ */
-.detail-image-carousel {
-    position: relative;
-    overflow: hidden;
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    background: #efefef;
-    border-radius: 8px 8px 0 0;
-    border: 1px solid #dbdbdb;
-    border-bottom: none;
-}
-.detail-carousel-track {
-    display: flex;
-    height: 100%;
-    transition: transform 0.3s ease;
-}
-.detail-carousel-slide {
-    flex-shrink: 0;
-    width: 100%;
-    height: 100%;
-}
-.detail-carousel-slide img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-.detail-carousel-dots {
-    position: absolute;
-    bottom: 12px;
     left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 6px;
-    z-index: 10;
+    transform: translateX(-50%) scaleX(0);
+    width: 60%;
+    height: 2px;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    transition: transform 0.3s ease;
+    border-radius: 2px;
 }
-.detail-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.5);
-    cursor: pointer;
+.nav-link:hover {
+    color: #6366f1;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+    transform: translateY(-2px);
 }
-.detail-dot.active {
-    background: #0095f6;
+.nav-link:hover::before {
+    transform: translateX(-50%) scaleX(1);
 }
-.detail-nav-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-    background: rgba(0, 0, 0, 0.4);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 28px;
-    height: 28px;
-    font-size: 14px;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
-.detail-image-carousel:hover .detail-nav-btn {
-    opacity: 1;
-}
-.detail-nav-btn.left { left: 8px; }
-.detail-nav-btn.right { right: 8px; }
-
-/* ഡീറ്റെയിൽ പേജിലെ കണ്ടന്റ് */
-.product-detail-content {
-    background: white;
-    border: 1px solid #dbdbdb;
-    border-top: none;
-    border-radius: 0 0 8px 8px;
-}
-.product-detail-actions {
-    display: flex;
-    align-items: center;
-    padding: 12px 16px;
-    gap: 16px;
-    border-bottom: 1px solid #efefef;
-}
-.product-detail-info {
-    padding: 16px;
-    border-bottom: 1px solid #efefef;
-}
-.product-detail-description {
-    padding: 16px;
-    font-size: 14px;
-    line-height: 1.5;
-    color: #262626;
-    white-space: pre-wrap;
-}
-.product-detail-specs {
-    padding: 16px;
-    border-top: 1px solid #efefef;
-}
-.product-detail-specs h3 {
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 12px;
-}
-.product-detail-specs ul {
-    list-style: disc;
-    padding-left: 20px;
-    font-size: 14px;
-    color: #262626;
-}
-.product-detail-buttons {
-    padding: 16px;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 12px;
+.nav-link.text-indigo-600 {
+    color: #6366f1;
+    font-weight: 700;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
 }
 
-/* --- 2. CART PAGE --- */
-.cart-page-container {
-    max-width: 614px;
-    margin: 24px auto;
-    background: white;
-    border: 1px solid #dbdbdb;
-    border-radius: 8px;
-}
-.cart-header {
-    padding: 16px;
-    font-size: 20px;
-    font-weight: 600;
-    color: #262626;
-    border-bottom: 1px solid #dbdbdb;
-}
-.cart-item-list {
-    padding: 16px;
-}
-.cart-item-new {
-    display: flex;
-    gap: 16px;
-    margin-bottom: 16px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid #efefef;
-}
-.cart-item-new:last-child {
-    margin-bottom: 0;
-    padding-bottom: 0;
-    border-bottom: none;
-}
-.cart-item-img-new {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 8px;
-    border: 1px solid #dbdbdb;
-    flex-shrink: 0;
-}
-.cart-item-details-new {
-    flex: 1;
-}
-.cart-item-name {
-    font-size: 14px;
-    font-weight: 600;
-    color: #262626;
-}
-.cart-item-price {
-    font-size: 14px;
-    color: #8e8e8e;
-    margin-top: 4px;
-}
-.cart-item-controls {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 8px;
-}
-.cart-quantity-btn-new {
-    border: 1px solid #dbdbdb;
-    background: white;
-    color: #262626;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    font-weight: 600;
-}
-.cart-quantity-display-new {
-    font-weight: 600;
-    font-size: 14px;
-    min-width: 20px;
-    text-align: center;
-}
-.cart-remove-btn-new {
-    margin-left: auto;
-    background: none;
-    border: none;
-    color: #ed4956;
-    font-size: 12px;
-    font-weight: 600;
-}
-.cart-summary {
-    padding: 16px;
-    border-top: 1px solid #dbdbdb;
-    background: #fafafa;
-}
-.cart-summary-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-    margin-bottom: 8px;
-}
-.cart-summary-row.total {
-    font-size: 16px;
-    font-weight: 600;
-    margin-top: 12px;
-}
-.checkout-btn {
-    width: 100%;
-    background: #0095f6;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 12px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 16px;
-}
-.cart-empty-msg {
-    padding: 48px 16px;
-    text-align: center;
-    color: #8e8e8e;
-    font-size: 16px;
-}
+/* --- ADMIN PANEL STYLES --- */
 
-/* --- 3. ACCOUNT PAGE --- */
-.account-page-container {
-    max-width: 614px;
-    margin: 24px auto;
-    background: white;
-    border: 1px solid #dbdbdb;
-    border-radius: 8px;
-}
-.account-header {
-    padding: 16px;
-    font-size: 20px;
-    font-weight: 600;
-    color: #262626;
-    border-bottom: 1px solid #dbdbdb;
-}
-.account-links {
-    padding: 8px 0;
-}
-.account-list-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px;
-    font-size: 14px;
-    font-weight: 500;
-    color: #262626;
-    cursor: pointer;
-    text-decoration: none;
-    border-bottom: 1px solid #efefef;
-}
-.account-list-item:last-child {
-    border-bottom: none;
-}
-.account-list-item:hover {
-    background: #fafafa;
-}
-.account-list-item i {
-    color: #8e8e8e;
-}
-.account-content-display {
-    padding: 24px;
-    font-size: 14px;
-    line-height: 1.5;
-    color: #262626;
-}
-.account-content-display h2 {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 16px;
-}
-.account-content-display p {
-    margin-bottom: 16px;
-    white-space: pre-wrap;
-}
-.account-footer {
-    padding: 16px;
-    text-align: center;
-    font-size: 12px;
-    color: #8e8e8e;
-    border-top: 1px solid #efefef;
-    background: #fafafa;
-}
-
-/* --- ADMIN PANEL STYLES (KEEP ORIGINAL) --- */
+/* Admin Menu Dropdown - GLASSMORPHISM */
 #admin-menu-dropdown {
-    min-width: 240px;
-    animation: slideDown 0.2s ease-out;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    min-width: 260px;
+    animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 @keyframes slideDown {
     from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateY(-15px) scale(0.95);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
     }
 }
 
 .admin-menu-link {
     display: block;
-    padding: 0.875rem 1.25rem;
-    font-weight: 500;
-    color: #374151;
-    transition: all 0.2s ease;
-    border-left: 3px solid transparent;
-}
-
-.admin-menu-link:hover {
-    background: linear-gradient(90deg, #f3f4f6 0%, #fafbfc 100%);
-    color: #4f46e5;
-    border-left-color: #4f46e5;
-    padding-left: 1.5rem;
-}
-
-.admin-menu-link.active {
-    background: linear-gradient(90deg, #eef2ff 0%, #f5f7ff 100%);
-    color: #4f46e5;
+    padding: 1rem 1.5rem;
     font-weight: 600;
-    border-left-color: #4f46e5;
+    color: #475569;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-left: 3px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+.admin-menu-link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    background: linear-gradient(90deg, rgba(99, 102, 241, 0.1), transparent);
+    transition: width 0.3s ease;
+}
+.admin-menu-link:hover::before {
+    width: 100%;
+}
+.admin-menu-link:hover {
+    color: #6366f1;
+    border-left-color: #6366f1;
+    padding-left: 1.75rem;
+    background: linear-gradient(90deg, rgba(99, 102, 241, 0.05), transparent);
+}
+.admin-menu-link.active {
+    background: linear-gradient(90deg, rgba(99, 102, 241, 0.12), rgba(139, 92, 246, 0.08));
+    color: #6366f1;
+    font-weight: 700;
+    border-left-color: #6366f1;
+    border-left-width: 4px;
 }
 
+/* Admin Cards - GLASSMORPHISM */
 .card {
-    background: white;
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-    transition: box-shadow 0.3s ease;
-    border: 1px solid #dbdbdb; /* ഇൻസ്റ്റാഗ്രാം ബോർഡർ ചേർത്തു */
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    border-radius: 1rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
-
 .card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 12px 40px rgba(99, 102, 241, 0.2);
+    transform: translateY(-4px);
+    border-color: rgba(99, 102, 241, 0.3);
 }
 
+/* Form Inputs - ULTRA MODERN */
 input[type="text"],
 input[type="url"],
 input[type="number"],
@@ -1047,127 +251,507 @@ input[type="email"],
 input[type="tel"],
 select,
 textarea {
-    transition: all 0.3s ease;
-    border: 1.5px solid #d1d5db;
-    border-radius: 6px; /* റൗണ്ടഡ് കോർണറുകൾ ചേർത്തു */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid #e2e8f0;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 0.75rem; /* Added border-radius */
 }
-
 input:focus,
 select:focus,
 textarea:focus {
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    border-color: #6366f1;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15), 0 8px 24px rgba(99, 102, 241, 0.1);
     outline: none;
-}
-
-button {
-    transition: all 0.3s ease;
-    font-weight: 600;
-    border-radius: 8px; /* റൗണ്ടഡ് കോർണറുകൾ ചേർത്തു */
-}
-
-button:hover:not(:disabled) {
+    background: white;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+/* Buttons - GRADIENT MAGIC */
+button {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 700;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.75rem; /* Added border-radius */
+}
+button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+button:hover:not(:disabled)::before {
+    width: 300px;
+    height: 300px;
+}
+button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
 button:active:not(:disabled) {
     transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
-
 button:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
 }
 
-/* [സൂചന] അഡ്മിൻ പാനൽ ടേബിളുകൾ സ്റ്റൈൽ ചെയ്യാൻ ചേർത്തത് */
-#admin-products-list-container {
-    background: white;
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-    border: 1px solid #dbdbdb;
+/* Primary Buttons - GRADIENT */
+.bg-indigo-600,
+.bg-blue-600 {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border: none;
+}
+.bg-indigo-600:hover,
+.bg-blue-600:hover {
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+}
+
+.bg-green-500 {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+.bg-green-500:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+/* --- CAROUSEL STYLES - MODERN --- */
+.carousel-container {
+    position: relative;
     overflow: hidden;
+    width: 100%;
+    height: 55vh;
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-radius: 0;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
 }
-#admin-products-list-container th {
-    background-color: #fafafa;
-    color: #262626;
-    padding: 1rem;
-    font-weight: 600;
-    font-size: 12px;
-    text-transform: uppercase;
-    border-bottom: 1px solid #dbdbdb;
+
+@media (min-width: 768px) {
+    .carousel-container {
+        border-radius: 1.5rem;
+        height: 65vh;
+    }
 }
-#admin-products-list-container td {
-    padding: 1rem;
-    border-bottom: 1px solid #efefef;
-    color: #262626;
-    font-size: 14px;
+
+.carousel-track {
+    display: flex;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
 }
-#admin-product-list-body tr:hover {
-    background-color: #fafafa;
+.carousel-slide {
+    flex: 0 0 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.9));
 }
-#admin-product-list-empty {
-    padding: 2rem;
-    color: #8e8e8e;
+.carousel-slide img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.3));
 }
-#category-list-container button {
-    background: rgba(237, 73, 86, 0.1);
-    border: 1px solid rgba(237, 73, 86, 0.2);
-    color: #ed4956;
+
+/* Carousel Dots - MODERN GLASS */
+.carousel-dots {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(12px);
+    padding: 0.75rem 1.25rem;
+    border-radius: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
-#category-list-container button:hover {
-    background: #ed4956;
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+.dot:hover {
+    background: rgba(255, 255, 255, 0.7);
+    transform: scale(1.3);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+.dot.active {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    transform: scale(1.4);
+    box-shadow: 0 0 16px rgba(99, 102, 241, 0.8);
+    border-color: white;
+}
+
+/* Carousel Navigation - GLASS BUTTONS */
+.carousel-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 20;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(12px);
     color: white;
+    padding: 1.5rem 1rem;
+    border-radius: 1rem;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.carousel-container:hover .carousel-nav-btn {
+    opacity: 0.9;
+}
+.carousel-nav-btn:hover {
+    opacity: 1 !important;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-50%) scale(1.15);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
-
-/* --- RESPONSIVE --- */
 @media (max-width: 640px) {
-    .feed-container {
-        max-width: 100%;
+    .carousel-nav-btn {
+        padding: 1.25rem 0.75rem;
+        font-size: 1.25rem;
+        opacity: 0.7;
     }
-    
-    .feed-post {
-        border-radius: 0;
-        border-left: none;
-        border-right: none;
-    }
-    
-    .stories-container {
-        border-radius: 0;
-        border-left: none;
-        border-right: none;
-    }
-    
-    #product-list-container {
-        gap: 2px; /* ഗ്യാപ്പ് ചെറുതാക്കി */
-    }
-    
-    /* [സൂചന] ഡീറ്റെയിൽ, കാർട്ട്, അക്കൗണ്ട് പേജുകൾ മൊബൈലിൽ ഫുൾ ആക്കുന്നു */
-    .product-detail-container,
-    .cart-page-container,
-    .account-page-container {
-        margin: 0;
-        border-radius: 0;
-        border-left: none;
-        border-right: none;
-    }
-    .detail-image-carousel {
-        border-radius: 0;
-        border-left: none;
-        border-right: none;
-    }
+}
+
+/* --- PRODUCT CARDS - ULTRA MODERN --- */
+
+/* Home Feed Product Cards - GLASS EFFECT */
+#home-product-list-container .bg-white {
+    border-radius: 1.25rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+#home-product-list-container .bg-white:hover {
+    box-shadow: 0 16px 48px rgba(99, 102, 241, 0.25);
+    transform: translateY(-6px) scale(1.02);
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+/* Product Grid Cards - 3D EFFECT */
+#product-list-container .bg-white {
+    border-radius: 1.25rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+}
+#product-list-container .bg-white::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    border-radius: 1.25rem;
+}
+#product-list-container .bg-white:hover::before {
+    opacity: 1;
+}
+#product-list-container .bg-white:hover {
+    box-shadow: 0 20px 60px rgba(99, 102, 241, 0.3);
+    transform: translateY(-8px) scale(1.03);
+    border-color: rgba(99, 102, 241, 0.5);
+}
+
+/* Product Images - ZOOM EFFECT */
+#product-list-container img {
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#product-list-container .bg-white:hover img {
+    transform: scale(1.1) rotate(1deg);
+}
+
+/* --- CATEGORY CHIPS - GLASS MORPHISM --- */
+.category-chip {
+    padding: 0.75rem 1.5rem;
+    border-radius: 1.25rem;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(12px);
+}
+
+.category-chip::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.6s ease;
+}
+
+.category-chip:hover::before {
+    left: 100%;
+}
+
+.category-chip.active {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.5);
+    transform: translateY(-4px) scale(1.05);
+}
+
+.category-chip:not(.active) {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.category-chip:not(.active):hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(243, 244, 246, 0.95));
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.25);
+    transform: translateY(-4px) scale(1.05);
+    border-color: #6366f1;
+}
+
+.category-chip i {
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.category-chip:hover i {
+    transform: scale(1.2) rotate(10deg);
+}
+.category-chip.active i {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+}
+
+/* --- COMMENTS MODAL - MODERN SLIDE UP --- */
+#comments-modal {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80vh;
+    max-height: 900px;
+    z-index: 50;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.2);
+    border-top-left-radius: 2rem;
+    border-top-right-radius: 2rem;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(100%);
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+#comments-modal.show {
+    transform: translateY(0);
+}
+#comments-modal::before {
+    content: '';
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 48px;
+    height: 5px;
+    background: linear-gradient(90deg, #d1d5db, #9ca3af);
+    border-radius: 3px;
+}
+
+.backdrop-blur {
+    backdrop-filter: blur(8px);
+    transition: opacity 0.3s ease;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+/* Comment Items - HOVER EFFECT */
+#comments-list > div {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 1.25rem;
+    border-radius: 1rem;
+    border: 1px solid transparent;
+}
+#comments-list > div:hover {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.05));
+    border-color: rgba(99, 102, 241, 0.2);
+    transform: translateX(4px);
+}
+
+/* --- CART STYLES - PREMIUM --- */
+
+.cart-badge {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 800;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.5);
+    animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.5); }
+    50% { transform: scale(1.15); box-shadow: 0 6px 20px rgba(239, 68, 68, 0.7); }
+}
+
+.mobile-nav-bar .cart-badge {
+    top: -4px;
+    right: 8px;
+}
+
+.cart-item {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 1.25rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(99, 102, 241, 0.1);
+}
+.cart-item:hover {
+    box-shadow: 0 12px 48px rgba(99, 102, 241, 0.2);
+    transform: translateY(-4px) scale(1.02);
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+.cart-item-img {
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 1rem;
+    border: 3px solid rgba(99, 102, 241, 0.2);
+    flex-shrink: 0;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.cart-item:hover .cart-item-img {
+    transform: scale(1.1) rotate(3deg);
+    border-color: #6366f1;
+}
+
+.cart-item-details {
+    flex-grow: 1;
+}
+
+.cart-quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+    padding: 0.5rem;
+    border-radius: 1rem;
+    border: 2px solid rgba(99, 102, 241, 0.2);
+}
+
+.cart-quantity-btn {
+    background: white;
+    border: 2px solid #6366f1;
+    color: #6366f1;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-weight: 800;
+    font-size: 1.25rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
+}
+.cart-quantity-btn:hover {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    transform: scale(1.2) rotate(10deg);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+.cart-quantity-btn:active {
+    transform: scale(1) rotate(0deg);
+}
+
+.cart-quantity-display {
+    font-weight: 700;
+    min-width: 32px;
+    text-align: center;
+    color: #1f2937;
+    font-size: 1.125rem;
+}
+
+.cart-remove-btn {
+    background: transparent;
+    color: #ef4444;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.625rem;
+    border: 2px solid transparent;
+}
+.cart-remove-btn:hover {
+    color: white;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    border-color: #ef4444;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+/* --- SEARCH BAR - MODERN --- */
+/* [സൂചന] ഹോം പേജിലെ സെർച്ച് ബാറിനും ഈ സ്റ്റൈൽ ബാധകമാക്കുന്നു */
+#home-page .bg-white,
+#account-page .bg-white {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    border-radius: 1.25rem; /* റൗണ്ടഡ് കോർണറുകൾ ചേർത്തു */
+}
+#search-input {
+    background: transparent;
+}
+#search-input:focus {
+    outline: none;
 }
 
 /* --- UTILITY CLASSES --- */
-.line-clamp-2 {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-}
 
+/* Line Clamp */
 .line-clamp-3 {
     overflow: hidden;
     display: -webkit-box;
@@ -1175,12 +759,65 @@ button:disabled {
     -webkit-line-clamp: 3;
 }
 
-/* Hide scrollbar */
-.no-scrollbar::-webkit-scrollbar {
+/* Hide Scrollbar */
+#category-filters::-webkit-scrollbar,
+#product-list-container::-webkit-scrollbar,
+#comments-list::-webkit-scrollbar {
     display: none;
 }
 
-.no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+/* [സൂചന] അഡ്മിൻ പാനൽ ടേബിളുകൾ സ്റ്റൈൽ ചെയ്യാൻ ചേർത്തത് */
+#admin-products-list-container {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    border-radius: 1rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    overflow: hidden; /* For rounded corners on table */
+}
+#admin-products-list-container th {
+    background-color: rgba(99, 102, 241, 0.1);
+    color: #4338ca;
+    padding: 1rem;
+    font-weight: 700;
+}
+#admin-products-list-container td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+    color: #1f2937;
+}
+#admin-product-list-body tr:hover {
+    background-color: rgba(99, 102, 241, 0.1);
+}
+#admin-product-list-empty {
+    padding: 2rem;
+    color: #475569;
+}
+
+/* അക്കൗണ്ട് പേജിലെ ലിങ്കുകൾക്ക് സ്റ്റൈൽ നൽകുന്നു */
+#account-page a.flex {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid transparent;
+}
+#account-page a.flex:hover {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.05));
+    border-color: rgba(99, 102, 241, 0.2);
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+}
+#info-content {
+    color: #334155;
+    line-height: 1.7;
+}
+
+/* ഡിലീറ്റ് ബട്ടൺ (കാറ്റഗറി) */
+#category-list-container button {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1));
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #dc2626;
+}
+#category-list-container button:hover {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
 }
