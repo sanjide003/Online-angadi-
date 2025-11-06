@@ -30,12 +30,12 @@
                 <i id="shop-header-icon" class="fas fa-camera-retro mr-2"></i><span id="shop-header-name">SocialShop</span>
             </div>
             
-            <!-- ഡെസ്ക്ടോപ്പ് നാവിഗേഷൻ -->
+            <!-- ഡെസ്ക്ടോപ്പ് നാവിഗേഷൻ (അഡ്മിൻ ലിങ്ക് നീക്കം ചെയ്തു) -->
             <div class="hidden md:flex space-x-6">
                 <a href="#" class="nav-link" onclick="showPage('home')">Home</a>
                 <a href="#" class="nav-link" onclick="showPage('products')">All Products</a>
                 <a href="#" class="nav-link" onclick="showPage('account')">Account</a>
-                <a href="admin.html" class="nav-link text-gray-500 hover:text-indigo-600">Admin Panel</a>
+                <!-- [സൂചന] അഡ്മിൻ പാനൽ ലിങ്ക് ഇവിടെ നിന്ന് നീക്കം ചെയ്തു -->
             </div>
 
             <!-- മൊബൈൽ ഐക്കണുകൾ -->
@@ -59,9 +59,9 @@
                 <input type="text" placeholder="Search products or categories..." class="flex-grow focus:outline-none text-gray-700" id="search-input">
             </div>
 
-            <!-- ഹോം പ്രൊഡക്റ്റ് ലിസ്റ്റ് കണ്ടെയ്നർ -->
+            <!-- ഹോം പ്രൊഡക്റ്റ് ഫീഡ് -->
             <div id="home-product-list-container" class="space-y-6">
-                <!-- JS വഴി ഉൽപ്പന്നങ്ങൾ ഇവിടെ വരും -->
+                <!-- JS വഴി പ്രൊഡക്റ്റുകൾ ഇവിടെ വരും -->
             </div>
         </section>
 
@@ -73,16 +73,16 @@
                 <!-- JS വഴി കാറ്റഗറി ചിപ്പുകൾ ഇവിടെ വരും -->
             </div>
             
-            <!-- പ്രൊഡക്റ്റ് ഗ്രിഡ് കണ്ടെയ്നർ -->
+            <!-- പ്രൊഡക്റ്റ് ഗ്രിഡ് -->
             <div id="product-list-container" class="grid grid-cols-2 gap-4 p-4 -mx-4 sm:mx-0">
-                <!-- JS വഴി ഉൽപ്പന്നങ്ങൾ ഇവിടെ വരും -->
+                <!-- JS വഴി പ്രൊഡക്റ്റുകൾ ഇവിടെ വരും -->
             </div>
         </section>
 
         <!-- പ്രൊഡക്റ്റ് ഡീറ്റെയിൽ പേജ് -->
         <section id="product-detail-page" class="page bg-white min-h-screen relative overflow-hidden">
             <div id="product-detail-container" class="max-w-xl mx-auto">
-                <!-- JS വഴി ഉൽപ്പന്നത്തിന്റെ വിവരങ്ങൾ ഇവിടെ വരും -->
+                <!-- JS വഴി പ്രൊഡക്റ്റ് ഡീറ്റെയിൽസ് ഇവിടെ വരും -->
             </div>
         </section>
 
@@ -108,7 +108,7 @@
                     </a>
                 </div>
 
-                <!-- ഫോളോ അസ് സെക്ഷൻ (JS വഴി നിയന്ത്രിക്കും) -->
+                <!-- ഫോളോ അസ് സെക്ഷൻ -->
                 <div id="follow-us-section" class="space-y-2 border-b pb-4 hidden">
                     <h2 class="text-xl font-semibold text-gray-700">Follow Us</h2>
                     <a id="follow-whatsapp-link" href="#" target="_blank" class="hidden flex justify-between items-center p-3 hover:bg-gray-50 rounded-lg transition duration-150">
@@ -129,7 +129,7 @@
                     </a>
                 </div>
                 
-                <!-- കോൺടാക്റ്റ് അസ് സെക്ഷൻ (JS വഴി നിയന്ത്രിക്കും) -->
+                <!-- കോൺടാക്റ്റ് അസ് സെക്ഷൻ -->
                 <div id="contact-us-section" class="space-y-2 border-b pb-4 hidden">
                     <h2 class="text-xl font-semibold text-gray-700">Contact Us</h2>
                     <a id="contact-phone-link" href="#" class="hidden flex justify-between items-center p-3 hover:bg-gray-50 rounded-lg transition duration-150">
@@ -142,7 +142,7 @@
                     </a>
                 </div>
                 
-                <!-- ഇൻഫോ കണ്ടന്റ് ഡിസ്പ്ലേ -->
+                <!-- ഇൻഫോ കണ്ടന്റ് -->
                 <div id="info-content-display" class="pt-4 space-y-4">
                     <h2 id="info-title" class="2xl font-bold text-gray-800 border-b pb-2">Welcome</h2>
                     <p id="info-content" class="text-gray-700 whitespace-pre-wrap">
@@ -150,7 +150,7 @@
                     </p>
                 </div>
 
-                <!-- ഫൂട്ടർ -->
+                <!-- ഫൂട്ടർ ടെക്സ്റ്റ് -->
                 <div class="text-center pt-6 border-t">
                     <p class="text-sm text-gray-500" id="account-copyright-display">© 2024 SocialShop. All rights reserved.</p>
                     <p class="text-xs text-gray-400 mt-2">Logged in as Guest: <span id="current-auth-uid"></span></p>
@@ -160,28 +160,26 @@
 
     </main>
 
-    <!-- മൊബൈൽ നാവിഗേഷൻ ബാർ -->
+    <!-- മൊബൈൽ നാവിഗേഷൻ (അഡ്മിൻ ലിങ്ക് നീക്കം ചെയ്തു) -->
     <div id="main-mobile-nav" class="mobile-nav-bar md:hidden flex justify-around items-center">
-        <!-- ഹോം -->
+        
         <a href="#" class="nav-link flex flex-col items-center p-1 text-xs text-indigo-600 active-mobile-link" onclick="showPage('home')">
             <i class="fas fa-home text-xl"></i>
             <span>Home</span>
         </a>
-        <!-- പ്രൊഡക്റ്റ്സ് -->
+        
         <a href="#" class="nav-link flex flex-col items-center p-1 text-xs text-gray-500" onclick="showPage('products')">
             <i class="fas fa-box text-xl"></i>
             <span>Products</span>
         </a>
-        <!-- അക്കൗണ്ട് -->
+        
         <a href="#" class="nav-link flex flex-col items-center p-1 text-xs text-gray-500 relative" onclick="showPage('account')">
             <i class="fas fa-user text-xl"></i>
             <span>Account</span>
         </a>
-        <!-- അഡ്മിൻ (മൊബൈലിൽ അഡ്മിനിലേക്കുള്ള ഒരു ഷോർട്ട്കട്ട്) -->
-        <a href="admin.html" class="nav-link flex flex-col items-center p-1 text-xs text-gray-500">
-            <i class="fas fa-cog text-xl"></i>
-            <span>Admin</span>
-        </a>
+        
+        <!-- [സൂചന] അഡ്മിൻ ഐക്കൺ ഇവിടെ നിന്ന് നീക്കം ചെയ്തു -->
+        
     </div>
 
     <!-- പൊതുവായ മോഡലുകൾ -->
@@ -206,10 +204,9 @@
            <i class="fas fa-spinner fa-spin text-indigo-600 text-5xl"></i>
     </div>
     
-    <!-- കമന്റ്സ് മോഡൽ ഓവർലേ -->
+    <!-- കമന്റ്സ് ഓവർലേ -->
     <div id="comments-backdrop" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden backdrop-blur" onclick="closeCommentsModal()"></div>
 
-    <!-- കമന്റ്സ് മോഡൽ (ബോട്ടം ഷീറ്റ്) -->
     <div id="comments-modal">
         
         <div class="p-4 border-b flex justify-between items-center flex-shrink-0">
@@ -219,17 +216,15 @@
             </button>
         </div>
         
-        
+        <!-- കമന്റ് ലിസ്റ്റ് -->
         <div id="comments-list" class="flex-grow overflow-y-auto space-y-4 mb-4 p-4">
-            <!-- JS വഴി കമന്റുകൾ ഇവിടെ വരും -->
             <p id="no-comments-msg" class="text-gray-500 italic text-center py-4">No comments yet. Be the first to share your feedback!</p>
         </div>
         
-        
+        <!-- പുതിയ കമന്റ് ഫോം -->
         <form id="add-comment-form" class="mt-auto pt-4 p-4 border-t border-gray-200 flex-shrink-0">
             <input type="hidden" id="comment-product-id">
             <div class="space-y-3">
-                
                 <div>
                     <input type="text" id="comment-user-name" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2" placeholder="Enter Your Name">
                 </div>
@@ -245,11 +240,11 @@
         </form>
     </div>
 
-    <!-- സ്ക്രിപ്റ്റുകൾ -->
+
+    <!-- പബ്ലിക് പേജിന് ആവശ്യമായ സ്ക്രിപ്റ്റുകൾ -->
     <!-- (1) ഫയർബേസ് കോൺഫിഗറേഷൻ ആദ്യം ലോഡ് ചെയ്യണം -->
     <script src="firebase-config.js" type="module"></script>
     <!-- (2) അതിനുശേഷം ആപ്പ് സ്ക്രിപ്റ്റ് ലോഡ് ചെയ്യണം -->
     <script src="app.js" type="module"></script>
-
 </body>
 </html>
