@@ -194,3 +194,88 @@ body {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
 }
+
+/* [സൂചന] കാർട്ട് പേജിനും ബാഡ്ജിനും വേണ്ടിയുള്ള പുതിയ സ്റ്റൈലുകൾ */
+
+/* കാർട്ട് ബാഡ്ജ് */
+.cart-badge {
+    position: absolute;
+    top: -4px;
+    right: -8px;
+    background-color: #ef4444; /* red-500 */
+    color: white;
+    font-size: 0.7rem; /* 11px */
+    font-weight: 600;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid white;
+}
+/* മൊബൈൽ നാവിഗേഷനിലെ ബാഡ്ജ് */
+.mobile-nav-bar .cart-badge {
+    top: -2px;
+    right: 10px;
+}
+/* ഡെസ്ക്ടോപ്പ് നാവിഗേഷനിലെ ബാഡ്ജ് */
+.nav-link .cart-badge {
+    top: -6px;
+    right: -10px;
+}
+
+/* കാർട്ട് പേജ് ഐറ്റം */
+.cart-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem; /* 16px */
+    padding: 1rem; /* 16px */
+    background-color: white;
+    border-radius: 0.5rem; /* 8px */
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+.cart-item-img {
+    width: 80px;
+    height: 80px;
+    object-cover;
+    border-radius: 0.5rem; /* 8px */
+    border: 1px solid #e5e7eb; /* gray-200 */
+    flex-shrink: 0;
+}
+.cart-item-details {
+    flex-grow: 1;
+}
+.cart-quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* 8px */
+}
+.cart-quantity-btn {
+    background-color: #f3f4f6; /* gray-100 */
+    border: 1px solid #d1d5db; /* gray-300 */
+    color: #374151; /* gray-700 */
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+.cart-quantity-btn:hover {
+    background-color: #e5e7eb; /* gray-200 */
+}
+.cart-quantity-display {
+    font-weight: 500;
+    min-width: 20px;
+    text-align: center;
+}
+.cart-remove-btn {
+    background-color: transparent;
+    color: #ef4444; /* red-500 */
+    font-size: 0.75rem; /* 12px */
+    font-weight: 500;
+    transition: color 0.2s;
+}
+.cart-remove-btn:hover {
+    color: #b91c1c; /* red-700 */
+}
