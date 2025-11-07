@@ -1572,4 +1572,84 @@ button[onclick*="deleteProduct"]:hover {
     }
 }
 
+/* --- 
+   പുതിയ ഫീച്ചറുകൾക്കുള്ള CSS
+   ഇവ പ്രവർത്തിക്കാൻ HTML/JavaScript മാറ്റങ്ങൾ ആവശ്യമാണ്
+--- */
+
+/* 1. ഹാർട്ട് ആനിമേഷന് വേണ്ടിയുള്ള CSS */
+@keyframes heartPulse {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+    }
+}
+
+/* ഈ ക്ലാസ് HTML-ൽ ഇമേജ് കണ്ടെയ്നറിനുള്ളിൽ ഒരു <i> ടാഗിന് നൽകണം */
+.like-heart-animation {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    font-size: 80px; /* ഹാർട്ടിന്റെ വലുപ്പം */
+    color: #ef4444; /* ഹാർട്ടിന്റെ കളർ */
+    display: none; /* തുടക്കത്തിൽ കാണിക്കാതിരിക്കാൻ */
+    pointer-events: none; /* ഇതിൽ ക്ലിക്ക് ചെയ്യാൻ പറ്റരുത് */
+    z-index: 10; /* ഇമേജിന് മുകളിൽ വരാൻ */
+}
+
+/* JavaScript ഉപയോഗിച്ച് 'show' ക്ലാസ് ആഡ് ചെയ്യുമ്പോൾ ആനിമേഷൻ പ്രവർത്തിക്കും */
+.like-heart-animation.show {
+    display: block;
+    animation: heartPulse 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+
+/* 2. ബുക്ക്മാർക്ക് ഐക്കണിന് വേണ്ടിയുള്ള CSS */
+
+/* നിങ്ങളുടെ HTML-ലെ ബുക്ക്മാർക്ക് ബട്ടണിൽ നിന്ന്
+  പഴയ പർപ്പിൾ കളർ ക്ലാസുകൾ (ഉദാ: bg-indigo-600) നീക്കം ചെയ്ത് 
+  'bookmark-button' എന്ന ക്ലാസ് നൽകണം.
+*/
+.bookmark-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 9999px; /* വൃത്താകൃതിയിൽ */
+    background-color: #f3f4f6; /* പുതിയ ഡിഫോൾട്ട് കളർ (ലൈറ്റ് ഗ്രേ) */
+    color: #4b5563; /* ഐക്കൺ കളർ */
+    transition: all 0.2s ease;
+}
+
+.bookmark-button:hover {
+    background-color: #e5e7eb;
+}
+
+/* HTML-ലെ ബുക്ക്മാർക്ക് ഐക്കണിന് (<i> ടാഗ്) 
+  'bookmark-icon' എന്ന ക്ലാസ് നൽകണം.
+  ഉദാ: <i class="bookmark-icon fa-regular fa-bookmark"></i>
+*/
+.bookmark-icon {
+    font-size: 1.25rem; /* ഐക്കൺ വലുപ്പം */
+    color: #6b7280; /* ഡിഫോൾട്ട് കളർ (ചാരനിറം) */
+    transition: all 0.2s ease;
+}
+
+/* JavaScript ഉപയോഗിച്ച് 'in-cart' എന്ന ക്ലാസ് ആഡ് ചെയ്യുമ്പോൾ
+  ഐക്കണിന്റെ നിറം കറുപ്പ് ആവും.
+  (കൂടാതെ 'fa-solid' എന്ന ക്ലാസ് കൂടി JS വഴി ആഡ് ചെയ്യണം)
+*/
+.bookmark-icon.in-cart {
+    color: #000000; /* കറുപ്പ് കളർ */
+}
+
 /* End of SocialShop CSS */
