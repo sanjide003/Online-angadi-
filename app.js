@@ -468,6 +468,12 @@ function renderHomeProductList(productsToRender) {
             </div>`;
         }
         
+        // [പുതിയത്] കാർട്ടിൽ ഉണ്ടോ എന്ന് പരിശോധിക്കുന്നു
+        const isInCart = cart.some(item => item.id === product.id);
+        const cartIconBaseClass = 'bookmark-icon text-2xl'; // style.css-ൽ നിന്നുള്ള ക്ലാസ്
+        const cartIconClass = isInCart ? 'fas fa-bookmark in-cart' : 'far fa-bookmark';
+
+
         // [സൂചന] കാർട്ട് ഐക്കൺ (ബുക്ക്മാർക്ക്) താഴെ ചേർത്തു
         const card = `
             <div class="bg-white rounded-lg shadow-md overflow-hidden pb-4">
@@ -482,12 +488,18 @@ function renderHomeProductList(productsToRender) {
                     </div>
                     <i class="fas fa-ellipsis-v text-gray-400 cursor-pointer"></i>
                 </div>
-                <div class="cursor-pointer" onclick="showProductDetail('${product.id}')">
+
+                <!-- [മാറ്റം] ഇമേജ് കണ്ടെയ്നറിന് 'relative' ഉം 'ondblclick' ഉം ചേർത്തു -->
+                <div class="relative cursor-pointer" ondblclick="triggerLikeAndAnimation('${product.id}')">
                     <img src="${imageUrl}" alt="${product.name}" class="w-full object-cover max-h-[400px]" onerror="this.src='https://placehold.co/600x400/E2E8F0/333?text=Image+Error'">
+                    <!-- [പുതിയത്] ഹാർട്ട് ആനിമേഷൻ ഐക്കൺ -->
+                    <i class="like-heart-animation fa-solid fa-heart" id="heart-anim-${product.id}"></i>
                 </div>
+
                 <div class="p-3">
                     <div class="flex items-center space-x-5 mb-3 border-b pb-3">
-                        <button class="flex items-center text-red-500 hover:text-red-700 transition duration-150" onclick="toggleLike('${product.id}')">
+                        <!-- [മാറ്റം] 'toggleLike' എന്നതിന് പകരം 'triggerLikeAndAnimation' എന്നാക്കി -->
+                        <button class="flex items-center text-red-500 hover:text-red-700 transition duration-150" onclick="triggerLikeAndAnimation('${product.id}')">
                             <i class="${likeIconClass} fa-heart text-2xl"></i>
                             <span class="ml-2 text-sm font-semibold">${likeCount}</span>
                         </button>
@@ -496,9 +508,9 @@ function renderHomeProductList(productsToRender) {
                             <span class="ml-2 text-sm font-semibold">${product.commentCount || 0}</span>
                         </button>
                         
-                        <!-- [സൂചന] പുതിയ ബുക്ക്മാർക്ക് (Add to Cart) ബട്ടൺ -->
+                        <!-- [മാറ്റം] ബുക്ക്മാർക്ക് (Add to Cart) ബട്ടൺ ഡൈനാമിക് ആക്കി -->
                         <button class="text-gray-600 hover:text-indigo-500 transition duration-150 ml-auto p-2" onclick="addToCart('${product.id}')" title="Add to Cart">
-                            <i class="far fa-bookmark text-2xl"></i>
+                            <i id="bookmark-icon-${product.id}" class="${cartIconBaseClass} ${cartIconClass}"></i>
                         </button>
                     </div>
                     <div class="cursor-pointer" onclick="showProductDetail('${product.id}')">
@@ -851,6 +863,36 @@ window.toggleLike = async function(productId) {
     }
 }
 
+// --- [പുതിയ ഫംഗ്ഷനുകൾ] ഹാർട്ട് ആനിമേഷന് വേണ്ടി ---
+
+// --- ഹാർട്ട് ആനിമേഷൻ ഫംഗ്ഷൻ ---
+function showHeartAnimation(productId) {
+    const heartIcon = document.getElementById(`heart-anim-${productId}`);
+    if (heartIcon) {
+        // റീ-ട്രിഗർ ചെയ്യുന്നതിനായി ക്ലാസ് ആദ്യം നീക്കം ചെയ്യുന്നു
+        heartIcon.classList.remove('show');
+        // ആനിമേഷൻ വീണ്ടും തുടങ്ങാൻ ചെറിയൊരു താമസം നൽകുന്നു
+        setTimeout(() => {
+            heartIcon.classList.add('show');
+            // ആനിമേഷൻ കഴിഞ്ഞാൽ ക്ലാസ് നീക്കം ചെയ്യുന്നു
+            setTimeout(() => {
+                heartIcon.classList.remove('show');
+            }, 600); // CSS ആനിമേഷൻ ദൈർഘ്യം (0.6s)
+        }, 10); // ഒരു ചെറിയ താമസം (10ms)
+    }
+}
+
+// --- ലൈക്കും ആനിമേഷനും ഒരുമിച്ച് ---
+window.triggerLikeAndAnimation = function(productId) {
+    // First, trigger the animation
+    showHeartAnimation(productId);
+    
+    // Then, toggle the like
+    toggleLike(productId);
+}
+// --- [പുതിയ ഫംഗ്ഷനുകൾ അവസാനിച്ചു] ---
+
+
 // --- COMMENT FUNCTIONS (Overlay) ---
 window.showCommentsOverlay = function(productId, productName) {
     const prod = allProducts.find(p => p.id === productId);
@@ -1024,6 +1066,14 @@ window.addToCart = function(productId) {
         });
     }
 
+    // --- [പുതിയ കോഡ്] ഐക്കൺ ഉടൻ അപ്ഡേറ്റ് ചെയ്യുന്നു ---
+    const icon = document.getElementById(`bookmark-icon-${productId}`);
+    if (icon) {
+        icon.classList.remove('far', 'fa-bookmark'); // 'far' (outline) നീക്കം ചെയ്യുന്നു
+        icon.classList.add('fas', 'fa-bookmark', 'in-cart'); // 'fas' (solid) ഉം 'in-cart' (black) ഉം ചേർക്കുന്നു
+    }
+    // --- [പുതിയ കോഡ് അവസാനിച്ചു] ---
+
     saveCartToStorage();
     updateCartUI();
     showMessage(`${product.name} added to cart!`, 'success');
@@ -1084,7 +1134,21 @@ window.updateCartQuantity = function(productId, change) {
 
     if (item.quantity <= 0) {
         // ക്വാണ്ടിറ്റി 0 ആയാൽ നീക്കം ചെയ്യുന്നു
-        removeFromCart(productId);
+        cart = cart.filter(item => item.id !== productId);
+        
+        // --- [പുതിയ കോഡ്] ഹോം പേജിലെ ഐക്കൺ അപ്ഡേറ്റ് ചെയ്യുന്നു ---
+        const icon = document.getElementById(`bookmark-icon-${productId}`);
+        if (icon) {
+            icon.classList.remove('fas', 'fa-bookmark', 'in-cart');
+            icon.classList.add('far', 'fa-bookmark');
+        }
+        // --- [പുതിയ കോഡ് അവസാനിച്ചു] ---
+
+        saveCartToStorage();
+        renderCartPage();
+        updateCartUI();
+        showMessage("Item removed from cart.", 'info');
+        
     } else {
         saveCartToStorage();
         renderCartPage(); // കാർട്ട് പേജ് വീണ്ടും റെൻഡർ ചെയ്യുന്നു
@@ -1095,6 +1159,15 @@ window.updateCartQuantity = function(productId, change) {
 // 7. കാർട്ടിൽ നിന്ന് നീക്കം ചെയ്യുന്നു
 window.removeFromCart = function(productId) {
     cart = cart.filter(item => item.id !== productId);
+
+    // --- [പുതിയ കോഡ്] ഹോം പേജിലെ ഐക്കൺ അപ്ഡേറ്റ് ചെയ്യുന്നു ---
+    const icon = document.getElementById(`bookmark-icon-${productId}`);
+    if (icon) {
+        icon.classList.remove('fas', 'fa-bookmark', 'in-cart'); // 'fas' (solid) ഉം 'in-cart' (black) ഉം നീക്കം ചെയ്യുന്നു
+        icon.classList.add('far', 'fa-bookmark'); // 'far' (outline) ചേർക്കുന്നു
+    }
+    // --- [പുതിയ കോഡ് അവസാനിച്ചു] ---
+    
     saveCartToStorage();
     renderCartPage();
     updateCartUI();
