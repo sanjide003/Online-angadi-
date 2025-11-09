@@ -14,6 +14,7 @@ let whatsappNumber = '';
 let infoContent = {}; 
 let headerSettings = { shopName: 'SocialShop', iconClass: 'fas fa-camera-retro' };
 let cart = [];
+let pageHistory = []; // Track page navigation history
 
 // Firestore References
 let productsCollectionRef;
@@ -88,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
         setupAuthListener();
 
-        // സെർച്ച് ഇൻപുട്ട് ലിസ്‌നർ
+        // സെർച്ച് ഇൻപുട്ട് ലിസനർ
         const searchInput = document.getElementById('search-input');
         if (searchInput) {
             searchInput.addEventListener('input', (event) => {
@@ -97,13 +98,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // കമന്റ് ഫോം ലിസ്‌നർ
+        // കമന്റ് ഫോം ലിസനർ
         const commentForm = document.getElementById('add-comment-form');
         if (commentForm) {
             commentForm.addEventListener('submit', handleAddComment);
         }
         
-        // കാറ്റഗറി ഫിൽറ്റർ ലിസ്‌നർ
+        // കാറ്റഗറി ഫിൽറ്റർ ലിസനർ
         const categoryFilters = document.getElementById('category-filters');
         if (categoryFilters) {
             categoryFilters.addEventListener('click', (e) => {
@@ -351,9 +352,21 @@ function renderAccountPageExtras(data) {
 
 // ========= UI NAVIGATION & RENDERING =========
 
-// --- Main Page Navigation ---
+// --- Main Page Navigation with History Tracking ---
 window.showPage = function(pageId) {
     if (!pages) return; 
+    
+    // Get current active page before changing
+    const currentActivePage = document.querySelector('.page.active');
+    let currentPageId = null;
+    if (currentActivePage) {
+        currentPageId = currentActivePage.id.replace('-page', '');
+    }
+    
+    // Add to history if navigating to a new page
+    if (currentPageId && currentPageId !== pageId) {
+        pageHistory.push(currentPageId);
+    }
     
     pages.forEach(page => {
         page.classList.remove('active');
@@ -388,7 +401,63 @@ window.showPage = function(pageId) {
         closeCommentsModal();
     }
 
-    // നാവിഗേഷൻ ലിങ്കുകളുടെ ആക്റ്റീവ് സ്റ്റേറ്റ് അപ്‌ഡേറ്റ് ചെയ്യുന്നു
+    // നാവിഗേഷൻ ലിങ്കുകളുടെ ആക്ടീവ് സ്റ്റേറ്റ് അപ്‌ഡേറ്റ് ചെയ്യുന്നു
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('text-indigo-600', 'font-semibold', 'active-mobile-link');
+        link.classList.add('text-gray-500');
+        
+        const onclickAttr = link.getAttribute('onclick');
+        if (onclickAttr && onclickAttr.includes(`'${pageId}'`)) {
+            link.classList.add('text-indigo-600', 'font-semibold', 'active-mobile-link');
+            link.classList.remove('text-gray-500');
+        }
+    });
+    
+    window.scrollTo(0, 0);
+}
+
+// --- Back Navigation Function ---
+window.goBack = function() {
+    if (pageHistory.length > 0) {
+        const previousPage = pageHistory.pop();
+        showPageWithoutHistory(previousPage);
+    } else {
+        showPageWithoutHistory('home');
+    }
+}
+
+// Show page without adding to history
+function showPageWithoutHistory(pageId) {
+    if (!pages) return;
+    
+    pages.forEach(page => {
+        page.classList.remove('active');
+    });
+    
+    const targetPage = document.getElementById(`${pageId}-page`);
+    if (targetPage) {
+        targetPage.classList.add('active');
+    }
+    
+    const mainMobileNav = document.getElementById('main-mobile-nav');
+    if (mainMobileNav) {
+        if (pageId === 'product-detail') {
+            mainMobileNav.classList.add('hidden');
+        } else {
+            mainMobileNav.classList.remove('hidden');
+        }
+    }
+    
+    if (pageId === 'products') {
+        renderProductPage(); 
+    }
+    if (pageId === 'account') {
+        showInfoSection('about');
+    }
+    if (pageId === 'cart') {
+        renderCartPage();
+    }
+    
     document.querySelectorAll('.nav-link').forEach(link => {
         link.classList.remove('text-indigo-600', 'font-semibold', 'active-mobile-link');
         link.classList.add('text-gray-500');
@@ -449,6 +518,10 @@ function getCategoryIcon(categoryId) {
     return category ? (category.iconClass || 'fas fa-tag') : 'fas fa-tag';
 }
 
+// Check if product is in cart
+function isProductInCart(productId) {
+    return cart.some(item => item.id === productId);
+}
 
 // --- Product List Renderers (Home - Social Feed Style) ---
 // "Show More" / "Show Less" ബട്ടൺ
@@ -487,6 +560,11 @@ function renderHomeProductList(productsToRender) {
         const brandHtml = product.brand ? `<p class="text-sm font-medium text-gray-500 mb-1">${product.brand}</p>` : '';
         const description = product.description || '';
         const descriptionId = `desc-${product.id}`;
+        
+        // Check if product is in cart
+        const inCart = isProductInCart(product.id);
+        const bookmarkClass = inCart ? 'fas bookmark-button in-cart' : 'far bookmark-button';
+        
         let descriptionHtml = '';
         if (description) {
             const isLong = description.length > 150 || description.split('\n').length > 3; 
@@ -524,8 +602,8 @@ function renderHomeProductList(productsToRender) {
                             <span class="ml-2 text-sm font-semibold">${product.commentCount || 0}</span>
                         </button>
                         
-                        <button class="text-gray-600 hover:text-indigo-500 transition duration-150 ml-auto p-2" onclick="addToCart('${product.id}')" title="Add to Cart">
-                            <i class="far fa-bookmark text-2xl"></i>
+                        <button class="text-gray-600 hover:text-indigo-500 transition duration-150 ml-auto p-2" onclick="toggleCart('${product.id}')" title="${inCart ? 'Remove from Cart' : 'Add to Cart'}">
+                            <i class="${bookmarkClass} fa-bookmark text-2xl" id="bookmark-${product.id}"></i>
                         </button>
                     </div>
                     <div class="cursor-pointer" onclick="showProductDetail('${product.id}')">
@@ -697,7 +775,7 @@ window.showProductDetail = function(productId) {
 
     container.innerHTML = `
         <div class="flex items-center justify-between p-3 bg-white border-b sticky top-0 z-10">
-            <button onclick="showPage('home')" class="text-gray-600 hover:text-indigo-600">
+            <button onclick="goBack()" class="text-gray-600 hover:text-indigo-600">
                    <i class="fas fa-arrow-left"></i>
             </button>
             <div class="flex items-center">
@@ -814,13 +892,26 @@ window.nextSlide = function() {
     updateCarousel();
 };
     
-// --- WHATSAPP CHAT FUNCTION ---
+// --- WHATSAPP CHAT FUNCTION (Updated with Image URL) ---
 window.openWhatsAppChat = function(productName, productId) {
     if (!whatsappNumber) {
         showMessage("Admin WhatsApp number is not set. Please set it in the Admin Panel.", 'error');
         return;
     }
-    const message = `Hello, I am interested in the product: ${productName}. Could you provide more details? (Product ID: ${productId})`;
+    
+    const product = allProducts.find(p => p.id === productId);
+    const imageUrl = product?.imageUrl || '';
+    const price = product?.retailPrice || product?.price || 0;
+    
+    const message = `🛍️ *${productName}*
+
+💰 Price: ₹${price.toFixed(2)}
+🆔 Product ID: ${productId}
+
+📸 View Image: ${imageUrl}
+
+Hello, I'm interested in this product. Could you provide more details?`;
+    
     const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
 }
@@ -1016,7 +1107,7 @@ async function handleAddComment(e) {
     
 
 // ---------------------------------------------------
-// കാർട്ടിനു വേണ്ടിയുള്ള ഫംഗ്ഷനുകൾ
+// കാർട്ടിന് വേണ്ടിയുള്ള ഫംഗ്ഷനുകൾ
 // ---------------------------------------------------
 
 // 1. ലോക്കൽ സ്റ്റോറേജിൽ നിന്ന് കാർട്ട് ലോഡ് ചെയ്യുന്നു
@@ -1052,7 +1143,60 @@ function updateCartUI() {
     });
 }
 
-// 4. കാർട്ടിലേക്ക് പ്രൊഡക്റ്റ് ചേർക്കുന്നു
+// 4. Toggle Cart - Add/Remove from cart (Updated for bookmark functionality)
+window.toggleCart = function(productId) {
+    const product = allProducts.find(p => p.id === productId);
+    if (!product) {
+        showMessage("Could not find product.", "error");
+        return;
+    }
+    
+    const existingItemIndex = cart.findIndex(item => item.id === productId);
+    const retailPrice = product.retailPrice || product.price || 0;
+    
+    if (existingItemIndex !== -1) {
+        // Remove from cart
+        cart.splice(existingItemIndex, 1);
+        showMessage(`${product.name} removed from cart!`, 'info');
+    } else {
+        // Add to cart
+        cart.push({
+            id: product.id,
+            name: product.name,
+            price: retailPrice,
+            imageUrl: product.imageUrl || `https://placehold.co/80x80/E2E8F0/333?text=Img`,
+            quantity: 1
+        });
+        showMessage(`${product.name} added to cart!`, 'success');
+    }
+    
+    saveCartToStorage();
+    updateCartUI();
+    updateBookmarkIcon(productId);
+    
+    // If on cart page, re-render
+    const cartPageEl = document.getElementById('cart-page');
+    if (cartPageEl && cartPageEl.classList.contains('active')) {
+        renderCartPage();
+    }
+}
+
+// Update bookmark icon visual state
+function updateBookmarkIcon(productId) {
+    const bookmarkIcon = document.getElementById(`bookmark-${productId}`);
+    if (bookmarkIcon) {
+        const inCart = isProductInCart(productId);
+        if (inCart) {
+            bookmarkIcon.classList.remove('far');
+            bookmarkIcon.classList.add('fas', 'in-cart');
+        } else {
+            bookmarkIcon.classList.remove('fas', 'in-cart');
+            bookmarkIcon.classList.add('far');
+        }
+    }
+}
+
+// 5. കാർട്ടിലേക്ക് പ്രൊഡക്റ്റ് ചേർക്കുന്നു (existing function for "Add to Cart" buttons)
 window.addToCart = function(productId) {
     const product = allProducts.find(p => p.id === productId);
     if (!product) {
@@ -1080,7 +1224,7 @@ window.addToCart = function(productId) {
     showMessage(`${product.name} added to cart!`, 'success');
 }
 
-// 5. കാർട്ട് പേജ് റെൻഡർ ചെയ്യുന്നു
+// 6. കാർട്ട് പേജ് റെൻഡർ ചെയ്യുന്നു (Updated with clickable images)
 window.renderCartPage = function() {
     if (!$cartItemsContainer || !$cartEmptyMsg || !$cartSummarySection) return;
 
@@ -1102,7 +1246,11 @@ window.renderCartPage = function() {
 
             const itemHtml = `
                 <div class="cart-item">
-                    <img src="${item.imageUrl}" alt="${item.name}" class="cart-item-img" onerror="this.src='https://placehold.co/80x80/E2E8F0/333?text=Error'">
+                    <img src="${item.imageUrl}" 
+                         alt="${item.name}" 
+                         class="cart-item-img" 
+                         onclick="showProductDetail('${item.id}')"
+                         onerror="this.src='https://placehold.co/80x80/E2E8F0/333?text=Error'">
                     <div class="cart-item-details">
                         <h3 class="font-bold text-gray-800">${item.name}</h3>
                         <p class="text-indigo-600 font-semibold text-sm">₹${item.price.toFixed(2)}</p>
@@ -1125,7 +1273,7 @@ window.renderCartPage = function() {
     }
 }
 
-// 6. കാർട്ട് ക്വാണ്ടിറ്റി അപ്‌ഡേറ്റ് ചെയ്യുന്നു
+// 7. കാർട്ട് ക്വാണ്ടിറ്റി അപ്‌ഡേറ്റ് ചെയ്യുന്നു
 window.updateCartQuantity = function(productId, change) {
     const item = cart.find(i => i.id === productId);
     if (!item) return;
@@ -1141,12 +1289,21 @@ window.updateCartQuantity = function(productId, change) {
     }
 }
 
-// 7. കാർട്ടിൽ നിന്ന് നീക്കം ചെയ്യുന്നു
+// 8. കാർട്ടിൽ നിന്ന് നീക്കം ചെയ്യുന്നു
 window.removeFromCart = function(productId) {
     cart = cart.filter(item => item.id !== productId);
     saveCartToStorage();
     renderCartPage();
     updateCartUI();
+    updateBookmarkIcon(productId);
+    
+    // Re-render home page if active to update bookmark icons
+    const homePageEl = document.getElementById('home-page');
+    const searchInputEl = document.getElementById('search-input');
+    if (homePageEl && homePageEl.classList.contains('active') && searchInputEl && searchInputEl.value === '') {
+        renderHomeProductList(allProducts);
+    }
+    
     showMessage("Item removed from cart.", 'info');
 }
 
