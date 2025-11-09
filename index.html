@@ -30,14 +30,14 @@
                 <i id="shop-header-icon" class="fas fa-camera-retro mr-2"></i><span id="shop-header-name">SocialShop</span>
             </div>
             
-            <!-- ഡെസ്ക്ടോപ്പ് നാവിഗേഷൻ (കാർട്ട് നീക്കം ചെയ്ത്) -->
+            <!-- ഡെസ്ക്ടോപ്പ് നാവിഗേഷൻ -->
             <div class="hidden md:flex items-center space-x-6">
                 <a href="#" class="nav-link" onclick="showPage('home')">Home</a>
                 <a href="#" class="nav-link" onclick="showPage('products')">All Products</a>
                 <a href="#" class="nav-link" onclick="showPage('account')">Account</a>
             </div>
 
-            <!-- മൊബൈൽ ആക്കണുകൾ (കാർട്ട് നീക്കം ചെയ്ത്) -->
+            <!-- മൊബൈൽ അക്കൗണ്ട് -->
             <div class="md:hidden flex items-center space-x-4">
                 <button class="nav-link relative" onclick="showPage('account')">
                     <i class="fas fa-user text-xl"></i>
@@ -78,7 +78,7 @@
             </div>
         </section>
 
-        <!-- പ്രൊഡക്റ്റ്സ് പേജ് -->
+        <!-- പ്രൊഡക്റ്റുസ് പേജ് -->
         <section id="products-page" class="page px-4 sm:px-0">
             
             <!-- കാറ്റഗറി ഫിൽറ്ററുകൾ -->
@@ -173,7 +173,12 @@
 
         <!-- കാർട്ട് പേജ് -->
         <section id="cart-page" class="page px-4 sm:px-0">
-            <h1 class="text-3xl font-bold mb-8">Your Cart</h1>
+            <div class="flex items-center justify-between mb-8">
+                <h1 class="text-3xl font-bold">Your Cart</h1>
+                <button onclick="goBack()" class="text-gray-600 hover:text-indigo-600 font-semibold">
+                    <i class="fas fa-arrow-left mr-2"></i>Back
+                </button>
+            </div>
             
             <div class="lg:flex lg:gap-8">
                 <!-- കാർട്ട് ഐറ്റംസ് -->
@@ -222,7 +227,7 @@
 
     </main>
 
-    <!-- മൊബൈൽ നാവിഗേഷൻ (കാർട്ട് നിലനിർത്തി) -->
+    <!-- മൊബൈൽ നാവിഗേഷൻ -->
     <div id="main-mobile-nav" class="mobile-nav-bar md:hidden flex justify-around items-center">
         
         <a href="#" class="nav-link flex flex-col items-center p-1 text-xs text-indigo-600 active-mobile-link" onclick="showPage('home')">
@@ -235,7 +240,7 @@
             <span>Products</span>
         </a>
 
-        <!-- മൊബൈൽ കാർട്ട് ആക്കൺ (താഴെ) -->
+        <!-- മൊബൈൽ കാർട്ട് ആക്കൺ -->
         <a href="#" class="nav-link flex flex-col items-center p-1 text-xs text-gray-500 relative" onclick="showPage('cart')">
             <i class="fas fa-shopping-cart text-xl"></i>
             <span id="cart-item-count-bottom-nav" class="cart-badge hidden">0</span>
@@ -272,14 +277,14 @@
         </div>
     </div>
     
-    <div id="loading-spinner" class="fixed inset-0 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center z-50 hidden">
+    <div id="loading-spinner" class="fixed inset-0 bg-white flex items-center justify-center z-50 hidden">
         <div class="loading-container">
             <div class="loading-spinner"></div>
             <p class="loading-text">Loading...</p>
         </div>
     </div>
     
-    <!-- കമന്റ്സ് ഓവർലേ -->
+    <!-- കമന്റുസ് ഓവർലേ -->
     <div id="comments-backdrop" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden backdrop-blur" onclick="closeCommentsModal()"></div>
 
     <div id="comments-modal">
