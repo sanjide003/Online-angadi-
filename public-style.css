@@ -1,5 +1,5 @@
 /* ================================
-    PUBLIC PAGE STYLES
+    PUBLIC PAGE STYLES - UPDATED
     പബ്ലിക് പേജ് ഡിസൈൻ
     ================================ */
 
@@ -10,24 +10,9 @@
 
 body {
     font-family: 'Inter', sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-    background-attachment: fixed;
+    background: #ffffff; /* Pure White Background */
     min-height: 100vh;
     position: relative;
-}
-
-body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3), transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(238, 130, 238, 0.3), transparent 50%),
-                radial-gradient(circle at 40% 20%, rgba(147, 197, 253, 0.3), transparent 50%);
-    pointer-events: none;
-    z-index: 0;
 }
 
 main {
@@ -66,7 +51,7 @@ main {
         left: 0;
         right: 0;
         z-index: 50;
-        background: rgba(255, 255, 255, 0.85);
+        background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(20px) saturate(180%);
         -webkit-backdrop-filter: blur(20px) saturate(180%);
         box-shadow: 0 -8px 32px rgba(31, 38, 135, 0.15);
@@ -74,7 +59,7 @@ main {
         display: flex;
         justify-content: space-around;
         align-items: center;
-        border-top: 1px solid rgba(255, 255, 255, 0.3);
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
     }
     .mobile-nav-bar::before {
         content: '';
@@ -83,7 +68,7 @@ main {
         left: 0;
         right: 0;
         height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(147, 197, 253, 0.5), transparent);
+        background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent);
     }
     .mobile-nav-bar .nav-link {
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -114,11 +99,11 @@ main {
 
 /* --- HEADER STYLES - GLASSMORPHISM --- */
 header {
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 #shop-header-title {
@@ -370,7 +355,7 @@ header {
     overflow: hidden;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(0, 0, 0, 0.1);
 }
 #home-product-list-container .bg-white:hover {
     box-shadow: 0 16px 48px rgba(99, 102, 241, 0.25);
@@ -385,7 +370,7 @@ header {
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     position: relative;
 }
 #product-list-container .bg-white::before {
@@ -415,6 +400,20 @@ header {
 }
 #product-list-container .bg-white:hover img {
     transform: scale(1.1) rotate(1deg);
+}
+
+/* --- BOOKMARK BUTTON STYLES (Updated) --- */
+.bookmark-button {
+    transition: color 0.2s ease;
+    cursor: pointer;
+}
+
+.bookmark-button.in-cart {
+    color: #1f2937; /* Black when in cart */
+}
+
+.bookmark-button:not(.in-cart) {
+    color: #6b7280; /* Gray when not in cart */
 }
 
 /* --- CATEGORY CHIPS - GLASS MORPHISM --- */
@@ -497,7 +496,7 @@ header {
     transform: translateY(100%);
     display: flex;
     flex-direction: column;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(0, 0, 0, 0.1);
 }
 #comments-modal.show {
     transform: translateY(0);
@@ -592,6 +591,7 @@ header {
     flex-shrink: 0;
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
 }
 .cart-item:hover .cart-item-img {
     transform: scale(1.1) rotate(3deg);
@@ -823,7 +823,7 @@ button:disabled {
 #confirm-modal > div {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     animation: modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -918,20 +918,9 @@ button:disabled {
     transform: scale(1.2);
 }
 
-/* Bookmark Button (Add to Cart) */
-#home-product-list-container button .fa-bookmark,
-#product-detail-page button .fa-bookmark {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-#home-product-list-container button:hover .fa-bookmark,
-#product-detail-page button:hover .fa-bookmark {
-    transform: scale(1.2) rotate(-10deg);
-}
-
 /* --- PRODUCT DETAIL PAGE STYLES --- */
 #product-detail-page {
-    background: linear-gradient(to bottom, #f8fafc 0%, #ffffff 100%);
+    background: #ffffff;
 }
 
 /* Fixed Bottom Buttons */
