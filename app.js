@@ -1044,15 +1044,13 @@ window.openWhatsAppChatForCart = function() {
 
     cart.forEach((item, index) => {
         const product = allProducts.find(p => p.id === item.id);
-        const productLink = `${APP_BASE_URL}?product=${item.id}`;
-        const imageUrl = product?.imageUrl || item.imageUrl || '';
+        const productLink = `${APP_BASE_URL}?product=${item.id);
         
         message += `${index + 1}. *${item.name}*\n`;
         message += `   Qty: ${item.quantity} × ₹${item.price.toFixed(2)} = ₹${(item.price * item.quantity).toFixed(2)}\n`;
         message += `   📱 View: ${productLink}\n`;
         if (imageUrl) {
-            message += `   📸 Image: ${imageUrl}\n`;
-        }
+        
         message += `\n`;
         
         total += item.price * item.quantity;
