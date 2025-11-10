@@ -14,7 +14,7 @@ let whatsappNumber = '';
 let infoContent = {}; 
 let headerSettings = { shopName: 'SocialShop', iconClass: 'fas fa-camera-retro' };
 let cart = [];
-let pageHistory = []; // Track page navigation history
+let pageHistory = [];
 
 // Firestore References
 let productsCollectionRef;
@@ -36,7 +36,10 @@ let activeProduct = null;
 
 // UI State
 let currentSlideIndex = 0;
-let activeCategoryId = 'all'; 
+let activeCategoryId = 'all';
+
+// Swipe tracking for each product
+let productSwipeStates = {};
 
 // --- DOM Elements (Public Page) ---
 let pages, loadingSpinner, messageModal, messageModalText, confirmModal, confirmModalText, confirmModalButton, commentsModal, commentsBackdrop;
@@ -45,6 +48,9 @@ let $accountUID, $accountCopyright, $infoTitle, $infoContent;
 let $cartBadgeBottomNav; 
 let $cartItemsContainer, $cartEmptyMsg, $cartSummarySection, $cartSubtotal, $cartTotal;
 let $scrollToTopBtn;
+
+// App Base URL (update this with your actual deployed URL)
+const APP_BASE_URL = window.location.origin; // Auto-detects current domain
 
 // ========= App Initialization & Setup =========
 
@@ -123,11 +129,40 @@ document.addEventListener('DOMContentLoaded', () => {
         // Scroll Event Listener for Scroll-to-Top Button
         window.addEventListener('scroll', handleScroll);
 
+        // Check URL parameters for direct product link
+        checkUrlParameters();
+
     } catch (error) {
         console.error("Application initialization failed:", error);
         showMessage("Application initialization failed: " + error.message, 'error');
     }
 });
+
+// --- Check URL Parameters for Deep Linking ---
+function checkUrlParameters() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('product');
+    
+    if (productId) {
+        // Wait for products to load, then show product
+        const checkInterval = setInterval(() => {
+            if (allProducts.length > 0) {
+                clearInterval(checkInterval);
+                const product = allProducts.find(p => p.id === productId);
+                if (product) {
+                    showProductDetail(productId);
+                    // Clear URL parameter
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                } else {
+                    showMessage("Product not found.", 'error');
+                }
+            }
+        }, 100);
+        
+        // Timeout after 5 seconds
+        setTimeout(() => clearInterval(checkInterval), 5000);
+    }
+}
 
 // --- SCROLL TO TOP FUNCTIONALITY ---
 function handleScroll() {
@@ -523,7 +558,82 @@ function isProductInCart(productId) {
     return cart.some(item => item.id === productId);
 }
 
-// --- Product List Renderers (Home - Social Feed Style) ---
+// --- SWIPE GESTURE HANDLER ---
+function initializeSwipeGesture(containerId, images, productId) {
+    const container = document.getElementById(containerId);
+    if (!container || images.length <= 1) return;
+    
+    let startX = 0;
+    let startY = 0;
+    let currentX = 0;
+    let isDragging = false;
+    let currentIndex = productSwipeStates[productId]?.index || 0;
+    
+    const track = container.querySelector('.swipe-track');
+    const dots = container.querySelectorAll('.swipe-dot');
+    
+    if (!track) return;
+    
+    const handleTouchStart = (e) => {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        isDragging = true;
+        track.style.transition = 'none';
+    };
+    
+    const handleTouchMove = (e) => {
+        if (!isDragging) return;
+        
+        currentX = e.touches[0].clientX;
+        const currentY = e.touches[0].clientY;
+        const diffX = currentX - startX;
+        const diffY = currentY - startY;
+        
+        // Prevent vertical scroll if horizontal swipe is detected
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+            e.preventDefault();
+            const offset = -(currentIndex * 100) + (diffX / container.offsetWidth) * 100;
+            track.style.transform = `translateX(${offset}%)`;
+        }
+    };
+    
+    const handleTouchEnd = (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+        
+        const diffX = currentX - startX;
+        const threshold = 50;
+        
+        track.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        
+        if (diffX > threshold && currentIndex > 0) {
+            currentIndex--;
+        } else if (diffX < -threshold && currentIndex < images.length - 1) {
+            currentIndex++;
+        }
+        
+        track.style.transform = `translateX(-${currentIndex * 100}%)`;
+        
+        // Update dots
+        if (dots) {
+            dots.forEach((dot, idx) => {
+                dot.classList.toggle('active', idx === currentIndex);
+            });
+        }
+        
+        // Save state
+        productSwipeStates[productId] = { index: currentIndex };
+    };
+    
+    container.addEventListener('touchstart', handleTouchStart, { passive: false });
+    container.addEventListener('touchmove', handleTouchMove, { passive: false });
+    container.addEventListener('touchend', handleTouchEnd);
+    
+    // Initial position
+    track.style.transform = `translateX(-${currentIndex * 100}%)`;
+}
+
+// --- Product List Renderers (Home - Social Feed Style with Swipe) ---
 // "Show More" / "Show Less" ബട്ടൺ
 window.toggleDescription = function(productId, buttonElement) {
     const descEl = document.getElementById(`desc-${productId}`);
@@ -537,7 +647,7 @@ window.toggleDescription = function(productId, buttonElement) {
     }
 }
 
-// ഹോം പേജിലെ പ്രൊഡക്റ്റ് ലിസ്റ്റ് റെൻഡർ ചെയ്യുന്നു
+// ഹോം പേജിലെ പ്രൊഡക്റ്റ് ലിസ്റ്റ് റെൻഡർ ചെയ്യുന്നു (With Swipe Support)
 function renderHomeProductList(productsToRender) {
     const container = document.getElementById('home-product-list-container');
     if (!container) return;
@@ -546,8 +656,11 @@ function renderHomeProductList(productsToRender) {
         container.innerHTML = '<p class="text-gray-500 col-span-full text-center py-8 bg-white rounded-lg shadow-md">No products available.</p>';
         return;
     }
+    
     productsToRender.forEach(product => {
         const imageUrl = product.imageUrl || `https://placehold.co/600x400/E2E8F0/333?text=${encodeURIComponent(product.name)}`;
+        const allImages = [imageUrl, ...(product.otherImages || [])].filter(url => url && url.length > 0);
+        
         const originalPrice = product.price || 0;
         const retailPrice = product.retailPrice || originalPrice;
         const discount = product.discountPercentage || 0;
@@ -575,6 +688,29 @@ function renderHomeProductList(productsToRender) {
             </div>`;
         }
         
+        // Create image swiper
+        const swipeContainerId = `swipe-home-${product.id}`;
+        let imageHtml = '';
+        
+        if (allImages.length > 1) {
+            const slidesHtml = allImages.map((img, idx) => 
+                `<div class="swipe-slide"><img src="${img}" alt="${product.name}" class="w-full object-cover max-h-[400px]" onerror="this.src='https://placehold.co/600x400/E2E8F0/333?text=Image+Error'"></div>`
+            ).join('');
+            
+            const dotsHtml = allImages.map((_, idx) => 
+                `<div class="swipe-dot ${idx === 0 ? 'active' : ''}"></div>`
+            ).join('');
+            
+            imageHtml = `
+                <div id="${swipeContainerId}" class="swipe-container relative">
+                    <div class="swipe-track">${slidesHtml}</div>
+                    <div class="swipe-dots">${dotsHtml}</div>
+                </div>
+            `;
+        } else {
+            imageHtml = `<img src="${allImages[0]}" alt="${product.name}" class="w-full object-cover max-h-[400px]" onerror="this.src='https://placehold.co/600x400/E2E8F0/333?text=Image+Error'">`;
+        }
+        
         const card = `
             <div class="bg-white rounded-lg shadow-md overflow-hidden pb-4">
                 <div class="flex items-center p-3">
@@ -589,7 +725,7 @@ function renderHomeProductList(productsToRender) {
                     <i class="fas fa-ellipsis-v text-gray-400 cursor-pointer"></i>
                 </div>
                 <div class="cursor-pointer" onclick="showProductDetail('${product.id}')">
-                    <img src="${imageUrl}" alt="${product.name}" class="w-full object-cover max-h-[400px]" onerror="this.src='https://placehold.co/600x400/E2E8F0/333?text=Image+Error'">
+                    ${imageHtml}
                 </div>
                 <div class="p-3">
                     <div class="flex items-center space-x-5 mb-3 border-b pb-3">
@@ -619,6 +755,11 @@ function renderHomeProductList(productsToRender) {
                 </div>
             </div>`;
         container.innerHTML += card;
+        
+        // Initialize swipe gesture if multiple images
+        if (allImages.length > 1) {
+            setTimeout(() => initializeSwipeGesture(swipeContainerId, allImages, product.id), 0);
+        }
     });
 }
 
@@ -721,7 +862,7 @@ function renderProductList(productsToRender) {
     });
 }
     
-// --- Product Detail Page ---
+// --- Product Detail Page (With Swipe Support) ---
 window.showProductDetail = function(productId) {
     const product = allProducts.find(p => p.id === productId);
     if (!product) {
@@ -764,14 +905,32 @@ window.showProductDetail = function(productId) {
          deliveryBadge = `<div class="bg-gray-700 text-white text-xs font-semibold px-3 py-1 rounded-full inline-flex items-center mt-3"><i class="fas fa-shipping-fast mr-2"></i> Delivery: ₹${product.deliveryCharge.toFixed(0)}</div>`;
     }
     
-    const slidesHtml = allImages.map((imgUrl, index) => `
-        <div class="carousel-slide"><img src="${imgUrl}" alt="Product Image ${index + 1}" class="object-contain w-full h-full" onerror="this.src='https://placehold.co/800x600/E2E8F0/333?text=Image+Error'"></div>
-    `).join('');
+    // Create swipeable carousel
+    const swipeContainerId = `swipe-detail-${product.id}`;
+    let carouselHtml = '';
+    
+    if (allImages.length > 1) {
+        const slidesHtml = allImages.map((imgUrl, index) => `
+            <div class="swipe-slide"><img src="${imgUrl}" alt="Product Image ${index + 1}" class="object-contain w-full h-full" onerror="this.src='https://placehold.co/800x600/E2E8F0/333?text=Image+Error'"></div>
+        `).join('');
 
-    const dotsHtml = allImages.map((_, index) => `
-        <div class="dot ${index === 0 ? 'active' : ''}" onclick="goToSlide(${index})"></div>
-    `).join('');
+        const dotsHtml = allImages.map((_, index) => `
+            <div class="swipe-dot ${index === 0 ? 'active' : ''}"></div>
+        `).join('');
 
+        carouselHtml = `
+            <div id="${swipeContainerId}" class="carousel-container swipe-container">
+                <div class="swipe-track carousel-track">${slidesHtml}</div>
+                <div class="swipe-dots carousel-dots">${dotsHtml}</div>
+            </div>
+        `;
+    } else {
+        carouselHtml = `
+            <div class="carousel-container">
+                <div class="carousel-slide"><img src="${allImages[0]}" alt="${product.name}" class="object-contain w-full h-full" onerror="this.src='https://placehold.co/800x600/E2E8F0/333?text=Image+Error'"></div>
+            </div>
+        `;
+    }
 
     container.innerHTML = `
         <div class="flex items-center justify-between p-3 bg-white border-b sticky top-0 z-10">
@@ -787,14 +946,7 @@ window.showProductDetail = function(productId) {
             </div>
         </div>
         
-        <div class="carousel-container">
-            <div id="image-carousel-track" class="carousel-track">${slidesHtml}</div>
-            ${allImages.length > 1 ? `<div class="carousel-dots">${dotsHtml}</div>` : ''}
-            ${allImages.length > 1 ? `
-                <button class="carousel-nav-btn absolute left-2" onclick="prevSlide()"><i class="fas fa-chevron-left"></i></button>
-                <button class="carousel-nav-btn absolute right-2" onclick="nextSlide()"><i class="fas fa-chevron-right"></i></button>
-            ` : ''}
-        </div>
+        ${carouselHtml}
         
         <div class="fixed bottom-0 left-0 right-0 p-3 z-30 flex justify-center w-full max-w-xl mx-auto md:px-4 space-x-2 bg-white border-t border-gray-200">
             <button class="w-1/2 flex items-center justify-center bg-indigo-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:bg-indigo-700 transition duration-300 transform hover:scale-[1.01]" id="add-to-cart-btn">
@@ -838,61 +990,19 @@ window.showProductDetail = function(productId) {
         <div class="h-32 sm:h-40"></div> 
     `;
     showPage('product-detail');
-    updateCarousel(); 
+    
+    // Initialize swipe gesture if multiple images
+    if (allImages.length > 1) {
+        setTimeout(() => initializeSwipeGesture(swipeContainerId, allImages, product.id), 0);
+    }
     
     const addToCartBtn = document.getElementById('add-to-cart-btn');
     if (addToCartBtn) {
         addToCartBtn.onclick = () => addToCart(product.id);
     }
 }
-
-// --- CAROUSEL FUNCTIONS ---
-function updateCarousel() {
-    const track = document.getElementById('image-carousel-track');
-    const dotsContainer = document.querySelector('#product-detail-container .carousel-dots');
-    if (!track) return;
-    const totalSlides = track.children.length;
-    if (totalSlides === 0) return;
-    if (currentSlideIndex >= totalSlides) currentSlideIndex = 0;
-    if (currentSlideIndex < 0) currentSlideIndex = totalSlides - 1;
-    track.style.transform = `translateX(-${currentSlideIndex * 100}%)`;
-    if (dotsContainer) {
-        const dots = dotsContainer.querySelectorAll('.dot');
-        dots.forEach((dot, index) => {
-            dot.classList.toggle('active', index === currentSlideIndex);
-        });
-    }
-}
-
-window.goToSlide = function(index) {
-    const track = document.getElementById('image-carousel-track');
-    if (!track) return;
-    const totalSlides = track.children.length;
-    if (index >= 0 && index < totalSlides) {
-        currentSlideIndex = index;
-        updateCarousel();
-    }
-}
-
-window.prevSlide = function() {
-    const track = document.getElementById('image-carousel-track');
-    if (!track) return;
-    const totalSlides = track.children.length;
-    if (totalSlides <= 1) return;
-    currentSlideIndex = (currentSlideIndex - 1 + totalSlides) % totalSlides;
-    updateCarousel();
-};
-
-window.nextSlide = function() {
-    const track = document.getElementById('image-carousel-track');
-    if (!track) return;
-    const totalSlides = track.children.length;
-    if (totalSlides <= 1) return;
-    currentSlideIndex = (currentSlideIndex + 1) % totalSlides;
-    updateCarousel();
-};
     
-// --- WHATSAPP CHAT FUNCTION (Updated with Image URL) ---
+// --- WHATSAPP CHAT FUNCTION (Updated with App Link) ---
 window.openWhatsAppChat = function(productName, productId) {
     if (!whatsappNumber) {
         showMessage("Admin WhatsApp number is not set. Please set it in the Admin Panel.", 'error');
@@ -900,15 +1010,17 @@ window.openWhatsAppChat = function(productName, productId) {
     }
     
     const product = allProducts.find(p => p.id === productId);
-    const imageUrl = product?.imageUrl || '';
     const price = product?.retailPrice || product?.price || 0;
+    
+    // Create app link
+    const productLink = `${APP_BASE_URL}?product=${productId}`;
     
     const message = `🛍️ *${productName}*
 
 💰 Price: ₹${price.toFixed(2)}
 🆔 Product ID: ${productId}
 
-📸 View Image: ${imageUrl}
+📱 View Product: ${productLink}
 
 Hello, I'm interested in this product. Could you provide more details?`;
     
@@ -916,7 +1028,7 @@ Hello, I'm interested in this product. Could you provide more details?`;
     window.open(url, '_blank');
 }
 
-// കാർട്ടിലെ സാധനങ്ങൾ ചേർത്ത് WhatsApp-ലേക്ക് പോകാനുള്ള ഫംഗ്ഷൻ
+// കാർട്ടിലെ സാധനങ്ങൾ ചേർത്ത് WhatsApp-ലേക്ക് പോകാനുള്ള ഫംഗ്ഷൻ (Updated with Product Links & Images)
 window.openWhatsAppChatForCart = function() {
     if (!whatsappNumber) {
         showMessage("Admin WhatsApp number is not set.", 'error');
@@ -927,24 +1039,38 @@ window.openWhatsAppChatForCart = function() {
         return;
     }
 
-    let message = "Hello, I would like to order the following items:\n\n";
+    let message = "🛒 *My Shopping Cart*\n\n";
     let total = 0;
 
-    cart.forEach(item => {
-        message += `* ${item.name} (x ${item.quantity}) - ₹${(item.price * item.quantity).toFixed(2)}\n`;
+    cart.forEach((item, index) => {
+        const product = allProducts.find(p => p.id === item.id);
+        const productLink = `${APP_BASE_URL}?product=${item.id}`;
+        const imageUrl = product?.imageUrl || item.imageUrl || '';
+        
+        message += `${index + 1}. *${item.name}*\n`;
+        message += `   Qty: ${item.quantity} × ₹${item.price.toFixed(2)} = ₹${(item.price * item.quantity).toFixed(2)}\n`;
+        message += `   📱 View: ${productLink}\n`;
+        if (imageUrl) {
+            message += `   📸 Image: ${imageUrl}\n`;
+        }
+        message += `\n`;
+        
         total += item.price * item.quantity;
     });
 
-    message += `\n*Total: ₹${total.toFixed(2)}*`;
+    message += `━━━━━━━━━━━━━━━\n`;
+    message += `💵 *Total: ₹${total.toFixed(2)}*\n\n`;
+    message += `I would like to place this order. Please confirm availability and delivery details.`;
     
     const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
 }
 
 window.shareProductLink = function(productName, productId) {
-    const linkText = `Check out this product: ${productName}! (ID: ${productId}).`;
+    const productLink = `${APP_BASE_URL}?product=${productId}`;
+    const linkText = `Check out this product: ${productName}!\n\n${productLink}`;
     if (copyTextToClipboard(linkText)) {
-        showMessage("Product details copied to clipboard. Share the link!", 'success');
+        showMessage("Product link copied to clipboard!", 'success');
     } else {
         showMessage("Failed to copy link. Please try manually.", 'error');
     }
@@ -1143,7 +1269,7 @@ function updateCartUI() {
     });
 }
 
-// 4. Toggle Cart - Add/Remove from cart (Updated for bookmark functionality)
+// 4. Toggle Cart - Add/Remove from cart
 window.toggleCart = function(productId) {
     const product = allProducts.find(p => p.id === productId);
     if (!product) {
@@ -1196,7 +1322,7 @@ function updateBookmarkIcon(productId) {
     }
 }
 
-// 5. കാർട്ടിലേക്ക് പ്രൊഡക്റ്റ് ചേർക്കുന്നു (existing function for "Add to Cart" buttons)
+// 5. കാർട്ടിലേക്ക് പ്രൊഡക്റ്റ് ചേർക്കുന്നു
 window.addToCart = function(productId) {
     const product = allProducts.find(p => p.id === productId);
     if (!product) {
@@ -1224,7 +1350,7 @@ window.addToCart = function(productId) {
     showMessage(`${product.name} added to cart!`, 'success');
 }
 
-// 6. കാർട്ട് പേജ് റെൻഡർ ചെയ്യുന്നു (Updated with clickable images)
+// 6. കാർട്ട് പേജ് റെൻഡർ ചെയ്യുന്നു
 window.renderCartPage = function() {
     if (!$cartItemsContainer || !$cartEmptyMsg || !$cartSummarySection) return;
 
