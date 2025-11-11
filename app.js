@@ -48,6 +48,7 @@ let $accountUID, $accountCopyright, $infoTitle, $infoContent;
 let $cartBadgeBottomNav; 
 let $cartItemsContainer, $cartEmptyMsg, $cartSummarySection, $cartSubtotal, $cartTotal;
 let $scrollToTopBtn;
+let $shareModal;
 
 // App Base URL (update this with your actual deployed URL)
 const APP_BASE_URL = window.location.origin; // Auto-detects current domain
@@ -66,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     confirmModalButton = document.getElementById('confirm-modal-button');
     commentsModal = document.getElementById('comments-modal'); 
     commentsBackdrop = document.getElementById('comments-backdrop');
+    $shareModal = document.getElementById('share-modal');
     
     $shopHeaderIcon = document.getElementById('shop-header-icon');
     $shopHeaderName = document.getElementById('shop-header-name');
@@ -110,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
             commentForm.addEventListener('submit', handleAddComment);
         }
         
-        // കാറ്റഗറി ഫിൽറ്റർ ലിസനർ
+        // കാറ്റഗറി ഫിൽട്ടർ ലിസനർ
         const categoryFilters = document.getElementById('category-filters');
         if (categoryFilters) {
             categoryFilters.addEventListener('click', (e) => {
@@ -412,7 +414,7 @@ window.showPage = function(pageId) {
         targetPage.classList.add('active');
     }
 
-    // പ്രൊഡക്റ്റ് ഡീറ്റെയിൽ പേജിൽ മാത്രം താഴത്തെ നാവിഗേഷൻ ബാർ മറയ്ക്കുന്നു
+    // പ്രൊഡക്ട് ഡീറ്റെയിൽ പേജിൽ മാത്രം താഴത്തെ നാവിഗേഷൻ ബാർ മറയ്ക്കുന്നു
     const mainMobileNav = document.getElementById('main-mobile-nav');
     if (mainMobileNav) {
         if (pageId === 'product-detail') {
@@ -436,7 +438,7 @@ window.showPage = function(pageId) {
         closeCommentsModal();
     }
 
-    // നാവിഗേഷൻ ലിങ്കുകളുടെ ആക്ടീവ് സ്റ്റേറ്റ് അപ്‌ഡേറ്റ് ചെയ്യുന്നു
+    // നാവിഗേഷൻ ലിങ്കുകളുടെ ആക്ടീവ് സ്റ്റേറ്റ് അപ്ഡേറ്റ് ചെയ്യുന്നു
     document.querySelectorAll('.nav-link').forEach(link => {
         link.classList.remove('text-indigo-600', 'font-semibold', 'active-mobile-link');
         link.classList.add('text-gray-500');
@@ -647,7 +649,7 @@ window.toggleDescription = function(productId, buttonElement) {
     }
 }
 
-// ഹോം പേജിലെ പ്രൊഡക്റ്റ് ലിസ്റ്റ് റെൻഡർ ചെയ്യുന്നു (With Swipe Support)
+// ഹോം പേജിലെ പ്രൊഡക്ട് ലിസ്റ്റ് റെൻഡർ ചെയ്യുന്നു (With Swipe Support)
 function renderHomeProductList(productsToRender) {
     const container = document.getElementById('home-product-list-container');
     if (!container) return;
@@ -737,6 +739,9 @@ function renderHomeProductList(productsToRender) {
                             <i class="far fa-comment text-2xl"></i>
                             <span class="ml-2 text-sm font-semibold">${product.commentCount || 0}</span>
                         </button>
+                        <button class="flex items-center text-gray-600 hover:text-green-500 transition duration-150" onclick="openShareModal('${product.id}')">
+                            <i class="fas fa-share-alt text-2xl"></i>
+                        </button>
                         
                         <button class="text-gray-600 hover:text-indigo-500 transition duration-150 ml-auto p-2" onclick="toggleCart('${product.id}')" title="${inCart ? 'Remove from Cart' : 'Add to Cart'}">
                             <i class="${bookmarkClass} fa-bookmark text-2xl" id="bookmark-${product.id}"></i>
@@ -763,7 +768,7 @@ function renderHomeProductList(productsToRender) {
     });
 }
 
-// ഹോം പേജിലെ സെർച്ച് ഫിൽറ്റർ
+// ഹോം പേജിലെ സെർച്ച് ഫിൽട്ടർ
 function filterAndRenderHomeProducts(searchTerm) {
     const filteredProducts = allProducts.filter(product => 
         product.name.toLowerCase().includes(searchTerm) || 
@@ -796,7 +801,7 @@ function renderProductPage() {
     filterProductsByCategory(activeCategoryId);
 }
 
-// കാറ്റഗറി അനുസരിച്ച് പ്രൊഡക്റ്റുകൾ ഫിൽറ്റർ ചെയ്യുന്നു
+// കാറ്റഗറി അനുസരിച്ച് പ്രൊഡക്ടുകൾ ഫിൽട്ടർ ചെയ്യുന്നു
 window.filterProductsByCategory = function(categoryId) {
     activeCategoryId = categoryId;
     document.querySelectorAll('#category-filters .category-chip').forEach(chip => {
@@ -811,7 +816,7 @@ window.filterProductsByCategory = function(categoryId) {
     renderProductList(filteredProducts);
 }
 
-// 'All Products' പേജിലെ പ്രൊഡക്റ്റ് ഗ്രിഡ് റെൻഡർ ചെയ്യുന്നു
+// 'All Products' പേജിലെ പ്രൊഡക്ട് ഗ്രിഡ് റെൻഡർ ചെയ്യുന്നു
 function renderProductList(productsToRender) {
     const container = document.getElementById('product-list-container');
     if (!container) return;
@@ -861,8 +866,64 @@ function renderProductList(productsToRender) {
         container.innerHTML += card;
     });
 }
+
+// --- Get Similar Products ---
+function getSimilarProducts(currentProductId, categoryId, count = 6) {
+    // Filter products from same category, excluding current product
+    let similar = allProducts.filter(p => 
+        p.categoryId === categoryId && p.id !== currentProductId
+    );
     
-// --- Product Detail Page (With Swipe Support) ---
+    // Shuffle array randomly
+    similar = similar.sort(() => 0.5 - Math.random());
+    
+    // Return first 'count' items
+    return similar.slice(0, count);
+}
+
+// --- Render Similar Products ---
+function renderSimilarProducts(currentProductId, categoryId) {
+    const similarProducts = getSimilarProducts(currentProductId, categoryId, 6);
+    
+    if (similarProducts.length === 0) {
+        return ''; // No similar products
+    }
+    
+    const productsHtml = similarProducts.map(product => {
+        const imageUrl = product.imageUrl || `https://placehold.co/300x300/E2E8F0/333?text=${encodeURIComponent(product.name)}`;
+        const retailPrice = product.retailPrice || product.price || 0;
+        const discount = product.discountPercentage || 0;
+        
+        return `
+            <div class="similar-product-card flex-shrink-0 w-40 sm:w-48 cursor-pointer" onclick="showProductDetail('${product.id}')">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition duration-300">
+                    <img src="${imageUrl}" alt="${product.name}" class="w-full h-40 sm:h-48 object-cover" onerror="this.src='https://placehold.co/300x300/E2E8F0/333?text=Error'">
+                    <div class="p-3">
+                        <h4 class="text-sm font-bold text-gray-800 mb-1 line-clamp-2" title="${product.name}">${product.name}</h4>
+                        <div class="flex items-baseline">
+                            <span class="text-lg font-bold text-green-600">₹${retailPrice.toFixed(0)}</span>
+                            ${discount > 0 ? `<span class="text-xs text-red-500 ml-2">${discount}% Off</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    return `
+        <div class="bg-gray-50 p-4 border-t mt-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-layer-group mr-2 text-indigo-600"></i>
+                Similar Products
+            </h2>
+            <div class="flex overflow-x-auto space-x-4 pb-4 similar-products-container">
+                ${productsHtml}
+            </div>
+        </div>
+    `;
+}
+    
+// --- Product Detail Page (With Swipe Support & Similar Products) ---
 window.showProductDetail = function(productId) {
     const product = allProducts.find(p => p.id === productId);
     if (!product) {
@@ -932,6 +993,23 @@ window.showProductDetail = function(productId) {
         `;
     }
 
+    // Product Instructions
+    const productInstructions = infoContent.productInstructions || '';
+    const instructionsHtml = productInstructions ? `
+        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+            <div class="flex items-start">
+                <i class="fas fa-info-circle text-yellow-600 text-xl mr-3 mt-1"></i>
+                <div>
+                    <h3 class="text-sm font-bold text-gray-800 mb-1">Important Instructions</h3>
+                    <p class="text-sm text-gray-700 whitespace-pre-wrap">${productInstructions}</p>
+                </div>
+            </div>
+        </div>
+    ` : '';
+
+    // Similar Products Section
+    const similarProductsHtml = renderSimilarProducts(product.id, product.categoryId);
+
     container.innerHTML = `
         <div class="flex items-center justify-between p-3 bg-white border-b sticky top-0 z-10">
             <button onclick="goBack()" class="text-gray-600 hover:text-indigo-600">
@@ -969,6 +1047,10 @@ window.showProductDetail = function(productId) {
                     <i class="far fa-comment text-2xl"></i>
                     <span id="detail-comment-count" class="ml-2 text-sm font-semibold">${commentCount}</span>
                 </button>
+                <button class="flex items-center text-gray-600 hover:text-green-500 transition duration-150" onclick="openShareModal('${product.id}')">
+                    <i class="fas fa-share-alt text-2xl"></i>
+                    <span class="ml-2 text-sm font-semibold">Share</span>
+                </button>
             </div>
             
             <h1 class="text-2xl font-bold text-gray-800 mb-1">${product.name}</h1>
@@ -986,7 +1068,9 @@ window.showProductDetail = function(productId) {
                 <ul class="list-none space-y-1">${specificationsList}</ul>
             </div>
             ` : ''}
+            ${instructionsHtml}
         </div>
+        ${similarProductsHtml}
         <div class="h-32 sm:h-40"></div> 
     `;
     showPage('product-detail');
@@ -1001,8 +1085,84 @@ window.showProductDetail = function(productId) {
         addToCartBtn.onclick = () => addToCart(product.id);
     }
 }
+
+// --- SHARE MODAL FUNCTIONS ---
+window.openShareModal = function(productId) {
+    const product = allProducts.find(p => p.id === productId);
+    if (!product) return;
     
-// --- WHATSAPP CHAT FUNCTION (Updated with App Link) ---
+    activeProduct = product; // Store for sharing
+    
+    if ($shareModal) {
+        $shareModal.classList.remove('hidden');
+        // Reset copy button text
+        const copyBtn = document.getElementById('copy-link-text');
+        if (copyBtn) copyBtn.textContent = 'Copy Link';
+    }
+}
+
+window.closeShareModal = function() {
+    if ($shareModal) {
+        $shareModal.classList.add('hidden');
+    }
+}
+
+window.shareVia = function(platform) {
+    if (!activeProduct) return;
+    
+    const productLink = `${APP_BASE_URL}?product=${activeProduct.id}`;
+    const price = activeProduct.retailPrice || activeProduct.price || 0;
+    
+    const shareText = `🛍️ *${activeProduct.name}*
+
+💰 Price: ₹${price.toFixed(2)}
+🆔 Product ID: ${activeProduct.id}
+
+📱 View Product: ${productLink}
+
+Check out this amazing product!`;
+    
+    const encodedText = encodeURIComponent(shareText);
+    const encodedLink = encodeURIComponent(productLink);
+    
+    let shareUrl = '';
+    
+    switch(platform) {
+        case 'whatsapp':
+            shareUrl = `https://wa.me/?text=${encodedText}`;
+            break;
+        case 'facebook':
+            shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedLink}`;
+            break;
+        case 'twitter':
+            shareUrl = `https://twitter.com/intent/tweet?text=${encodedText}`;
+            break;
+        case 'telegram':
+            shareUrl = `https://t.me/share/url?url=${encodedLink}&text=${encodeURIComponent(activeProduct.name)}`;
+            break;
+        case 'copy':
+            if (copyTextToClipboard(shareText)) {
+                const copyBtn = document.getElementById('copy-link-text');
+                if (copyBtn) {
+                    copyBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Copied!';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = '<i class="fas fa-copy mr-2"></i>Copy Link';
+                    }, 2000);
+                }
+                showMessage("Link copied to clipboard!", 'success');
+            } else {
+                showMessage("Failed to copy link.", 'error');
+            }
+            return;
+    }
+    
+    if (shareUrl) {
+        window.open(shareUrl, '_blank');
+        closeShareModal();
+    }
+}
+    
+// --- WHATSAPP CHAT FUNCTION (Updated - No Image URL) ---
 window.openWhatsAppChat = function(productName, productId) {
     if (!whatsappNumber) {
         showMessage("Admin WhatsApp number is not set. Please set it in the Admin Panel.", 'error');
@@ -1028,7 +1188,7 @@ Hello, I'm interested in this product. Could you provide more details?`;
     window.open(url, '_blank');
 }
 
-// കാർട്ടിലെ സാധനങ്ങൾ ചേർത്ത് WhatsApp-ലേക്ക് പോകാനുള്ള ഫംഗ്ഷൻ (Updated with Product Links & Images)
+// കാർട്ടിലെ സാധനങ്ങൾ ചേർത്ത് WhatsApp-ലേക്ക് പോകാനുള്ള ഫംഗ്ഷൻ (Updated - No Image URL)
 window.openWhatsAppChatForCart = function() {
     if (!whatsappNumber) {
         showMessage("Admin WhatsApp number is not set.", 'error');
@@ -1043,17 +1203,11 @@ window.openWhatsAppChatForCart = function() {
     let total = 0;
 
     cart.forEach((item, index) => {
-        const product = allProducts.find(p => p.id === item.id);
         const productLink = `${APP_BASE_URL}?product=${item.id}`;
-        const imageUrl = product?.imageUrl || item.imageUrl || '';
         
         message += `${index + 1}. *${item.name}*\n`;
         message += `   Qty: ${item.quantity} × ₹${item.price.toFixed(2)} = ₹${(item.price * item.quantity).toFixed(2)}\n`;
-        message += `   📱 View: ${productLink}\n`;
-        if (imageUrl) {
-            message += `   📸 Image: ${imageUrl}\n`;
-        }
-        message += `\n`;
+        message += `   🔗 View: ${productLink}\n\n`;
         
         total += item.price * item.quantity;
     });
@@ -1064,16 +1218,6 @@ window.openWhatsAppChatForCart = function() {
     
     const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
-}
-
-window.shareProductLink = function(productName, productId) {
-    const productLink = `${APP_BASE_URL}?product=${productId}`;
-    const linkText = `Check out this product: ${productName}!\n\n${productLink}`;
-    if (copyTextToClipboard(linkText)) {
-        showMessage("Product link copied to clipboard!", 'success');
-    } else {
-        showMessage("Failed to copy link. Please try manually.", 'error');
-    }
 }
 
 // --- LIKE FUNCTION ---
@@ -1255,7 +1399,7 @@ function saveCartToStorage() {
     }
 }
 
-// 3. കാർട്ട് ബാഡ്ജ് അപ്‌ഡേറ്റ് ചെയ്യുന്നു
+// 3. കാർട്ട് ബാഡ്ജ് അപ്ഡേറ്റ് ചെയ്യുന്നു
 function updateCartUI() {
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -1322,7 +1466,7 @@ function updateBookmarkIcon(productId) {
     }
 }
 
-// 5. കാർട്ടിലേക്ക് പ്രൊഡക്റ്റ് ചേർക്കുന്നു
+// 5. കാർട്ടിലേക്ക് പ്രൊഡക്ട് ചേർക്കുന്നു
 window.addToCart = function(productId) {
     const product = allProducts.find(p => p.id === productId);
     if (!product) {
@@ -1399,7 +1543,7 @@ window.renderCartPage = function() {
     }
 }
 
-// 7. കാർട്ട് ക്വാണ്ടിറ്റി അപ്‌ഡേറ്റ് ചെയ്യുന്നു
+// 7. കാർട്ട് ക്വാണ്ടിറ്റി അപ്ഡേറ്റ് ചെയ്യുന്നു
 window.updateCartQuantity = function(productId, change) {
     const item = cart.find(i => i.id === productId);
     if (!item) return;

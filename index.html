@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SANJIDE - Online Shopping App</title>
+    <title>SocialShop - Online Shopping App</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -27,7 +27,7 @@
             
             <!-- ഷോപ്പ് ടൈറ്റിൽ -->
             <div id="shop-header-title" class="text-2xl font-bold text-indigo-600 cursor-pointer" onclick="showPage('home')">
-                <i id="shop-header-icon" class="fas fa-camera-retro mr-2"></i><span id="shop-header-name">SANJIDE</span>
+                <i id="shop-header-icon" class="fas fa-camera-retro mr-2"></i><span id="shop-header-name">SocialShop</span>
             </div>
             
             <!-- ഡെസ്ക്ടോപ്പ് നാവിഗേഷൻ -->
@@ -55,7 +55,7 @@
             <!-- ഹീറോ സെക്ഷൻ / ബാനർ -->
             <div class="hero-gradient rounded-2xl p-8 mb-6 text-white relative overflow-hidden">
                 <div class="relative z-10">
-                    <h1 class="text-3xl sm:text-4xl font-bold mb-3">Welcome to <span id="hero-shop-name">SANJIDE</span></h1>
+                    <h1 class="text-3xl sm:text-4xl font-bold mb-3">Welcome to <span id="hero-shop-name">SocialShop</span></h1>
                     <p class="text-white/90 text-lg mb-4">Marhaba online store</p>
                     <p class="text-white/90 text-lg mb-4">Discover amazing products at great prices</p>
                 </div>
@@ -73,30 +73,30 @@
                 </button>
             </div>
 
-            <!-- ഹോം പ്രൊഡക്റ്റ് ഫീഡ് -->
+            <!-- ഹോം പ്രൊഡക്ട് ഫീഡ് -->
             <div id="home-product-list-container" class="space-y-6">
-                <!-- JS വഴി പ്രൊഡക്റ്റുകൾ ഇവിടെ വരും -->
+                <!-- JS വഴി പ്രൊഡക്ടുകൾ ഇവിടെ വരും -->
             </div>
         </section>
 
-        <!-- പ്രൊഡക്റ്റുസ് പേജ് -->
+        <!-- പ്രൊഡക്ട്സ് പേജ് -->
         <section id="products-page" class="page px-4 sm:px-0">
             
-            <!-- കാറ്റഗറി ഫിൽറ്ററുകൾ -->
+            <!-- കാറ്റഗറി ഫിൽട്ടറുകൾ -->
             <div id="category-filters" class="flex overflow-x-auto space-x-3 pb-4 mb-6 sticky top-16 bg-gray-100 z-10 p-2 -mx-4 sm:p-0 sm:mx-0">
                 <!-- JS വഴി കാറ്റഗറി ചിപ്പുകൾ ഇവിടെ വരും -->
             </div>
             
-            <!-- പ്രൊഡക്റ്റ് ഗ്രിഡ് -->
+            <!-- പ്രൊഡക്ട് ഗ്രിഡ് -->
             <div id="product-list-container" class="grid grid-cols-2 gap-4 p-4 -mx-4 sm:mx-0">
-                <!-- JS വഴി പ്രൊഡക്റ്റുകൾ ഇവിടെ വരും -->
+                <!-- JS വഴി പ്രൊഡക്ടുകൾ ഇവിടെ വരും -->
             </div>
         </section>
 
-        <!-- പ്രൊഡക്റ്റ് ഡീറ്റെയിൽ പേജ് -->
+        <!-- പ്രൊഡക്ട് ഡീറ്റെയിൽ പേജ് -->
         <section id="product-detail-page" class="page bg-white min-h-screen relative overflow-hidden">
             <div id="product-detail-container" class="max-w-xl mx-auto">
-                <!-- JS വഴി പ്രൊഡക്റ്റ് ഡീറ്റെയിൽസ് ഇവിടെ വരും -->
+                <!-- JS വഴി പ്രൊഡക്ട് ഡീറ്റെയിൽസ് ഇവിടെ വരും -->
             </div>
         </section>
 
@@ -166,7 +166,7 @@
 
                 <!-- ഫൂട്ടർ ടെക്സ്റ്റ് -->
                 <div class="text-center pt-6 border-t">
-                    <p class="text-sm text-gray-500" id="account-copyright-display">© DSD003 SANJIDE. All rights reserved.</p>
+                    <p class="text-sm text-gray-500" id="account-copyright-display">© 2024 SocialShop. All rights reserved.</p>
                     <p class="text-xs text-gray-400 mt-2">Logged in as Guest: <span id="current-auth-uid"></span></p>
                 </div>
             </div>
@@ -285,7 +285,7 @@
         </div>
     </div>
     
-    <!-- കമന്റുസ് ഓവർലേ -->
+    <!-- കമന്റ്സ് ഓവർലേ -->
     <div id="comments-backdrop" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden backdrop-blur" onclick="closeCommentsModal()"></div>
 
     <div id="comments-modal">
@@ -319,6 +319,53 @@
                 </div>
             </div>
         </form>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="share-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-end sm:items-center justify-center">
+        <div class="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl p-6 transform transition-all">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800">Share Product</h3>
+                <button onclick="closeShareModal()" class="text-gray-400 hover:text-gray-600 text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-4 gap-4 mb-6">
+                <button onclick="shareVia('whatsapp')" class="flex flex-col items-center justify-center p-4 rounded-xl hover:bg-gray-50 transition">
+                    <div class="w-14 h-14 bg-green-500 rounded-full flex items-center justify-center mb-2">
+                        <i class="fab fa-whatsapp text-white text-2xl"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-700">WhatsApp</span>
+                </button>
+                
+                <button onclick="shareVia('facebook')" class="flex flex-col items-center justify-center p-4 rounded-xl hover:bg-gray-50 transition">
+                    <div class="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center mb-2">
+                        <i class="fab fa-facebook-f text-white text-2xl"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-700">Facebook</span>
+                </button>
+                
+                <button onclick="shareVia('twitter')" class="flex flex-col items-center justify-center p-4 rounded-xl hover:bg-gray-50 transition">
+                    <div class="w-14 h-14 bg-blue-400 rounded-full flex items-center justify-center mb-2">
+                        <i class="fab fa-twitter text-white text-2xl"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-700">Twitter</span>
+                </button>
+                
+                <button onclick="shareVia('telegram')" class="flex flex-col items-center justify-center p-4 rounded-xl hover:bg-gray-50 transition">
+                    <div class="w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center mb-2">
+                        <i class="fab fa-telegram-plane text-white text-2xl"></i>
+                    </div>
+                    <span class="text-xs font-medium text-gray-700">Telegram</span>
+                </button>
+            </div>
+            
+            <button onclick="shareVia('copy')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-3 px-6 rounded-xl transition duration-300 flex items-center justify-center">
+                <i class="fas fa-copy mr-2"></i>
+                <span id="copy-link-text">Copy Link</span>
+            </button>
+        </div>
     </div>
 
     <!-- പബ്ലിക് പേജിന് ആവശ്യമായ സ്ക്രിപ്റ്റുകൾ -->
