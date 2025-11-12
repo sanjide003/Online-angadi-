@@ -1,6 +1,6 @@
 /* ================================
-    PUBLIC PAGE STYLES - UPDATED
-    പബ്ലിക് പേജ് ഡിസൈൻ
+    PUBLIC PAGE STYLES - OPTIMIZED (വേഗതയ്ക്കായി ഒപ്റ്റിമൈസ് ചെയ്തത്)
+    'backdrop-filter: blur()' പൂർണ്ണമായും ഒഴിവാക്കി
     ================================ */
 
 /* --- BASE STYLES --- */
@@ -40,7 +40,7 @@ main {
     }
 }
 
-/* --- MOBILE NAVIGATION - GLASSMORPHISM --- */
+/* --- MOBILE NAVIGATION - FAST --- */
 @media (max-width: 767px) {
     body {
         padding-bottom: 80px; 
@@ -51,9 +51,7 @@ main {
         left: 0;
         right: 0;
         z-index: 50;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        background: rgba(255, 255, 255, 0.98); /* FAST: Removed blur */
         box-shadow: 0 -8px 32px rgba(31, 38, 135, 0.15);
         height: 72px;
         display: flex;
@@ -97,11 +95,9 @@ main {
     }
 }
 
-/* --- HEADER STYLES - GLASSMORPHISM --- */
+/* --- HEADER STYLES - FAST --- */
 header {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(255, 255, 255, 0.98); /* FAST: Removed blur */
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
@@ -180,8 +176,7 @@ header {
 .search-bar-enhanced {
     display: flex;
     align-items: center;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
+    background: #ffffff; /* FAST: Removed blur */
     border-radius: 1.5rem;
     padding: 0.75rem 1.25rem;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
@@ -274,8 +269,7 @@ header {
     display: flex;
     gap: 8px;
     z-index: 10;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.5); /* FAST: Removed blur */
     padding: 6px 12px;
     border-radius: 20px;
 }
@@ -342,8 +336,7 @@ header {
     display: flex;
     gap: 12px;
     z-index: 10;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(12px);
+    background: rgba(0, 0, 0, 0.4); /* FAST: Removed blur */
     padding: 0.75rem 1.25rem;
     border-radius: 2rem;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -371,14 +364,13 @@ header {
 
 /* --- PRODUCT CARDS - ULTRA MODERN --- */
 
-/* Home Feed Product Cards - GLASS EFFECT */
+/* Home Feed Product Cards - FAST */
 #home-product-list-container .bg-white {
     border-radius: 1.25rem;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
+    background: #ffffff; /* FAST: Removed blur */
     border: 1px solid rgba(0, 0, 0, 0.1);
 }
 #home-product-list-container .bg-white:hover {
@@ -392,8 +384,7 @@ header {
     border-radius: 1.25rem;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
+    background: #ffffff; /* FAST: Removed blur */
     border: 1px solid rgba(0, 0, 0, 0.1);
     position: relative;
 }
@@ -440,7 +431,7 @@ header {
     color: #6b7280; /* Gray when not in cart */
 }
 
-/* --- CATEGORY CHIPS - GLASS MORPHISM --- */
+/* --- CATEGORY CHIPS - FAST --- */
 .category-chip {
     padding: 0.75rem 1.5rem;
     border-radius: 1.25rem;
@@ -453,8 +444,7 @@ header {
     align-items: center;
     position: relative;
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(12px);
+    background: #ffffff; /* FAST: Removed blur */
 }
 
 .category-chip::before {
@@ -521,8 +511,7 @@ header {
 }
 
 .similar-product-card .bg-white {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
+    background: #ffffff; /* FAST: Removed blur */
     border: 1px solid rgba(99, 102, 241, 0.1);
 }
 
@@ -581,8 +570,7 @@ header {
     height: 80vh;
     max-height: 900px;
     z-index: 50;
-    background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(20px);
+    background: #ffffff; /* FAST: Removed blur */
     box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.2);
     border-top-left-radius: 2rem;
     border-top-right-radius: 2rem;
@@ -608,7 +596,7 @@ header {
 }
 
 .backdrop-blur {
-    backdrop-filter: blur(8px);
+    /* FAST: Removed blur */
     transition: opacity 0.3s ease;
     background: rgba(0, 0, 0, 0.4);
 }
@@ -663,8 +651,7 @@ header {
     align-items: center;
     gap: 1.25rem;
     padding: 1.5rem;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
+    background: #ffffff; /* FAST: Removed blur */
     border-radius: 1.25rem;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -912,11 +899,10 @@ button:disabled {
     50% { opacity: 0.5; }
 }
 
-/* --- MODALS - GLASSMORPHISM --- */
+/* --- MODALS - FAST --- */
 #message-modal > div,
 #confirm-modal > div {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
+    background: #ffffff; /* FAST: Removed blur */
     border: 1px solid rgba(0, 0, 0, 0.1);
     animation: modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -934,8 +920,7 @@ button:disabled {
 
 /* --- ACCOUNT PAGE STYLES --- */
 #account-page .bg-white {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
+    background: #ffffff; /* FAST: Removed blur */
     border: 1px solid rgba(99, 102, 241, 0.2);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
     border-radius: 1.25rem;
@@ -989,8 +974,7 @@ button:disabled {
 
 /* --- HOME PAGE ENHANCEMENTS --- */
 #home-page .bg-white {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
+    background: #ffffff; /* FAST: Removed blur */
     border: 1px solid rgba(99, 102, 241, 0.1);
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
     border-radius: 1.25rem;
@@ -1026,27 +1010,24 @@ button:disabled {
 
 /* Fixed Bottom Buttons */
 #product-detail-page .fixed.bottom-0 {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.98); /* FAST: Removed blur */
     border-top: 1px solid rgba(99, 102, 241, 0.1);
 }
 
 /* Product Detail Content Cards */
 #product-detail-container .bg-white {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
+    background: #ffffff; /* FAST: Removed blur */
     border-bottom: 1px solid rgba(99, 102, 241, 0.1);
 }
 
 /* Product Instructions Box */
 .bg-yellow-50 {
-    background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.05));
-    backdrop-filter: blur(10px);
+    background: #fefce8; /* FAST: Removed blur */
     transition: all 0.3s ease;
 }
 
 .bg-yellow-50:hover {
-    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.08));
+    background: #fef9c3;
     transform: translateX(2px);
 }
 
@@ -1098,8 +1079,7 @@ button:disabled {
 
 /* --- CART PAGE SPECIFIC STYLES --- */
 #cart-page .bg-white {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
+    background: #ffffff; /* FAST: Removed blur */
     border: 1px solid rgba(99, 102, 241, 0.1);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
@@ -1112,7 +1092,7 @@ button:disabled {
 /* --- BADGE STYLES FOR PRODUCT CARDS --- */
 .bg-blue-600.text-white.text-\[10px\],
 .bg-black.bg-opacity-70.text-white.text-\[10px\] {
-    backdrop-filter: blur(8px);
+    /* FAST: Removed blur */
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
