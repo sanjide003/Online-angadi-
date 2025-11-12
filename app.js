@@ -3,18 +3,28 @@ import {
     db, auth, APP_ID, 
     doc, onSnapshot, collection, query, 
     updateDoc, deleteDoc, arrayRemove, arrayUnion, serverTimestamp, addDoc,
-    signInAnonymously 
+    signInAnonymously,
+    getDocs, // പേജിനേഷന് വേണ്ടി ചേർത്തത്
+    limit,   // പേജിനേഷന് വേണ്ടി ചേർത്തത്
+    orderBy, // പേജിനേഷന് വേണ്ടി ചേർത്തത്
+    startAfter, // പേജിനേഷന് വേണ്ടി ചേർത്തത്
+    where // ഫിൽട്ടറിംഗിന് വേണ്ടി ചേർത്തത്
 } from './firebase-config.js';
 
 // --- Global Instances & Caches ---
 let currentUserId = null;
-let allProducts = [];
+let allProducts = []; // ഇപ്പോൾ ഇത് ലോഡ് ചെയ്ത പ്രൊഡക്ടുകൾ മാത്രമാണ്
 let categoriesCache = []; 
 let whatsappNumber = '';
 let infoContent = {}; 
 let headerSettings = { shopName: 'SocialShop', iconClass: 'fas fa-camera-retro' };
 let cart = [];
 let pageHistory = [];
+
+// --- Pagination State (പുതിയത്) ---
+let lastVisibleProduct = null; // അടുത്ത പേജ് ലോഡ് ചെയ്യാനുള്ള പോയിന്റർ
+let isFetchingProducts = false; // ഒരേസമയം ഒന്നിലധികം തവണ ലോഡ് ആവാതിരിക്കാൻ
+const PRODUCTS_PER_PAGE = 8; // ഒരു തവണ ലോഡ് ചെയ്യുന്ന പ്രൊഡക്ടുകളുടെ എണ്ണം
 
 // Firestore References
 let productsCollectionRef;
@@ -23,7 +33,6 @@ let settingsDocRef;
 let infoDocRef; 
 
 // Snapshot Unsubscribe Functions
-let unsubscribeProducts = null;
 let unsubscribeCategories = null; 
 let unsubscribeSettings = null; 
 let unsubscribeComments = null;
@@ -116,7 +125,17 @@ document.addEventListener('DOMContentLoaded', () => {
             searchInput.addEventListener('input', (event) => {
                 debounce(() => {
                     const searchTerm = event.target.value.toLowerCase();
-                    filterAndRenderHomeProducts(searchTerm);
+                    // പേജിനേഷൻ: സെർച്ച് ചെയ്യുമ്പോൾ, `allProducts`-ൽ ഇപ്പോൾ ലോഡ് ചെയ്തവ മാത്രം ഫിൽട്ടർ ചെയ്യുന്നു
+                    const filteredProducts = allProducts.filter(product => 
+                        product.name.toLowerCase().includes(searchTerm) || 
+                        (product.description && product.description.toLowerCase().includes(searchTerm)) ||
+                        product.id.toLowerCase().includes(searchTerm) ||
+                        (product.categoryName && product.categoryName.toLowerCase().includes(searchTerm))
+                    );
+                    // ഫിൽട്ടർ ചെയ്തവ മാത്രം റെൻഡർ ചെയ്യുന്നു (ഇവ പേജിനേറ്റ് ചെയ്യില്ല)
+                    renderHomeProductList(filteredProducts, false); // false = append അല്ല, clear ചെയ്യുക
+                    renderProductList(filteredProducts, false); // false = append അല്ല, clear ചെയ്യുക
+
                 }, 300);
             });
         }
@@ -143,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadCartFromStorage();
         updateCartUI();
         
-        // Scroll Event Listener - THROTTLED
+        // Scroll Event Listener - THROTTLED (Infinite scroll ഇവിടെയാണ്)
         window.addEventListener('scroll', throttle(handleScroll, 200));
 
         // Check URL parameters for direct product link
@@ -196,38 +215,71 @@ function initializeImageObserver() {
 }
 
 // --- Check URL Parameters for Deep Linking ---
-function checkUrlParameters() {
+async function checkUrlParameters() {
     const urlParams = new URLSearchParams(window.location.search);
     const productId = urlParams.get('product');
     
     if (productId) {
-        // Wait for products to load, then show product
-        const checkInterval = setInterval(() => {
-            if (allProducts.length > 0) {
-                clearInterval(checkInterval);
-                const product = allProducts.find(p => p.id === productId);
-                if (product) {
+        // ആ പ്രൊഡക്റ്റ് `allProducts`-ൽ ഉണ്ടോ എന്ന് നോക്കുക
+        let product = allProducts.find(p => p.id === productId);
+        
+        if (product) {
+            showProductDetail(productId);
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } else {
+            // `allProducts`-ൽ ഇല്ലെങ്കിൽ, അത് മാത്രമായി ഫയർബേസിൽ നിന്ന് ഫെച്ച് ചെയ്യുക
+            try {
+                const productRef = doc(db, productsCollectionRef.path, productId);
+                const docSnap = await getDoc(productRef); // getDoc ഉപയോഗിക്കുന്നു
+                if (docSnap.exists()) {
+                    product = { id: docSnap.id, ...docSnap.data() };
+                    // `allProducts`-ലേക്ക് ചേർക്കുന്നു
+                    if (!allProducts.find(p => p.id === product.id)) {
+                         allProducts.unshift(product);
+                    }
                     showProductDetail(productId);
-                    // Clear URL parameter
                     window.history.replaceState({}, document.title, window.location.pathname);
                 } else {
                     showMessage("Product not found.", 'error');
                 }
+            } catch (error) {
+                console.error("Error fetching deep linked product:", error);
+                showMessage("Could not load product.", 'error');
             }
-        }, 100);
-        
-        // Timeout after 5 seconds
-        setTimeout(() => clearInterval(checkInterval), 5000);
+        }
     }
 }
 
-// --- SCROLL TO TOP FUNCTIONALITY ---
+// --- SCROLL TO TOP & INFINITE SCROLL FUNCTIONALITY ---
 function handleScroll() {
+    // 1. Scroll-to-top button logic (മാറ്റമില്ല)
     if ($scrollToTopBtn) {
         if (window.pageYOffset > 300) {
             $scrollToTopBtn.classList.remove('hidden');
         } else {
             $scrollToTopBtn.classList.add('hidden');
+        }
+    }
+    
+    // 2. Infinite Scroll Logic (പുതിയത്)
+    const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+    
+    // യൂസർ സ്ക്രോൾ ചെയ്ത് പേജിന്റെ അവസാന 400px എത്തുമ്പോൾ
+    if (scrollTop + clientHeight >= scrollHeight - 400 && !isFetchingProducts) {
+        
+        const homePage = document.getElementById('home-page');
+        const productsPage = document.getElementById('products-page');
+
+        // ഹോം പേജിലോ പ്രൊഡക്ട്സ് പേജിലോ ആണെങ്കിൽ മാത്രം ലോഡ് ചെയ്യുക
+        if (homePage.classList.contains('active') || productsPage.classList.contains('active')) {
+            
+             // സെർച്ച് ചെയ്യുകയാണെങ്കിൽ ഓട്ടോ-ലോഡ് ചെയ്യരുത്
+             const searchInput = document.getElementById('search-input');
+             const searchTerm = searchInput ? searchInput.value : '';
+             
+             if(searchTerm === '' && activeCategoryId === 'all') {
+                loadMoreProducts();
+             }
         }
     }
 }
@@ -288,13 +340,13 @@ function updateAppHeader(settings) {
     whatsappNumber = headerSettings.whatsappNumber;
 }
 
-// --- DATA LOADING ---
+// --- DATA LOADING (മാറ്റം വരുത്തിയത്) ---
 function loadInitialData() {
     if (!currentUserId || !db) return;
     
     showLoading(true);
     
-    // 1. Load Categories (Public)
+    // 1. Load Categories (Public) (മാറ്റമില്ല)
     if (unsubscribeCategories) unsubscribeCategories();
     unsubscribeCategories = onSnapshot(categoriesCollectionRef, (snapshot) => {
         categoriesCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -303,14 +355,14 @@ function loadInitialData() {
         categoriesCache.forEach(cat => {
             categoryIconCache[cat.id] = cat.iconClass || 'fas fa-tag';
         });
-        renderProductPage();
+        renderProductPage(); // കാറ്റഗറി ലോഡ് ആയ ശേഷം ഇത് വിളിക്കുന്നു
     }, (error) => {
         console.error("Error fetching categories:", error);
         showMessage("Failed to load categories.", 'error');
         showLoading(false);
     });
 
-    // 2. Load Settings (Public) - WhatsApp, Header
+    // 2. Load Settings (Public) (മാറ്റമില്ല)
     if (unsubscribeSettings) unsubscribeSettings();
     unsubscribeSettings = onSnapshot(settingsDocRef, (docSnap) => {
         const settings = docSnap.exists() ? docSnap.data() : {};
@@ -319,31 +371,13 @@ function loadInitialData() {
         console.error("Error fetching settings:", error);
     });
     
-    // 3. Load Products (Public)
-    if (unsubscribeProducts) unsubscribeProducts();
-    unsubscribeProducts = onSnapshot(productsCollectionRef, (snapshot) => {
-        allProducts = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        allProducts.forEach(p => {
-            p.likes = p.likes || [];
-            p.commentCount = p.commentCount || 0;
-        });
-        
-        filterAndRenderHomeProducts('');
-        renderProductList(allProducts);
-        
-        const productsPageEl = document.getElementById('products-page');
-        if (productsPageEl && productsPageEl.classList.contains('active')) {
-            filterProductsByCategory(activeCategoryId);
-        }
-        
-        showLoading(false);
-    }, (error) => {
-        console.error("Error fetching products:", error);
-        showMessage("Failed to load products.", 'error');
-        showLoading(false);
-    });
+    // 3. Load Products (Public) (മാറ്റം വരുത്തി - 'ചാട്ടം' ഒഴിവാക്കാൻ)
+    // `onSnapshot` മാറ്റി, പേജിനേഷൻ ഉപയോഗിക്കുന്നു
+    allProducts = []; // ലിസ്റ്റ് ക്ലിയർ ചെയ്യുന്നു
+    lastVisibleProduct = null; // പേജിനേഷൻ റീസെറ്റ് ചെയ്യുന്നു
+    loadMoreProducts(); // ആദ്യത്തെ ബാച്ച് ലോഡ് ചെയ്യുന്നു
     
-    // 4. Load Info Content (Public)
+    // 4. Load Info Content (Public) (മാറ്റമില്ല)
     if (unsubscribeInfo) unsubscribeInfo();
     unsubscribeInfo = onSnapshot(infoDocRef, (docSnap) => {
         infoContent = docSnap.exists() ? docSnap.data() : {};
@@ -356,6 +390,75 @@ function loadInitialData() {
     }, (error) => {
         console.error("Error fetching info content:", error);
     });
+}
+
+// --- (പുതിയ ഫംഗ്ഷൻ) - പ്രൊഡക്ടുകൾ ലോഡ് ചെയ്യാനുള്ള പ്രധാന ഫംഗ്ഷൻ ---
+async function loadMoreProducts() {
+    // ഓൾറെഡി ലോഡ് ചെയ്യുകയാണെങ്കിലോ, ഇനി ലോഡ് ചെയ്യാൻ ഇല്ലെങ്കിലോ നിർത്തുക
+    if (isFetchingProducts || lastVisibleProduct === 'STOP') return;
+
+    isFetchingProducts = true;
+    showLoading(true);
+
+    try {
+        let productQuery;
+        
+        // ഇത് ആദ്യത്തെ ലോഡ് ആണെങ്കിൽ (lastVisibleProduct = null)
+        if (!lastVisibleProduct) {
+            productQuery = query(
+                productsCollectionRef,
+                orderBy("createdAt", "desc"), // പുതിയവ ആദ്യം കാണിക്കുന്നു
+                limit(PRODUCTS_PER_PAGE)
+            );
+        } else {
+            // ഇത് അടുത്ത പേജ് ആണെങ്കിൽ
+            productQuery = query(
+                productsCollectionRef,
+                orderBy("createdAt", "desc"),
+                startAfter(lastVisibleProduct), // നിർത്തിയ ഇടത്തുനിന്ന് തുടങ്ങുന്നു
+                limit(PRODUCTS_PER_PAGE)
+            );
+        }
+
+        const documentSnapshots = await getDocs(productQuery);
+
+        if (documentSnapshots.empty) {
+            // ഇനി പ്രൊഡക്ടുകൾ ഇല്ല
+            console.log("No more products to load.");
+            lastVisibleProduct = 'STOP'; // ഇനി ലോഡ് ചെയ്യാതിരിക്കാൻ
+        } else {
+            // അവസാനത്തെ പ്രൊഡക്റ്റ് അടുത്ത തവണത്തെക്ക് വേണ്ടി സേവ് ചെയ്യുന്നു
+            lastVisibleProduct = documentSnapshots.docs[documentSnapshots.docs.length - 1];
+
+            const newProducts = documentSnapshots.docs.map(doc => {
+                 const data = doc.data();
+                 // 'likes' ഇല്ലെങ്കിൽ ഒരു ഒഴിഞ്ഞ array നൽകുന്നു
+                 return { id: doc.id, ...data, likes: data.likes || [], commentCount: data.commentCount || 0 };
+            });
+            
+            // പഴയ ലിസ്റ്റിനൊപ്പം പുതിയവ കൂടി ചേർക്കുന്നു
+            allProducts.push(...newProducts); 
+
+            // ഇപ്പോൾ ഏത് പേജ് ആണോ ആക്ടീവ്, അതനുസരിച്ച് UI അപ്ഡേറ്റ് ചെയ്യുന്നു
+            const homePage = document.getElementById('home-page');
+            const productsPage = document.getElementById('products-page');
+
+            if (homePage.classList.contains('active')) {
+                // *** BUG FIX: true പാസ്സ് ചെയ്യുന്നു (append ചെയ്യാൻ) ***
+                renderHomeProductList(newProducts, true);
+            }
+            if (productsPage.classList.contains('active')) {
+                 // *** BUG FIX: true പാസ്സ് ചെയ്യുന്നു (append ചെയ്യാൻ) ***
+                renderProductList(newProducts, true);
+            }
+        }
+    } catch (error) {
+        console.error("Error fetching more products: ", error);
+        showMessage("Failed to load more products.", "error");
+    } finally {
+        isFetchingProducts = false;
+        showLoading(false);
+    }
 }
     
 // --- Account Page Content Handlers ---
@@ -483,9 +586,17 @@ window.showPage = function(pageId) {
             mainMobileNav.classList.remove('hidden');
         }
     }
+    
+    // പേജ് മാറുമ്പോൾ, ആ പേജിന് വേണ്ട ഡാറ്റ വീണ്ടും റെൻഡർ ചെയ്യുന്നു
+    // (സെർച്ച് ഒഴികെ)
+    const searchInput = document.getElementById('search-input');
+    const searchTerm = searchInput ? searchInput.value : '';
 
+    if (pageId === 'home' && searchTerm === '') {
+        renderHomeProductList(allProducts, false); // false = clear and render
+    }
     if (pageId === 'products') {
-        renderProductPage(); 
+        renderProductPage(); // ഇത് `filterProductsByCategory` വിളിക്കും
     }
     if (pageId === 'account') {
         showInfoSection('about');
@@ -545,15 +656,7 @@ function showPageWithoutHistory(pageId) {
         }
     }
     
-    if (pageId === 'products') {
-        renderProductPage(); 
-    }
-    if (pageId === 'account') {
-        showInfoSection('about');
-    }
-    if (pageId === 'cart') {
-        renderCartPage();
-    }
+    // (goBack-ൽ ഡാറ്റ വീണ്ടും റെൻഡർ ചെയ്യേണ്ട ആവശ്യമില്ല, കാരണം അത് `allProducts`-ൽ ഉണ്ട്)
     
     document.querySelectorAll('.nav-link').forEach(link => {
         link.classList.remove('text-indigo-600', 'font-semibold', 'active-mobile-link');
@@ -635,6 +738,11 @@ function initializeSwipeGesture(containerId, images, productId) {
     
     if (!track) return;
     
+    // പഴയ ലിസണറുകൾ നീക്കം ചെയ്യുന്നു (വീണ്ടും റെൻഡർ ചെയ്യുമ്പോൾ)
+    container.removeEventListener('touchstart', handleTouchStart);
+    container.removeEventListener('touchmove', handleTouchMove);
+    container.removeEventListener('touchend', handleTouchEnd);
+    
     const handleTouchStart = (e) => {
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
@@ -708,12 +816,18 @@ window.toggleDescription = function(productId, buttonElement) {
     }
 }
 
-// ഹോം പേജിലെ പ്രൊഡക്ട് ലിസ്റ്റ് റെൻഡർ ചെയ്യുന്നു - OPTIMIZED with DocumentFragment & Lazy Loading
-function renderHomeProductList(productsToRender) {
+// ഹോം പേജിലെ പ്രൊഡക്ട് ലിസ്റ്റ് റെൻഡർ ചെയ്യുന്നു - OPTIMIZED
+// *** BUG FIX: `append` എന്നൊരു പുതിയ παράμετρο ചേർത്തു ***
+function renderHomeProductList(productsToRender, append = false) {
     const container = document.getElementById('home-product-list-container');
     if (!container) return;
-    container.innerHTML = '';
-    if (productsToRender.length === 0) {
+    
+    // `append` അല്ലെങ്കിൽ, കണ്ടെയ്നർ ക്ലിയർ ചെയ്യുന്നു
+    if (!append) {
+        container.innerHTML = '';
+    }
+    
+    if (productsToRender.length === 0 && !append) {
         container.innerHTML = '<p class="text-gray-500 col-span-full text-center py-8 bg-white rounded-lg shadow-md">No products available.</p>';
         return;
     }
@@ -731,6 +845,10 @@ function renderHomeProductList(productsToRender) {
         const discountedPrice = retailPrice.toFixed(0);
         const categoryName = product.categoryName || 'General';
         const categoryIcon = getCategoryIcon(product.categoryId);
+        
+        // `likes` ഇല്ലെങ്കിൽ ഒരു ഒഴിഞ്ഞ array ഉറപ്പുവരുത്തുന്നു
+        product.likes = product.likes || [];
+        
         const isLiked = product.likes.includes(currentUserId);
         const likeIconClass = isLiked ? 'fas' : 'far';
         const likeCount = product.likes.length || 0;
@@ -805,7 +923,7 @@ function renderHomeProductList(productsToRender) {
                     </button>
                     <button class="flex items-center text-gray-600 hover:text-blue-500 transition duration-150" onclick="showCommentsOverlay('${product.id}', '${product.name}')">
                         <i class="far fa-comment text-2xl"></i>
-                        <span class="ml-2 text-sm font-semibold">${product.commentCount || 0}</span>
+                        <span id="comment-count-${product.id}" class="ml-2 text-sm font-semibold">${product.commentCount || 0}</span>
                     </button>
                     <button class="flex items-center text-gray-600 hover:text-green-500 transition duration-150" onclick="openShareModal('${product.id}')">
                         <i class="fas fa-share-alt text-2xl"></i>
@@ -838,7 +956,7 @@ function renderHomeProductList(productsToRender) {
             imageObserver.observe(img);
         });
     } else {
-        // Fallback: load all images immediately if IntersectionObserver not supported
+        // Fallback
         document.querySelectorAll('.lazy-img').forEach(img => {
             if (img.dataset.src) {
                 img.src = img.dataset.src;
@@ -856,17 +974,6 @@ function renderHomeProductList(productsToRender) {
             }
         });
     }, 0);
-}
-
-// ഹോം പേജിലെ സെർച്ച് ഫിൽട്ടർ
-function filterAndRenderHomeProducts(searchTerm) {
-    const filteredProducts = allProducts.filter(product => 
-        product.name.toLowerCase().includes(searchTerm) || 
-        (product.description && product.description.toLowerCase().includes(searchTerm)) ||
-        product.id.toLowerCase().includes(searchTerm) ||
-        (product.categoryName && product.categoryName.toLowerCase().includes(searchTerm))
-    );
-    renderHomeProductList(filteredProducts);
 }
 
 // --- Category Filtering Logic for Products Page (Client Side) ---
@@ -888,30 +995,68 @@ function renderProductPage() {
         chip.innerHTML = `<i class="${iconClass} mr-2"></i> ${cat.name}`;
         filterContainer.appendChild(chip);
     });
-    filterProductsByCategory(activeCategoryId);
+    
+    // പേജ് ലോഡ് ചെയ്യുമ്പോൾ 'All' കാറ്റഗറി ഡാറ്റ റെൻഡർ ചെയ്യുന്നു
+    // (ഇപ്പോൾ allProducts-ൽ ഉള്ള ഡാറ്റ വെച്ച്)
+    filterProductsByCategory(activeCategoryId, true);
 }
 
-// കാറ്റഗറി അനുസരിച്ച് പ്രൊഡക്ടുകൾ ഫിൽട്ടർ ചെയ്യുന്നു
-window.filterProductsByCategory = function(categoryId) {
+// കാറ്റഗറി അനുസരിച്ച് പ്രൊഡക്ടുകൾ ഫിൽട്ടർ ചെയ്യുന്നു (മാറ്റം വരുത്തിയത്)
+window.filterProductsByCategory = async function(categoryId, isInitialLoad = false) {
     activeCategoryId = categoryId;
     document.querySelectorAll('#category-filters .category-chip').forEach(chip => {
         chip.classList.toggle('active', chip.dataset.id === categoryId);
     });
-    let filteredProducts;
+    
+    // കണ്ടെയ്നർ ക്ലിയർ ചെയ്യുന്നു
+    const container = document.getElementById('product-list-container');
+    if (container) container.innerHTML = '';
+    
+    allProducts = [];
+    lastVisibleProduct = null;
+    isFetchingProducts = true; // ഇൻഫിനിറ്റ് സ്ക്രോൾ തടയുന്നു
+    showLoading(true);
+    
+    // 'All' ആണ് തിരഞ്ഞെടുത്തതെങ്കിൽ, പേജിനേഷൻ റീസെറ്റ് ചെയ്ത് വീണ്ടും തുടങ്ങുക
     if (categoryId === 'all') {
-        filteredProducts = allProducts;
+        isFetchingProducts = false; // ഇൻഫിനിറ്റ് സ്ക്രോൾ അനുവദിക്കുന്നു
+        loadMoreProducts(); // ഇത് ആദ്യത്തെ ബാച്ച് ലോഡ് ചെയ്ത് റെൻഡർ ചെയ്യും
     } else {
-        filteredProducts = allProducts.filter(p => p.categoryId === categoryId);
+        // ഒരു പ്രത്യേക കാറ്റഗറി ആണെങ്കിൽ, ആ കാറ്റഗറി *മുഴുവൻ* ലോഡ് ചെയ്യുന്നു (പേജിനേഷൻ ഇല്ലാതെ)
+        try {
+            const categoryQuery = query(
+                productsCollectionRef,
+                where("categoryId", "==", categoryId),
+                orderBy("createdAt", "desc")
+            );
+            const documentSnapshots = await getDocs(categoryQuery);
+            allProducts = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data(), likes: doc.data().likes || [], commentCount: doc.data().commentCount || 0 }));
+            renderProductList(allProducts, false); // false = append അല്ല, clear ചെയ്യുക
+            
+            // ഈ കാറ്റഗറി പേജിൽ ഇൻഫിനിറ്റ് സ്ക്രോൾ തടയാൻ isFetchingProducts = true ആക്കി വെക്കുന്നു
+            lastVisibleProduct = 'STOP'; // ഈ പേജിൽ ഇനി ലോഡ് ചെയ്യേണ്ടതില്ല
+            isFetchingProducts = true; 
+        } catch (error) {
+            console.error("Error fetching category products: ", error);
+            showMessage("Failed to load products for this category.", "error");
+        } finally {
+            showLoading(false);
+        }
     }
-    renderProductList(filteredProducts);
 }
 
 // 'All Products' പേജിലെ പ്രൊഡക്ട് ഗ്രിഡ് റെൻഡർ ചെയ്യുന്നു - OPTIMIZED
-function renderProductList(productsToRender) {
+// *** BUG FIX: `append` എന്നൊരു പുതിയ παράμετρο ചേർത്തു ***
+function renderProductList(productsToRender, append = false) {
     const container = document.getElementById('product-list-container');
     if (!container) return;
-    container.innerHTML = '';
-     if (productsToRender.length === 0) {
+    
+    // `append` അല്ലെങ്കിൽ, കണ്ടെയ്നർ ക്ലിയർ ചെയ്യുന്നു
+    if (!append) {
+        container.innerHTML = '';
+    }
+    
+     if (productsToRender.length === 0 && !append) {
         container.innerHTML = '<p class="text-gray-500 w-full col-span-2 text-center py-8">No products found in this category.</p>';
         return;
     }
@@ -1038,7 +1183,9 @@ function renderSimilarProducts(currentProductId, categoryId) {
 window.showProductDetail = function(productId) {
     const product = allProducts.find(p => p.id === productId);
     if (!product) {
-        showMessage("Product not found.", 'error');
+        // `checkUrlParameters`-ൽ നിന്ന് വിളിക്കുകയാണെങ്കിൽ, ഈ ഫംഗ്ഷൻ വീണ്ടും വിളിക്കും.
+        // അതിനാൽ തൽക്കാലം ഇവിടെ നിർത്തുന്നു.
+        console.warn(`Product ${productId} not found in allProducts cache yet.`);
         return;
     }
     
@@ -1064,6 +1211,9 @@ window.showProductDetail = function(productId) {
 
     const categoryName = product.categoryName || 'General';
     const categoryIcon = getCategoryIcon(product.categoryId);
+    
+    // `likes` ഇല്ലെങ്കിൽ ഒരു ഒഴിഞ്ഞ array ഉറപ്പുവരുത്തുന്നു
+    product.likes = product.likes || [];
     
     const isLiked = product.likes.includes(currentUserId);
     const likeIconClass = isLiked ? 'fas' : 'far';
@@ -1346,6 +1496,7 @@ window.openWhatsAppChatForCart = function() {
 }
 
 // --- LIKE FUNCTION - OPTIMIZED with Optimistic UI Update ---
+// *** ഇതാണ് "ചാട്ടം" ഇല്ലാതെ പ്രവർത്തിക്കുന്നത് ***
 window.toggleLike = async function(productId) {
     if (!currentUserId) {
         showMessage("You must be signed in to like a product.", 'error');
@@ -1354,6 +1505,9 @@ window.toggleLike = async function(productId) {
     
     const product = allProducts.find(p => p.id === productId);
     if (!product) return;
+    
+    // `likes` ഇല്ലെങ്കിൽ ഒരു ഒഴിഞ്ഞ array ഉറപ്പുവരുത്തുന്നു
+    product.likes = product.likes || [];
     
     const isLiked = product.likes.includes(currentUserId);
     
@@ -1393,6 +1547,7 @@ window.toggleLike = async function(productId) {
     if (detailLikeCount) detailLikeCount.textContent = newCount;
     
     // Update Firebase in background
+    // *** `onSnapshot` ഇല്ലാത്തതുകൊണ്ട്, ഇത് പേജ് റീലോഡ് ചെയ്യില്ല ***
     try {
         const productRef = doc(db, productsCollectionRef.path, productId);
         if (isLiked) {
@@ -1451,22 +1606,16 @@ window.closeCommentsModal = function() {
 function setupCommentsListener(productId) {
     if (unsubscribeComments) unsubscribeComments();
     const commentsCollection = collection(productsCollectionRef, productId, 'comments');
-    unsubscribeComments = onSnapshot(query(commentsCollection), (snapshot) => {
+    unsubscribeComments = onSnapshot(query(commentsCollection, orderBy("createdAt", "desc")), (snapshot) => {
         let comments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        comments.sort((a, b) => {
-            const timeA = a.createdAt ? a.createdAt.toDate().getTime() : 0;
-            const timeB = b.createdAt ? b.createdAt.toDate().getTime() : 0;
-            return timeB - timeA;
-        });
         renderComments(comments);
+        
+        // Update comment count in local `allProducts` array
         const productIndex = allProducts.findIndex(p => p.id === productId);
         if (productIndex !== -1) {
             allProducts[productIndex].commentCount = comments.length;
-            // Only update detail count if on detail page
-            const detailCount = document.getElementById('detail-comment-count');
-            if (detailCount && activeProduct && activeProduct.id === productId) {
-                detailCount.textContent = comments.length;
-            }
+            // Update UI
+            updateCommentCountUI(productId, comments.length);
         }
     }, (error) => {
         console.error("Error fetching comments:", error);
@@ -1543,12 +1692,18 @@ async function handleAddComment(e) {
             userId: currentUserId,
             createdAt: serverTimestamp()
         });
+        
+        // `commentCount` അപ്ഡേറ്റ് ചെയ്യാൻ `updateDoc` ഉപയോഗിക്കുന്നു
         const productRef = doc(db, productsCollectionRef.path, productId);
         const product = allProducts.find(p => p.id === productId);
         if (product) {
+            const newCount = (product.commentCount || 0) + 1;
             await updateDoc(productRef, {
-                commentCount: (product.commentCount || 0) + 1 
+                commentCount: newCount
             });
+            // `onSnapshot` ലിസണർ ഇത് കൈകാര്യം ചെയ്തുകൊള്ളും,
+            // പക്ഷെ വേണമെങ്കിൽ ഇവിടെയും UI അപ്ഡേറ്റ് ചെയ്യാം
+             updateCommentCountUI(productId, newCount);
         }
         feedbackInput.value = '';
         userNameInput.value = ''; 
@@ -1558,6 +1713,49 @@ async function handleAddComment(e) {
     }
 }
     
+// --- (പുതിയത്) UI അപ്ഡേറ്റ് ഫംഗ്ഷനുകൾ ---
+// `onSnapshot` ഇല്ലാതെ, ലൈക്കും കമന്റും തത്സമയം അപ്ഡേറ്റ് ചെയ്യാൻ
+function updateLikeUI(productId, likes) {
+    const likeIcon = document.getElementById(`like-icon-${productId}`);
+    const likeCount = document.getElementById(`like-count-${productId}`);
+    const detailLikeIcon = document.getElementById('detail-like-icon');
+    const detailLikeCount = document.getElementById('detail-like-count');
+    
+    const isLiked = likes.includes(currentUserId);
+    const newCount = likes.length;
+
+    if (likeIcon) {
+        likeIcon.className = `${isLiked ? 'fas' : 'far'} fa-heart text-2xl`;
+    }
+    if (likeCount) {
+        likeCount.textContent = newCount;
+    }
+    
+    // ഡീറ്റെയിൽ പേജിലാണെങ്കിൽ അതും അപ്ഡേറ്റ് ചെയ്യുന്നു
+    if (activeProduct && activeProduct.id === productId) {
+        if (detailLikeIcon) {
+            detailLikeIcon.className = `${isLiked ? 'fas' : 'far'} fa-heart text-2xl`;
+        }
+        if (detailLikeCount) {
+            detailLikeCount.textContent = newCount;
+        }
+    }
+}
+
+function updateCommentCountUI(productId, newCount) {
+    const commentCount = document.getElementById(`comment-count-${productId}`);
+    const detailCommentCount = document.getElementById('detail-comment-count');
+
+    if (commentCount) {
+        commentCount.textContent = newCount;
+    }
+    
+    if (activeProduct && activeProduct.id === productId) {
+        if (detailCommentCount) {
+            detailCommentCount.textContent = newCount;
+        }
+    }
+}
 
 // ---------------------------------------------------
 // കാർട്ടിന് വേണ്ടിയുള്ള ഫംഗ്ഷനുകൾ - OPTIMIZED
@@ -1764,7 +1962,8 @@ window.removeFromCart = function(productId) {
     const homePageEl = document.getElementById('home-page');
     const searchInputEl = document.getElementById('search-input');
     if (homePageEl && homePageEl.classList.contains('active') && searchInputEl && searchInputEl.value === '') {
-        renderHomeProductList(allProducts);
+        // `allProducts`-ൽ നിന്ന് നീക്കം ചെയ്തതുകൊണ്ട് വീണ്ടും റെൻഡർ ചെയ്യുന്നു
+        renderHomeProductList(allProducts, false); // false = clear and render
     }
     
     showMessage("Item removed from cart.", 'info');
