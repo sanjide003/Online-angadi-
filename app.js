@@ -41,6 +41,16 @@ let activeCategoryId = 'all';
 // Swipe tracking for each product
 let productSwipeStates = {};
 
+// Performance Optimization: Caches
+let categoryIconCache = {};
+let cartProductIds = new Set();
+
+// Debounce/Throttle timers
+let searchDebounceTimer = null;
+
+// Intersection Observer for lazy loading
+let imageObserver = null;
+
 // --- DOM Elements (Public Page) ---
 let pages, loadingSpinner, messageModal, messageModalText, confirmModal, confirmModalText, confirmModalButton, commentsModal, commentsBackdrop;
 let $shopHeaderIcon, $shopHeaderName;
@@ -96,13 +106,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
         setupAuthListener();
+        
+        // Initialize Intersection Observer for lazy loading
+        initializeImageObserver();
 
-        // സെർച്ച് ഇൻപുട്ട് ലിസനർ
+        // സെർച്ച് ഇൻപുട്ട് ലിസനർ - DEBOUNCED
         const searchInput = document.getElementById('search-input');
         if (searchInput) {
             searchInput.addEventListener('input', (event) => {
-                const searchTerm = event.target.value.toLowerCase();
-                filterAndRenderHomeProducts(searchTerm);
+                debounce(() => {
+                    const searchTerm = event.target.value.toLowerCase();
+                    filterAndRenderHomeProducts(searchTerm);
+                }, 300);
             });
         }
 
@@ -112,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
             commentForm.addEventListener('submit', handleAddComment);
         }
         
-        // കാറ്റഗറി ഫിൽട്ടർ ലിസനർ
+        // കാറ്റഗറി ഫിൽറ്റർ ലിസനർ
         const categoryFilters = document.getElementById('category-filters');
         if (categoryFilters) {
             categoryFilters.addEventListener('click', (e) => {
@@ -128,8 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
         loadCartFromStorage();
         updateCartUI();
         
-        // Scroll Event Listener for Scroll-to-Top Button
-        window.addEventListener('scroll', handleScroll);
+        // Scroll Event Listener - THROTTLED
+        window.addEventListener('scroll', throttle(handleScroll, 200));
 
         // Check URL parameters for direct product link
         checkUrlParameters();
@@ -139,6 +154,46 @@ document.addEventListener('DOMContentLoaded', () => {
         showMessage("Application initialization failed: " + error.message, 'error');
     }
 });
+
+// --- PERFORMANCE UTILITIES ---
+
+// Debounce function
+function debounce(func, delay) {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(func, delay);
+}
+
+// Throttle function
+function throttle(func, limit) {
+    let inThrottle;
+    return function(...args) {
+        if (!inThrottle) {
+            func.apply(this, args);
+            inThrottle = true;
+            setTimeout(() => inThrottle = false, limit);
+        }
+    };
+}
+
+// Initialize Intersection Observer for Lazy Loading Images
+function initializeImageObserver() {
+    if ('IntersectionObserver' in window) {
+        imageObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    if (img.dataset.src) {
+                        img.src = img.dataset.src;
+                        img.removeAttribute('data-src');
+                        imageObserver.unobserve(img);
+                    }
+                }
+            });
+        }, {
+            rootMargin: '50px'
+        });
+    }
+}
 
 // --- Check URL Parameters for Deep Linking ---
 function checkUrlParameters() {
@@ -243,6 +298,11 @@ function loadInitialData() {
     if (unsubscribeCategories) unsubscribeCategories();
     unsubscribeCategories = onSnapshot(categoriesCollectionRef, (snapshot) => {
         categoriesCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // Build category icon cache
+        categoryIconCache = {};
+        categoriesCache.forEach(cat => {
+            categoryIconCache[cat.id] = cat.iconClass || 'fas fa-tag';
+        });
         renderProductPage();
     }, (error) => {
         console.error("Error fetching categories:", error);
@@ -548,16 +608,15 @@ function copyTextToClipboard(text) {
     }
 }
 
-// കാറ്റഗറി ഐക്കൺ നൽകുന്നു
+// കാറ്റഗറി ഐകൺ നൽകുന്നു - CACHED
 function getCategoryIcon(categoryId) {
     if (!categoryId) return 'fas fa-tag';
-    const category = categoriesCache.find(c => c.id === categoryId);
-    return category ? (category.iconClass || 'fas fa-tag') : 'fas fa-tag';
+    return categoryIconCache[categoryId] || 'fas fa-tag';
 }
 
-// Check if product is in cart
+// Check if product is in cart - OPTIMIZED
 function isProductInCart(productId) {
-    return cart.some(item => item.id === productId);
+    return cartProductIds.has(productId);
 }
 
 // --- SWIPE GESTURE HANDLER ---
@@ -649,7 +708,7 @@ window.toggleDescription = function(productId, buttonElement) {
     }
 }
 
-// ഹോം പേജിലെ പ്രൊഡക്ട് ലിസ്റ്റ് റെൻഡർ ചെയ്യുന്നു (With Swipe Support)
+// ഹോം പേജിലെ പ്രൊഡക്ട് ലിസ്റ്റ് റെൻഡർ ചെയ്യുന്നു - OPTIMIZED with DocumentFragment & Lazy Loading
 function renderHomeProductList(productsToRender) {
     const container = document.getElementById('home-product-list-container');
     if (!container) return;
@@ -658,6 +717,9 @@ function renderHomeProductList(productsToRender) {
         container.innerHTML = '<p class="text-gray-500 col-span-full text-center py-8 bg-white rounded-lg shadow-md">No products available.</p>';
         return;
     }
+    
+    // Use DocumentFragment for better performance
+    const fragment = document.createDocumentFragment();
     
     productsToRender.forEach(product => {
         const imageUrl = product.imageUrl || `https://placehold.co/600x400/E2E8F0/333?text=${encodeURIComponent(product.name)}`;
@@ -676,7 +738,7 @@ function renderHomeProductList(productsToRender) {
         const description = product.description || '';
         const descriptionId = `desc-${product.id}`;
         
-        // Check if product is in cart
+        // Check if product is in cart - OPTIMIZED
         const inCart = isProductInCart(product.id);
         const bookmarkClass = inCart ? 'fas bookmark-button in-cart' : 'far bookmark-button';
         
@@ -690,14 +752,19 @@ function renderHomeProductList(productsToRender) {
             </div>`;
         }
         
-        // Create image swiper
+        // Create image swiper with LAZY LOADING
         const swipeContainerId = `swipe-home-${product.id}`;
         let imageHtml = '';
         
         if (allImages.length > 1) {
-            const slidesHtml = allImages.map((img, idx) => 
-                `<div class="swipe-slide"><img src="${img}" alt="${product.name}" class="w-full object-cover max-h-[400px]" onerror="this.src='https://placehold.co/600x400/E2E8F0/333?text=Image+Error'"></div>`
-            ).join('');
+            const slidesHtml = allImages.map((img, idx) => {
+                // First image loads immediately, others lazy load
+                if (idx === 0) {
+                    return `<div class="swipe-slide"><img src="${img}" alt="${product.name}" class="w-full object-cover max-h-[400px]" onerror="this.src='https://placehold.co/600x400/E2E8F0/333?text=Image+Error'"></div>`;
+                } else {
+                    return `<div class="swipe-slide"><img data-src="${img}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'%3E%3Crect fill='%23e2e8f0' width='600' height='400'/%3E%3C/svg%3E" alt="${product.name}" class="w-full object-cover max-h-[400px] lazy-img" onerror="this.src='https://placehold.co/600x400/E2E8F0/333?text=Image+Error'"></div>`;
+                }
+            }).join('');
             
             const dotsHtml = allImages.map((_, idx) => 
                 `<div class="swipe-dot ${idx === 0 ? 'active' : ''}"></div>`
@@ -710,62 +777,85 @@ function renderHomeProductList(productsToRender) {
                 </div>
             `;
         } else {
-            imageHtml = `<img src="${allImages[0]}" alt="${product.name}" class="w-full object-cover max-h-[400px]" onerror="this.src='https://placehold.co/600x400/E2E8F0/333?text=Image+Error'">`;
+            imageHtml = `<img data-src="${allImages[0]}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 400'%3E%3Crect fill='%23e2e8f0' width='600' height='400'/%3E%3C/svg%3E" alt="${product.name}" class="w-full object-cover max-h-[400px] lazy-img" onerror="this.src='https://placehold.co/600x400/E2E8F0/333?text=Image+Error'">`;
         }
         
-        const card = `
-            <div class="bg-white rounded-lg shadow-md overflow-hidden pb-4">
-                <div class="flex items-center p-3">
-                    <div class="flex items-center flex-grow cursor-pointer" onclick="navigateToCategory('${product.categoryId}')">
-                        <div class="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center mr-3 flex-shrink-0">
-                            <i class="${categoryIcon} text-indigo-500 text-lg"></i>
-                        </div>
-                        <div class="flex-grow">
-                            <span class="font-semibold text-gray-800">${categoryName}</span>
-                        </div>
+        const cardDiv = document.createElement('div');
+        cardDiv.className = 'bg-white rounded-lg shadow-md overflow-hidden pb-4';
+        cardDiv.innerHTML = `
+            <div class="flex items-center p-3">
+                <div class="flex items-center flex-grow cursor-pointer" onclick="navigateToCategory('${product.categoryId}')">
+                    <div class="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center mr-3 flex-shrink-0">
+                        <i class="${categoryIcon} text-indigo-500 text-lg"></i>
                     </div>
-                    <i class="fas fa-ellipsis-v text-gray-400 cursor-pointer"></i>
+                    <div class="flex-grow">
+                        <span class="font-semibold text-gray-800">${categoryName}</span>
+                    </div>
+                </div>
+                <i class="fas fa-ellipsis-v text-gray-400 cursor-pointer"></i>
+            </div>
+            <div class="cursor-pointer" onclick="showProductDetail('${product.id}')">
+                ${imageHtml}
+            </div>
+            <div class="p-3">
+                <div class="flex items-center space-x-5 mb-3 border-b pb-3">
+                    <button class="flex items-center text-red-500 hover:text-red-700 transition duration-150" onclick="toggleLike('${product.id}')">
+                        <i id="like-icon-${product.id}" class="${likeIconClass} fa-heart text-2xl"></i>
+                        <span id="like-count-${product.id}" class="ml-2 text-sm font-semibold">${likeCount}</span>
+                    </button>
+                    <button class="flex items-center text-gray-600 hover:text-blue-500 transition duration-150" onclick="showCommentsOverlay('${product.id}', '${product.name}')">
+                        <i class="far fa-comment text-2xl"></i>
+                        <span class="ml-2 text-sm font-semibold">${product.commentCount || 0}</span>
+                    </button>
+                    <button class="flex items-center text-gray-600 hover:text-green-500 transition duration-150" onclick="openShareModal('${product.id}')">
+                        <i class="fas fa-share-alt text-2xl"></i>
+                    </button>
+                    
+                    <button class="text-gray-600 hover:text-indigo-500 transition duration-150 ml-auto p-2" onclick="toggleCart('${product.id}')" title="${inCart ? 'Remove from Cart' : 'Add to Cart'}">
+                        <i class="${bookmarkClass} fa-bookmark text-2xl" id="bookmark-${product.id}"></i>
+                    </button>
                 </div>
                 <div class="cursor-pointer" onclick="showProductDetail('${product.id}')">
-                    ${imageHtml}
-                </div>
-                <div class="p-3">
-                    <div class="flex items-center space-x-5 mb-3 border-b pb-3">
-                        <button class="flex items-center text-red-500 hover:text-red-700 transition duration-150" onclick="toggleLike('${product.id}')">
-                            <i class="${likeIconClass} fa-heart text-2xl"></i>
-                            <span class="ml-2 text-sm font-semibold">${likeCount}</span>
-                        </button>
-                        <button class="flex items-center text-gray-600 hover:text-blue-500 transition duration-150" onclick="showCommentsOverlay('${product.id}', '${product.name}')">
-                            <i class="far fa-comment text-2xl"></i>
-                            <span class="ml-2 text-sm font-semibold">${product.commentCount || 0}</span>
-                        </button>
-                        <button class="flex items-center text-gray-600 hover:text-green-500 transition duration-150" onclick="openShareModal('${product.id}')">
-                            <i class="fas fa-share-alt text-2xl"></i>
-                        </button>
-                        
-                        <button class="text-gray-600 hover:text-indigo-500 transition duration-150 ml-auto p-2" onclick="toggleCart('${product.id}')" title="${inCart ? 'Remove from Cart' : 'Add to Cart'}">
-                            <i class="${bookmarkClass} fa-bookmark text-2xl" id="bookmark-${product.id}"></i>
-                        </button>
+                    ${brandHtml} 
+                    <h3 class="text-lg font-bold text-gray-800 mb-1">${product.name}</h3>
+                    <div class="text-xl font-bold mb-1 flex items-baseline">
+                        <span class="text-green-600 mr-2">₹${discountedPrice}</span>
+                        ${discount > 0 ? `<span class="text-gray-500 line-through text-sm mr-1">₹${originalPrice.toFixed(0)}</span>` : ''}
+                        ${discount > 0 ? `<span class="text-red-500 text-sm">(${discount}% Off)</span>` : ''}
                     </div>
-                    <div class="cursor-pointer" onclick="showProductDetail('${product.id}')">
-                        ${brandHtml} 
-                        <h3 class="text-lg font-bold text-gray-800 mb-1">${product.name}</h3>
-                        <div class="text-xl font-bold mb-1 flex items-baseline">
-                            <span class="text-green-600 mr-2">₹${discountedPrice}</span>
-                            ${discount > 0 ? `<span class="text-gray-500 line-through text-sm mr-1">₹${originalPrice.toFixed(0)}</span>` : ''}
-                            ${discount > 0 ? `<span class="text-red-500 text-sm">(${discount}% Off)</span>` : ''}
-                        </div>
-                    </div>
-                    ${descriptionHtml}
                 </div>
+                ${descriptionHtml}
             </div>`;
-        container.innerHTML += card;
         
-        // Initialize swipe gesture if multiple images
-        if (allImages.length > 1) {
-            setTimeout(() => initializeSwipeGesture(swipeContainerId, allImages, product.id), 0);
-        }
+        fragment.appendChild(cardDiv);
     });
+    
+    container.appendChild(fragment);
+    
+    // Observe lazy images
+    if (imageObserver) {
+        document.querySelectorAll('.lazy-img').forEach(img => {
+            imageObserver.observe(img);
+        });
+    } else {
+        // Fallback: load all images immediately if IntersectionObserver not supported
+        document.querySelectorAll('.lazy-img').forEach(img => {
+            if (img.dataset.src) {
+                img.src = img.dataset.src;
+                img.removeAttribute('data-src');
+            }
+        });
+    }
+    
+    // Initialize swipe gestures after DOM update
+    setTimeout(() => {
+        productsToRender.forEach(product => {
+            const allImages = [product.imageUrl, ...(product.otherImages || [])].filter(url => url && url.length > 0);
+            if (allImages.length > 1) {
+                initializeSwipeGesture(`swipe-home-${product.id}`, allImages, product.id);
+            }
+        });
+    }, 0);
 }
 
 // ഹോം പേജിലെ സെർച്ച് ഫിൽട്ടർ
@@ -816,7 +906,7 @@ window.filterProductsByCategory = function(categoryId) {
     renderProductList(filteredProducts);
 }
 
-// 'All Products' പേജിലെ പ്രൊഡക്ട് ഗ്രിഡ് റെൻഡർ ചെയ്യുന്നു
+// 'All Products' പേജിലെ പ്രൊഡക്ട് ഗ്രിഡ് റെൻഡർ ചെയ്യുന്നു - OPTIMIZED
 function renderProductList(productsToRender) {
     const container = document.getElementById('product-list-container');
     if (!container) return;
@@ -825,6 +915,10 @@ function renderProductList(productsToRender) {
         container.innerHTML = '<p class="text-gray-500 w-full col-span-2 text-center py-8">No products found in this category.</p>';
         return;
     }
+    
+    // Use DocumentFragment
+    const fragment = document.createDocumentFragment();
+    
     productsToRender.forEach(product => {
         const imageUrl = product.imageUrl || `https://placehold.co/400x300/E2E8F0/333?text=${encodeURIComponent(product.name)}`;
         const originalPrice = product.price || 0;
@@ -839,32 +933,49 @@ function renderProductList(productsToRender) {
         }
         const brandBadge = product.brand ? `<span class="bg-black bg-opacity-70 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">${product.brand}</span>` : '';
         
-        const card = `
-            <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition duration-300 flex flex-col">
-                <div onclick="showProductDetail('${product.id}')" class="relative cursor-pointer">
-                    <img src="${imageUrl}" alt="${product.name}" class="w-full h-48 sm:h-56 object-cover" onerror="this.src='https://placehold.co/400x300/E2E8F0/333?text=Image+Error'">
-                    <div class="absolute top-2 left-2">${brandBadge}</div>
-                    <div class="absolute bottom-2 left-2">${deliveryBadge}</div>
+        const cardDiv = document.createElement('div');
+        cardDiv.className = 'bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition duration-300 flex flex-col';
+        cardDiv.innerHTML = `
+            <div onclick="showProductDetail('${product.id}')" class="relative cursor-pointer">
+                <img data-src="${imageUrl}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Crect fill='%23e2e8f0' width='400' height='300'/%3E%3C/svg%3E" alt="${product.name}" class="w-full h-48 sm:h-56 object-cover lazy-img" onerror="this.src='https://placehold.co/400x300/E2E8F0/333?text=Image+Error'">
+                <div class="absolute top-2 left-2">${brandBadge}</div>
+                <div class="absolute bottom-2 left-2">${deliveryBadge}</div>
+            </div>
+            <div class="p-3 sm:p-4 flex flex-col flex-grow">
+                <h3 class="text-sm sm:text-base font-bold text-gray-800 mb-2 cursor-pointer" onclick="showProductDetail('${product.id}')" title="${product.name}">${product.name}</h3>
+                <div class="mb-3">
+                    <span class="text-lg sm:text-xl font-bold text-gray-900 mr-2">₹${discountedPrice}</span>
+                    ${discount > 0 ? `<span class="text-gray-500 line-through text-xs sm:text-sm mr-1">₹${originalPrice.toFixed(0)}</span><span class="text-green-600 text-xs sm:text-sm font-semibold">${discount}% Off</span>` : ''}
                 </div>
-                <div class="p-3 sm:p-4 flex flex-col flex-grow">
-                    <h3 class="text-sm sm:text-base font-bold text-gray-800 mb-2 cursor-pointer" onclick="showProductDetail('${product.id}')" title="${product.name}">${product.name}</h3>
-                    <div class="mb-3">
-                        <span class="text-lg sm:text-xl font-bold text-gray-900 mr-2">₹${discountedPrice}</span>
-                        ${discount > 0 ? `<span class="text-gray-500 line-through text-xs sm:text-sm mr-1">₹${originalPrice.toFixed(0)}</span><span class="text-green-600 text-xs sm:text-sm font-semibold">${discount}% Off</span>` : ''}
-                    </div>
-                    
-                    <div class="flex gap-2 mt-auto">
-                        <button class="w-1/2 bg-green-500 text-white font-bold py-2 px-3 rounded-lg hover:bg-green-600 transition duration-300 text-sm" onclick="openWhatsAppChat('${product.name}', '${product.id}')">
-                            <i class="fab fa-whatsapp mr-1 sm:mr-2"></i> Chat
-                        </button>
-                        <button class="w-1/2 bg-indigo-600 text-white font-bold py-2 px-3 rounded-lg hover:bg-indigo-700 transition duration-300 text-sm" onclick="addToCart('${product.id}')">
-                            <i class="fas fa-cart-plus mr-1 sm:mr-2"></i> Add
-                        </button>
-                    </div>
+                
+                <div class="flex gap-2 mt-auto">
+                    <button class="w-1/2 bg-green-500 text-white font-bold py-2 px-3 rounded-lg hover:bg-green-600 transition duration-300 text-sm" onclick="openWhatsAppChat('${product.name}', '${product.id}')">
+                        <i class="fab fa-whatsapp mr-1 sm:mr-2"></i> Chat
+                    </button>
+                    <button class="w-1/2 bg-indigo-600 text-white font-bold py-2 px-3 rounded-lg hover:bg-indigo-700 transition duration-300 text-sm" onclick="addToCart('${product.id}')">
+                        <i class="fas fa-cart-plus mr-1 sm:mr-2"></i> Add
+                    </button>
                 </div>
             </div>`;
-        container.innerHTML += card;
+        
+        fragment.appendChild(cardDiv);
     });
+    
+    container.appendChild(fragment);
+    
+    // Observe lazy images
+    if (imageObserver) {
+        document.querySelectorAll('.lazy-img').forEach(img => {
+            imageObserver.observe(img);
+        });
+    } else {
+        document.querySelectorAll('.lazy-img').forEach(img => {
+            if (img.dataset.src) {
+                img.src = img.dataset.src;
+                img.removeAttribute('data-src');
+            }
+        });
+    }
 }
 
 // --- Get Similar Products ---
@@ -897,7 +1008,7 @@ function renderSimilarProducts(currentProductId, categoryId) {
         return `
             <div class="similar-product-card flex-shrink-0 w-40 sm:w-48 cursor-pointer" onclick="showProductDetail('${product.id}')">
                 <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition duration-300">
-                    <img src="${imageUrl}" alt="${product.name}" class="w-full h-40 sm:h-48 object-cover" onerror="this.src='https://placehold.co/300x300/E2E8F0/333?text=Error'">
+                    <img data-src="${imageUrl}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Crect fill='%23e2e8f0' width='300' height='300'/%3E%3C/svg%3E" alt="${product.name}" class="w-full h-40 sm:h-48 object-cover lazy-img" onerror="this.src='https://placehold.co/300x300/E2E8F0/333?text=Error'">
                     <div class="p-3">
                         <h4 class="text-sm font-bold text-gray-800 mb-1 line-clamp-2" title="${product.name}">${product.name}</h4>
                         <div class="flex items-baseline">
@@ -923,7 +1034,7 @@ function renderSimilarProducts(currentProductId, categoryId) {
     `;
 }
     
-// --- Product Detail Page (With Swipe Support & Similar Products) ---
+// --- Product Detail Page (With Swipe Support & Similar Products) - OPTIMIZED ---
 window.showProductDetail = function(productId) {
     const product = allProducts.find(p => p.id === productId);
     if (!product) {
@@ -1075,6 +1186,20 @@ window.showProductDetail = function(productId) {
     `;
     showPage('product-detail');
     
+    // Observe lazy images in similar products
+    if (imageObserver) {
+        document.querySelectorAll('.lazy-img').forEach(img => {
+            imageObserver.observe(img);
+        });
+    } else {
+        document.querySelectorAll('.lazy-img').forEach(img => {
+            if (img.dataset.src) {
+                img.src = img.dataset.src;
+                img.removeAttribute('data-src');
+            }
+        });
+    }
+    
     // Initialize swipe gesture if multiple images
     if (allImages.length > 1) {
         setTimeout(() => initializeSwipeGesture(swipeContainerId, allImages, product.id), 0);
@@ -1220,17 +1345,56 @@ window.openWhatsAppChatForCart = function() {
     window.open(url, '_blank');
 }
 
-// --- LIKE FUNCTION ---
+// --- LIKE FUNCTION - OPTIMIZED with Optimistic UI Update ---
 window.toggleLike = async function(productId) {
     if (!currentUserId) {
         showMessage("You must be signed in to like a product.", 'error');
         return;
     }
-    const productRef = doc(db, productsCollectionRef.path, productId);
+    
     const product = allProducts.find(p => p.id === productId);
     if (!product) return;
+    
     const isLiked = product.likes.includes(currentUserId);
+    
+    // OPTIMISTIC UI UPDATE - Update immediately
+    const likeIcon = document.getElementById(`like-icon-${productId}`);
+    const likeCount = document.getElementById(`like-count-${productId}`);
+    const detailLikeIcon = document.getElementById('detail-like-icon');
+    const detailLikeCount = document.getElementById('detail-like-count');
+    
+    if (isLiked) {
+        // Remove like
+        product.likes = product.likes.filter(id => id !== currentUserId);
+        if (likeIcon) {
+            likeIcon.classList.remove('fas');
+            likeIcon.classList.add('far');
+        }
+        if (detailLikeIcon) {
+            detailLikeIcon.classList.remove('fas');
+            detailLikeIcon.classList.add('far');
+        }
+    } else {
+        // Add like
+        product.likes.push(currentUserId);
+        if (likeIcon) {
+            likeIcon.classList.remove('far');
+            likeIcon.classList.add('fas');
+        }
+        if (detailLikeIcon) {
+            detailLikeIcon.classList.remove('far');
+            detailLikeIcon.classList.add('fas');
+        }
+    }
+    
+    // Update count
+    const newCount = product.likes.length;
+    if (likeCount) likeCount.textContent = newCount;
+    if (detailLikeCount) detailLikeCount.textContent = newCount;
+    
+    // Update Firebase in background
     try {
+        const productRef = doc(db, productsCollectionRef.path, productId);
         if (isLiked) {
             await updateDoc(productRef, { likes: arrayRemove(currentUserId) });
         } else {
@@ -1238,6 +1402,25 @@ window.toggleLike = async function(productId) {
         }
     } catch (error) {
         console.error("Error toggling like:", error);
+        // Revert optimistic update on error
+        if (isLiked) {
+            product.likes.push(currentUserId);
+        } else {
+            product.likes = product.likes.filter(id => id !== currentUserId);
+        }
+        // Update UI back
+        if (likeIcon) {
+            likeIcon.classList.toggle('fas');
+            likeIcon.classList.toggle('far');
+        }
+        if (detailLikeIcon) {
+            detailLikeIcon.classList.toggle('fas');
+            detailLikeIcon.classList.toggle('far');
+        }
+        const revertCount = product.likes.length;
+        if (likeCount) likeCount.textContent = revertCount;
+        if (detailLikeCount) detailLikeCount.textContent = revertCount;
+        
         showMessage("Failed to update like status.", 'error');
     }
 }
@@ -1279,10 +1462,10 @@ function setupCommentsListener(productId) {
         const productIndex = allProducts.findIndex(p => p.id === productId);
         if (productIndex !== -1) {
             allProducts[productIndex].commentCount = comments.length;
-            const homePageEl = document.getElementById('home-page');
-            const searchInputEl = document.getElementById('search-input');
-            if (homePageEl && homePageEl.classList.contains('active') && searchInputEl && searchInputEl.value === '') {
-                renderHomeProductList(allProducts); 
+            // Only update detail count if on detail page
+            const detailCount = document.getElementById('detail-comment-count');
+            if (detailCount && activeProduct && activeProduct.id === productId) {
+                detailCount.textContent = comments.length;
             }
         }
     }, (error) => {
@@ -1302,34 +1485,34 @@ function renderComments(comments) {
     if (comments.length === 0) {
         container.appendChild(noCommentsMsg);
         noCommentsMsg.classList.remove('hidden'); 
-        const detailCount = document.getElementById('detail-comment-count');
-        if (detailCount) detailCount.textContent = 0;
         return;
     }
     noCommentsMsg.classList.add('hidden');
+    
+    // Use DocumentFragment for better performance
+    const fragment = document.createDocumentFragment();
+    
     comments.forEach(comment => {
         const date = comment.createdAt ? comment.createdAt.toDate().toLocaleString() : 'Just now';
-        const commentHtml = `
-            <div class="border-b pb-3">
-                   <div class="flex items-start mb-1">
-                        <div class="bg-gray-200 h-8 w-8 rounded-full flex items-center justify-center text-sm font-semibold mr-3 flex-shrink-0">
-                            ${comment.userName.charAt(0).toUpperCase()}
-                        </div>
-                        <div class="flex-grow">
-                            <div class="flex items-baseline space-x-2">
-                                <span class="font-bold text-gray-800">${comment.userName}</span>
-                                <span class="text-xs text-gray-500">${date}</span>
-                            </div>
-                            <p class="text-gray-700 whitespace-pre-wrap">${comment.feedback}</p>
-                        </div>
+        const commentDiv = document.createElement('div');
+        commentDiv.className = 'border-b pb-3';
+        commentDiv.innerHTML = `
+            <div class="flex items-start mb-1">
+                <div class="bg-gray-200 h-8 w-8 rounded-full flex items-center justify-center text-sm font-semibold mr-3 flex-shrink-0">
+                    ${comment.userName.charAt(0).toUpperCase()}
+                </div>
+                <div class="flex-grow">
+                    <div class="flex items-baseline space-x-2">
+                        <span class="font-bold text-gray-800">${comment.userName}</span>
+                        <span class="text-xs text-gray-500">${date}</span>
                     </div>
+                    <p class="text-gray-700 whitespace-pre-wrap">${comment.feedback}</p>
+                </div>
             </div>`;
-        container.innerHTML += commentHtml;
+        fragment.appendChild(commentDiv);
     });
-    const countDisplay = document.getElementById('detail-comment-count');
-    if (countDisplay) {
-         countDisplay.textContent = comments.length;
-    }
+    
+    container.appendChild(fragment);
     container.scrollTop = 0;
 }
 
@@ -1377,16 +1560,19 @@ async function handleAddComment(e) {
     
 
 // ---------------------------------------------------
-// കാർട്ടിന് വേണ്ടിയുള്ള ഫംഗ്ഷനുകൾ
+// കാർട്ടിന് വേണ്ടിയുള്ള ഫംഗ്ഷനുകൾ - OPTIMIZED
 // ---------------------------------------------------
 
 // 1. ലോക്കൽ സ്റ്റോറേജിൽ നിന്ന് കാർട്ട് ലോഡ് ചെയ്യുന്നു
 function loadCartFromStorage() {
     try {
         cart = JSON.parse(localStorage.getItem('socialShopCart')) || [];
+        // Build cartProductIds Set for fast lookup
+        cartProductIds = new Set(cart.map(item => item.id));
     } catch (error) {
         console.error('Error loading cart from storage:', error);
         cart = [];
+        cartProductIds = new Set();
     }
 }
 
@@ -1394,6 +1580,8 @@ function loadCartFromStorage() {
 function saveCartToStorage() {
     try {
         localStorage.setItem('socialShopCart', JSON.stringify(cart));
+        // Update cartProductIds Set
+        cartProductIds = new Set(cart.map(item => item.id));
     } catch (error) {
         console.error('Error saving cart to storage:', error);
     }
@@ -1413,7 +1601,7 @@ function updateCartUI() {
     });
 }
 
-// 4. Toggle Cart - Add/Remove from cart
+// 4. Toggle Cart - Add/Remove from cart - OPTIMIZED
 window.toggleCart = function(productId) {
     const product = allProducts.find(p => p.id === productId);
     if (!product) {
@@ -1494,7 +1682,7 @@ window.addToCart = function(productId) {
     showMessage(`${product.name} added to cart!`, 'success');
 }
 
-// 6. കാർട്ട് പേജ് റെൻഡർ ചെയ്യുന്നു
+// 6. കാർട്ട് പേജ് റെൻഡർ ചെയ്യുന്നു - OPTIMIZED
 window.renderCartPage = function() {
     if (!$cartItemsContainer || !$cartEmptyMsg || !$cartSummarySection) return;
 
@@ -1509,34 +1697,39 @@ window.renderCartPage = function() {
 
         $cartItemsContainer.innerHTML = '';
         let subtotal = 0;
+        
+        // Use DocumentFragment
+        const fragment = document.createDocumentFragment();
 
         cart.forEach(item => {
             const itemTotal = item.price * item.quantity;
             subtotal += itemTotal;
 
-            const itemHtml = `
-                <div class="cart-item">
-                    <img src="${item.imageUrl}" 
-                         alt="${item.name}" 
-                         class="cart-item-img" 
-                         onclick="showProductDetail('${item.id}')"
-                         onerror="this.src='https://placehold.co/80x80/E2E8F0/333?text=Error'">
-                    <div class="cart-item-details">
-                        <h3 class="font-bold text-gray-800">${item.name}</h3>
-                        <p class="text-indigo-600 font-semibold text-sm">₹${item.price.toFixed(2)}</p>
-                        <button class="cart-remove-btn mt-1" onclick="removeFromCart('${item.id}')">
-                            <i class="fas fa-trash-alt mr-1"></i>Remove
-                        </button>
-                    </div>
-                    <div class="cart-quantity-controls">
-                        <button class="cart-quantity-btn" onclick="updateCartQuantity('${item.id}', -1)">-</button>
-                        <span class="cart-quantity-display">${item.quantity}</span>
-                        <button class="cart-quantity-btn" onclick="updateCartQuantity('${item.id}', 1)">+</button>
-                    </div>
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'cart-item';
+            itemDiv.innerHTML = `
+                <img src="${item.imageUrl}" 
+                     alt="${item.name}" 
+                     class="cart-item-img" 
+                     onclick="showProductDetail('${item.id}')"
+                     onerror="this.src='https://placehold.co/80x80/E2E8F0/333?text=Error'">
+                <div class="cart-item-details">
+                    <h3 class="font-bold text-gray-800">${item.name}</h3>
+                    <p class="text-indigo-600 font-semibold text-sm">₹${item.price.toFixed(2)}</p>
+                    <button class="cart-remove-btn mt-1" onclick="removeFromCart('${item.id}')">
+                        <i class="fas fa-trash-alt mr-1"></i>Remove
+                    </button>
                 </div>
-            `;
-            $cartItemsContainer.innerHTML += itemHtml;
+                <div class="cart-quantity-controls">
+                    <button class="cart-quantity-btn" onclick="updateCartQuantity('${item.id}', -1)">-</button>
+                    <span class="cart-quantity-display">${item.quantity}</span>
+                    <button class="cart-quantity-btn" onclick="updateCartQuantity('${item.id}', 1)">+</button>
+                </div>`;
+            
+            fragment.appendChild(itemDiv);
         });
+        
+        $cartItemsContainer.appendChild(fragment);
 
         if ($cartSubtotal) $cartSubtotal.textContent = `₹${subtotal.toFixed(2)}`;
         if ($cartTotal) $cartTotal.textContent = `₹${subtotal.toFixed(2)}`;
