@@ -3,28 +3,18 @@ import {
     db, auth, APP_ID, 
     doc, onSnapshot, collection, query, 
     updateDoc, deleteDoc, arrayRemove, arrayUnion, serverTimestamp, addDoc,
-    signInAnonymously,
-    getDocs, // പേജിനേഷന് വേണ്ടി ചേർത്തത്
-    limit,   // പേജിനേഷന് വേണ്ടി ചേർത്തത്
-    orderBy, // പേജിനേഷന് വേണ്ടി ചേർത്തത്
-    startAfter, // പേജിനേഷന് വേണ്ടി ചേർത്തത്
-    where // ഫിൽട്ടറിംഗിന് വേണ്ടി ചേർത്തത്
+    signInAnonymously 
 } from './firebase-config.js';
 
 // --- Global Instances & Caches ---
 let currentUserId = null;
-let allProducts = []; // ഇപ്പോൾ ഇത് ലോഡ് ചെയ്ത പ്രൊഡക്ടുകൾ മാത്രമാണ്
+let allProducts = [];
 let categoriesCache = []; 
 let whatsappNumber = '';
 let infoContent = {}; 
 let headerSettings = { shopName: 'SocialShop', iconClass: 'fas fa-camera-retro' };
 let cart = [];
 let pageHistory = [];
-
-// --- Pagination State (പുതിയത്) ---
-let lastVisibleProduct = null; // അടുത്ത പേജ് ലോഡ് ചെയ്യാനുള്ള പോയിന്റർ
-let isFetchingProducts = false; // ഒരേസമയം ഒന്നിലധികം തവണ ലോഡ് ആവാതിരിക്കാൻ
-const PRODUCTS_PER_PAGE = 8; // ഒരു തവണ ലോഡ് ചെയ്യുന്ന പ്രൊഡക്ടുകളുടെ എണ്ണം
 
 // Firestore References
 let productsCollectionRef;
@@ -33,7 +23,7 @@ let settingsDocRef;
 let infoDocRef; 
 
 // Snapshot Unsubscribe Functions
-let unsubscribeProducts = null; // ഇത് ഇപ്പോൾ ഉപയോഗിക്കുന്നില്ല, പക്ഷെ ഘടന നിലനിർത്തുന്നു
+let unsubscribeProducts = null;
 let unsubscribeCategories = null; 
 let unsubscribeSettings = null; 
 let unsubscribeComments = null;
@@ -153,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadCartFromStorage();
         updateCartUI();
         
-        // Scroll Event Listener - THROTTLED (Infinite scroll ഇവിടെയാണ്)
+        // Scroll Event Listener - THROTTLED
         window.addEventListener('scroll', throttle(handleScroll, 200));
 
         // Check URL parameters for direct product link
@@ -212,9 +202,6 @@ function checkUrlParameters() {
     
     if (productId) {
         // Wait for products to load, then show product
-        // (ഇപ്പോൾ പേജിനേഷൻ ഉള്ളതുകൊണ്ട്, ആ പ്രൊഡക്റ്റ് കിട്ടാൻ വേണ്ടി ഒരു പ്രത്യേക ഫെച്ച് ചെയ്യാം)
-        // (തൽക്കാലം, ഇത് ലളിതമായി നിലനിർത്തുന്നു. `allProducts`-ൽ ഉണ്ടെങ്കിൽ കാണിക്കും)
-        
         const checkInterval = setInterval(() => {
             if (allProducts.length > 0) {
                 clearInterval(checkInterval);
@@ -224,9 +211,7 @@ function checkUrlParameters() {
                     // Clear URL parameter
                     window.history.replaceState({}, document.title, window.location.pathname);
                 } else {
-                    // TODO: ആ പ്രൊഡക്റ്റ് `allProducts`-ൽ ഇല്ലെങ്കിൽ, അത് മാത്രമായി ഫെച്ച് ചെയ്യണം.
-                    // (തൽക്കാലം, ഇത് ലളിതമായി നിലനിർത്തുന്നു)
-                    console.warn('Deep linked product not in initial load.');
+                    showMessage("Product not found.", 'error');
                 }
             }
         }, 100);
@@ -236,39 +221,13 @@ function checkUrlParameters() {
     }
 }
 
-// --- SCROLL TO TOP & INFINITE SCROLL FUNCTIONALITY ---
+// --- SCROLL TO TOP FUNCTIONALITY ---
 function handleScroll() {
-    // 1. Scroll-to-top button logic (മാറ്റമില്ല)
     if ($scrollToTopBtn) {
         if (window.pageYOffset > 300) {
             $scrollToTopBtn.classList.remove('hidden');
         } else {
             $scrollToTopBtn.classList.add('hidden');
-        }
-    }
-    
-    // 2. Infinite Scroll Logic (പുതിയത്)
-    const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
-    
-    // യൂസർ സ്ക്രോൾ ചെയ്ത് പേജിന്റെ അവസാന 400px എത്തുമ്പോൾ
-    if (scrollTop + clientHeight >= scrollHeight - 400 && !isFetchingProducts) {
-        
-        const homePage = document.getElementById('home-page');
-        const productsPage = document.getElementById('products-page');
-
-        // ഹോം പേജിലോ പ്രൊഡക്ട്സ് പേജിലോ ആണെങ്കിൽ മാത്രം ലോഡ് ചെയ്യുക
-        if (homePage.classList.contains('active') || productsPage.classList.contains('active')) {
-            
-             // സെർച്ച് ചെയ്യുകയാണെങ്കിൽ ഓട്ടോ-ലോഡ് ചെയ്യരുത്
-             const searchInput = document.getElementById('search-input');
-             const searchTerm = searchInput ? searchInput.value : '';
-             
-             // ഒരു പ്രത്യേക കാറ്റഗറി ഫിൽട്ടർ ചെയ്യുകയാണെങ്കിലും ഓട്ടോ-ലോഡ് ചെയ്യരുത്
-             const productsPageActive = productsPage.classList.contains('active');
-             
-             if(searchTerm === '' && (!productsPageActive || activeCategoryId === 'all')) {
-                loadMoreProducts();
-             }
         }
     }
 }
@@ -329,13 +288,13 @@ function updateAppHeader(settings) {
     whatsappNumber = headerSettings.whatsappNumber;
 }
 
-// --- DATA LOADING (മാറ്റം വരുത്തിയത്) ---
+// --- DATA LOADING ---
 function loadInitialData() {
     if (!currentUserId || !db) return;
     
     showLoading(true);
     
-    // 1. Load Categories (Public) (മാറ്റമില്ല)
+    // 1. Load Categories (Public)
     if (unsubscribeCategories) unsubscribeCategories();
     unsubscribeCategories = onSnapshot(categoriesCollectionRef, (snapshot) => {
         categoriesCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -351,7 +310,7 @@ function loadInitialData() {
         showLoading(false);
     });
 
-    // 2. Load Settings (Public) (മാറ്റമില്ല)
+    // 2. Load Settings (Public) - WhatsApp, Header
     if (unsubscribeSettings) unsubscribeSettings();
     unsubscribeSettings = onSnapshot(settingsDocRef, (docSnap) => {
         const settings = docSnap.exists() ? docSnap.data() : {};
@@ -360,14 +319,31 @@ function loadInitialData() {
         console.error("Error fetching settings:", error);
     });
     
-    // 3. Load Products (Public) (മാറ്റം വരുത്തി)
-    // `onSnapshot` മാറ്റി, പേജിനേഷൻ ഉപയോഗിക്കുന്നു
-    if (unsubscribeProducts) unsubscribeProducts(); // പഴയ ലിസണർ നിർത്തുന്നു
-    allProducts = []; // ലിസ്റ്റ് ക്ലിയർ ചെയ്യുന്നു
-    lastVisibleProduct = null; // പേജിനേഷൻ റീസെറ്റ് ചെയ്യുന്നു
-    loadMoreProducts(); // ആദ്യത്തെ ബാച്ച് ലോഡ് ചെയ്യുന്നു
+    // 3. Load Products (Public)
+    if (unsubscribeProducts) unsubscribeProducts();
+    unsubscribeProducts = onSnapshot(productsCollectionRef, (snapshot) => {
+        allProducts = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        allProducts.forEach(p => {
+            p.likes = p.likes || [];
+            p.commentCount = p.commentCount || 0;
+        });
+        
+        filterAndRenderHomeProducts('');
+        renderProductList(allProducts);
+        
+        const productsPageEl = document.getElementById('products-page');
+        if (productsPageEl && productsPageEl.classList.contains('active')) {
+            filterProductsByCategory(activeCategoryId);
+        }
+        
+        showLoading(false);
+    }, (error) => {
+        console.error("Error fetching products:", error);
+        showMessage("Failed to load products.", 'error');
+        showLoading(false);
+    });
     
-    // 4. Load Info Content (Public) (മാറ്റമില്ല)
+    // 4. Load Info Content (Public)
     if (unsubscribeInfo) unsubscribeInfo();
     unsubscribeInfo = onSnapshot(infoDocRef, (docSnap) => {
         infoContent = docSnap.exists() ? docSnap.data() : {};
@@ -380,81 +356,6 @@ function loadInitialData() {
     }, (error) => {
         console.error("Error fetching info content:", error);
     });
-}
-
-// --- (പുതിയ ഫംഗ്ഷൻ) - പ്രൊഡക്ടുകൾ ലോഡ് ചെയ്യാനുള്ള പ്രധാന ഫംഗ്ഷൻ ---
-async function loadMoreProducts() {
-    // ഓൾറെഡി ലോഡ് ചെയ്യുകയാണെങ്കിലോ, ഇനി ലോഡ് ചെയ്യാൻ ഇല്ലെങ്കിലോ നിർത്തുക
-    if (isFetchingProducts || lastVisibleProduct === 'STOP') return;
-
-    isFetchingProducts = true;
-    showLoading(true);
-    
-    const loadingIndicator = document.getElementById('pagination-loading');
-    if (loadingIndicator) loadingIndicator.classList.remove('hidden');
-
-    try {
-        let productQuery;
-        
-        // ഇത് ആദ്യത്തെ ലോഡ് ആണെങ്കിൽ (lastVisibleProduct = null)
-        if (!lastVisibleProduct) {
-            productQuery = query(
-                productsCollectionRef,
-                orderBy("createdAt", "desc"), // പുതിയവ ആദ്യം കാണിക്കുന്നു
-                limit(PRODUCTS_PER_PAGE)
-            );
-        } else {
-            // ഇത് അടുത്ത പേജ് ആണെങ്കിൽ
-            productQuery = query(
-                productsCollectionRef,
-                orderBy("createdAt", "desc"),
-                startAfter(lastVisibleProduct), // നിർത്തിയ ഇടത്തുനിന്ന് തുടങ്ങുന്നു
-                limit(PRODUCTS_PER_PAGE)
-            );
-        }
-
-        const documentSnapshots = await getDocs(productQuery);
-
-        if (documentSnapshots.empty) {
-            // ഇനി പ്രൊഡക്ടുകൾ ഇല്ല
-            console.log("No more products to load.");
-            lastVisibleProduct = 'STOP'; // ഇനി ലോഡ് ചെയ്യാതിരിക്കാൻ
-        } else {
-            // അവസാനത്തെ പ്രൊഡക്റ്റ് അടുത്ത തവണത്തെക്ക് വേണ്ടി സേവ് ചെയ്യുന്നു
-            lastVisibleProduct = documentSnapshots.docs[documentSnapshots.docs.length - 1];
-
-            const newProducts = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            
-            // പഴയ ലിസ്റ്റിനൊപ്പം പുതിയവ കൂടി ചേർക്കുന്നു
-            allProducts.push(...newProducts); 
-
-            // ഇപ്പോൾ ഏത് പേജ് ആണോ ആക്ടീവ്, അതനുസരിച്ച് UI അപ്ഡേറ്റ് ചെയ്യുന്നു
-            const homePage = document.getElementById('home-page');
-            const productsPage = document.getElementById('products-page');
-
-            // സെർച്ച് ബാർ ഒഴിഞ്ഞതാണെങ്കിൽ മാത്രം റീ-റെൻഡർ ചെയ്യുക
-            const searchInput = document.getElementById('search-input');
-            const searchTerm = searchInput ? searchInput.value : '';
-
-            if (searchTerm === '') {
-                if (homePage.classList.contains('active')) {
-                    // ഹോം പേജ് മുഴുവനായി റീ-റെൻഡർ ചെയ്യുന്നു (പുതിയവ അടക്കം)
-                    renderHomeProductList(allProducts);
-                }
-                if (productsPage.classList.contains('active') && activeCategoryId === 'all') {
-                     // പ്രൊഡക്ട്സ് പേജ് മുഴുവനായി റീ-റെൻഡർ ചെയ്യുന്നു
-                    renderProductList(allProducts);
-                }
-            }
-        }
-    } catch (error) {
-        console.error("Error fetching more products: ", error);
-        showMessage("Failed to load more products.", "error");
-    } finally {
-        isFetchingProducts = false;
-        showLoading(false);
-        if (loadingIndicator) loadingIndicator.classList.add('hidden');
-    }
 }
     
 // --- Account Page Content Handlers ---
@@ -811,10 +712,7 @@ window.toggleDescription = function(productId, buttonElement) {
 function renderHomeProductList(productsToRender) {
     const container = document.getElementById('home-product-list-container');
     if (!container) return;
-    
-    // പേജിനേഷൻ: കണ്ടെയ്നർ ക്ലിയർ ചെയ്യുന്നു
     container.innerHTML = '';
-    
     if (productsToRender.length === 0) {
         container.innerHTML = '<p class="text-gray-500 col-span-full text-center py-8 bg-white rounded-lg shadow-md">No products available.</p>';
         return;
@@ -932,13 +830,6 @@ function renderHomeProductList(productsToRender) {
         fragment.appendChild(cardDiv);
     });
     
-    // പേജിനേഷൻ ലോഡിംഗ് സ്പിന്നർ ചേർക്കുന്നു
-    const loadingDiv = document.createElement('div');
-    loadingDiv.id = 'pagination-loading';
-    loadingDiv.className = 'hidden text-center py-4 col-span-full';
-    loadingDiv.innerHTML = `<i class="fas fa-spinner fa-spin text-indigo-600 text-3xl"></i>`;
-    fragment.appendChild(loadingDiv);
-    
     container.appendChild(fragment);
     
     // Observe lazy images
@@ -969,14 +860,12 @@ function renderHomeProductList(productsToRender) {
 
 // ഹോം പേജിലെ സെർച്ച് ഫിൽട്ടർ
 function filterAndRenderHomeProducts(searchTerm) {
-    // പേജിനേഷൻ: സെർച്ച് ചെയ്യുമ്പോൾ, `allProducts`-ൽ ഇപ്പോൾ ലോഡ് ചെയ്തവ മാത്രം ഫിൽട്ടർ ചെയ്യുന്നു
     const filteredProducts = allProducts.filter(product => 
         product.name.toLowerCase().includes(searchTerm) || 
         (product.description && product.description.toLowerCase().includes(searchTerm)) ||
         product.id.toLowerCase().includes(searchTerm) ||
         (product.categoryName && product.categoryName.toLowerCase().includes(searchTerm))
     );
-    // ഫിൽട്ടർ ചെയ്തവ മാത്രം റെൻഡർ ചെയ്യുന്നു (ഇവ പേജിനേറ്റ് ചെയ്യില്ല)
     renderHomeProductList(filteredProducts);
 }
 
@@ -999,66 +888,29 @@ function renderProductPage() {
         chip.innerHTML = `<i class="${iconClass} mr-2"></i> ${cat.name}`;
         filterContainer.appendChild(chip);
     });
-    
-    // പേജ് ലോഡ് ചെയ്യുമ്പോൾ 'All' കാറ്റഗറി ഡാറ്റ റെൻഡർ ചെയ്യുന്നു
-    // (ഇപ്പോൾ allProducts-ൽ ഉള്ള ഡാറ്റ വെച്ച്)
-    filterProductsByCategory(activeCategoryId, true);
+    filterProductsByCategory(activeCategoryId);
 }
 
-// കാറ്റഗറി അനുസരിച്ച് പ്രൊഡക്ടുകൾ ഫിൽട്ടർ ചെയ്യുന്നു (മാറ്റം വരുത്തിയത്)
-window.filterProductsByCategory = async function(categoryId, isInitialLoad = false) {
+// കാറ്റഗറി അനുസരിച്ച് പ്രൊഡക്ടുകൾ ഫിൽട്ടർ ചെയ്യുന്നു
+window.filterProductsByCategory = function(categoryId) {
     activeCategoryId = categoryId;
     document.querySelectorAll('#category-filters .category-chip').forEach(chip => {
         chip.classList.toggle('active', chip.dataset.id === categoryId);
     });
-
-    // പ്രാരംഭ ലോഡ് ആണെങ്കിൽ (showPage വിളിക്കുമ്പോൾ), ഇതിനകം ലോഡ് ചെയ്തവ കാണിക്കുക
-    if (isInitialLoad && categoryId === 'all') {
-        renderProductList(allProducts);
-        return;
-    }
-    
-    // യൂസർ ഒരു ചിപ്പിൽ ക്ലിക്ക് ചെയ്യുമ്പോൾ, ലിസ്റ്റ് ക്ലിയർ ചെയ്ത് പുതിയതായി ലോഡ് ചെയ്യുക
-    allProducts = [];
-    lastVisibleProduct = null;
-    isFetchingProducts = true; // ഇൻഫിനിറ്റ് സ്ക്രോൾ തടയുന്നു
-    showLoading(true);
-    
-    // 'All' ആണ് തിരഞ്ഞെടുത്തതെങ്കിൽ, പേജിനേഷൻ റീസെറ്റ് ചെയ്ത് വീണ്ടും തുടങ്ങുക
+    let filteredProducts;
     if (categoryId === 'all') {
-        isFetchingProducts = false; // ഇൻഫിനിറ്റ് സ്ക്രോൾ അനുവദിക്കുന്നു
-        loadMoreProducts(); // ഇത് ആദ്യത്തെ ബാച്ച് ലോഡ് ചെയ്ത് റെൻഡർ ചെയ്യും
+        filteredProducts = allProducts;
     } else {
-        // ഒരു പ്രത്യേക കാറ്റഗറി ആണെങ്കിൽ, ആ കാറ്റഗറി *മുഴുവൻ* ലോഡ് ചെയ്യുന്നു (പേജിനേഷൻ ഇല്ലാതെ)
-        try {
-            const categoryQuery = query(
-                productsCollectionRef,
-                where("categoryId", "==", categoryId),
-                orderBy("createdAt", "desc")
-            );
-            const documentSnapshots = await getDocs(categoryQuery);
-            allProducts = documentSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            renderProductList(allProducts); // ഈ കാറ്റഗറി മാത്രം റെൻഡർ ചെയ്യുന്നു
-            
-            // ഈ കാറ്റഗറി പേജിൽ ഇൻഫിനിറ്റ് സ്ക്രോൾ തടയാൻ isFetchingProducts = true ആക്കി വെക്കുന്നു
-            isFetchingProducts = true; 
-        } catch (error) {
-            console.error("Error fetching category products: ", error);
-            showMessage("Failed to load products for this category.", "error");
-        } finally {
-            showLoading(false);
-        }
+        filteredProducts = allProducts.filter(p => p.categoryId === categoryId);
     }
+    renderProductList(filteredProducts);
 }
 
 // 'All Products' പേജിലെ പ്രൊഡക്ട് ഗ്രിഡ് റെൻഡർ ചെയ്യുന്നു - OPTIMIZED
 function renderProductList(productsToRender) {
     const container = document.getElementById('product-list-container');
     if (!container) return;
-    
-    // പേജിനേഷൻ: കണ്ടെയ്നർ ക്ലിയർ ചെയ്യുന്നു
     container.innerHTML = '';
-    
      if (productsToRender.length === 0) {
         container.innerHTML = '<p class="text-gray-500 w-full col-span-2 text-center py-8">No products found in this category.</p>';
         return;
@@ -1108,13 +960,6 @@ function renderProductList(productsToRender) {
         
         fragment.appendChild(cardDiv);
     });
-    
-    // പേജിനേഷൻ ലോഡിംഗ് സ്പിന്നർ ചേർക്കുന്നു
-    const loadingDiv = document.createElement('div');
-    loadingDiv.id = 'pagination-loading';
-    loadingDiv.className = 'hidden text-center py-4 col-span-2';
-    loadingDiv.innerHTML = `<i class="fas fa-spinner fa-spin text-indigo-600 text-3xl"></i>`;
-    fragment.appendChild(loadingDiv);
     
     container.appendChild(fragment);
     
@@ -1193,9 +1038,7 @@ function renderSimilarProducts(currentProductId, categoryId) {
 window.showProductDetail = function(productId) {
     const product = allProducts.find(p => p.id === productId);
     if (!product) {
-        // TODO: `allProducts`-ൽ ഇല്ലെങ്കിൽ, ഈ `productId` വെച്ച് ഫയർബേസിൽ നിന്ന് ഫെച്ച് ചെയ്യണം.
-        // തൽക്കാലം, ഒരു എറർ കാണിക്കുന്നു.
-        showMessage("Product not found (it may not be loaded yet). Please try again from the home page.", 'error');
+        showMessage("Product not found.", 'error');
         return;
     }
     
@@ -1921,7 +1764,6 @@ window.removeFromCart = function(productId) {
     const homePageEl = document.getElementById('home-page');
     const searchInputEl = document.getElementById('search-input');
     if (homePageEl && homePageEl.classList.contains('active') && searchInputEl && searchInputEl.value === '') {
-        // പേജിനേഷൻ: `allProducts`-ൽ നിന്ന് നീക്കം ചെയ്തതുകൊണ്ട് വീണ്ടും റെൻഡർ ചെയ്യുന്നു
         renderHomeProductList(allProducts);
     }
     
