@@ -16,9 +16,6 @@ let headerSettings = { shopName: 'SocialShop', iconClass: 'fas fa-camera-retro' 
 let cart = [];
 let pageHistory = [];
 
-// *** FIX: "ചാട്ടം" ഒഴിവാക്കാൻ ഈ ഫ്ലാഗ് ചേർത്തു ***
-let isProductLoadComplete = false; // പ്രൊഡക്ടുകൾ ആദ്യമായി ലോഡ് ചെയ്തോ എന്ന് അറിയാൻ
-
 // Firestore References
 let productsCollectionRef;
 let categoriesCollectionRef;
@@ -206,8 +203,7 @@ function checkUrlParameters() {
     if (productId) {
         // Wait for products to load, then show product
         const checkInterval = setInterval(() => {
-            // *** FIX: `isProductLoadComplete` ഉപയോഗിക്കുന്നു ***
-            if (isProductLoadComplete) {
+            if (allProducts.length > 0) {
                 clearInterval(checkInterval);
                 const product = allProducts.find(p => p.id === productId);
                 if (product) {
@@ -324,65 +320,23 @@ function loadInitialData() {
     });
     
     // 3. Load Products (Public)
-    // *** FIX: "ചാട്ടം" ഒഴിവാക്കാൻ `onSnapshot` അപ്ഡേറ്റ് ചെയ്തു ***
     if (unsubscribeProducts) unsubscribeProducts();
-    isProductLoadComplete = false; // ഫ്ലാഗ് റീസെറ്റ് ചെയ്യുന്നു
-    
     unsubscribeProducts = onSnapshot(productsCollectionRef, (snapshot) => {
-        
-        // `docChanges` ഉപയോഗിച്ച് മാറ്റങ്ങൾ മാത്രം കണ്ടെത്തുന്നു
-        snapshot.docChanges().forEach((change) => {
-            const productData = { 
-                id: change.doc.id, 
-                ...change.doc.data(), 
-                likes: change.doc.data().likes || [], // 'likes' ഇല്ലെങ്കിൽ ഒഴിഞ്ഞ array നൽകുന്നു
-                commentCount: change.doc.data().commentCount || 0 
-            };
-            const index = allProducts.findIndex(p => p.id === change.doc.id);
-
-            if (change.type === "added") {
-                if (index === -1) { // പുതിയ പ്രൊഡക്റ്റ്
-                    allProducts.push(productData);
-                }
-            }
-            if (change.type === "modified") {
-                if (index !== -1) { // നിലവിലുള്ള പ്രൊഡക്റ്റ്
-                    allProducts[index] = productData; // ലോക്കൽ ഡാറ്റ അപ്ഡേറ്റ് ചെയ്യുന്നു
-                    
-                    // *** ഇതാണ് പ്രധാനപ്പെട്ട ഭാഗം ***
-                    // പേജ് മുഴുവൻ റീ-റെൻഡർ ചെയ്യുന്നതിന് പകരം,
-                    // ആ പ്രൊഡക്റ്റിന്റെ UI മാത്രം അപ്ഡേറ്റ് ചെയ്യുന്നു.
-                    if (isProductLoadComplete) { // ആദ്യത്തെ ലോഡിംഗിൽ ഇത് ചെയ്യേണ്ടതില്ല
-                        updateLikeUI(productData.id, productData.likes);
-                        updateCommentCountUI(productData.id, productData.commentCount);
-                        // (ഭാവിയിൽ പേരും വിലയും ഇതുപോലെ അപ്ഡേറ്റ് ചെയ്യാം)
-                    }
-                }
-            }
-            if (change.type === "removed") {
-                if (index !== -1) { // പ്രൊഡക്റ്റ് നീക്കം ചെയ്തു
-                    allProducts.splice(index, 1);
-                }
-            }
+        allProducts = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        allProducts.forEach(p => {
+            p.likes = p.likes || [];
+            p.commentCount = p.commentCount || 0;
         });
-
-        // ആദ്യത്തെ ലോഡിൽ മാത്രം (അല്ലെങ്കിൽ ഒരു പ്രൊഡക്റ്റ് add/remove ചെയ്യുമ്പോൾ) പേജ് മുഴുവൻ റീ-റെൻഡർ ചെയ്യുക
-        const hasAddedOrRemoved = snapshot.docChanges().some(c => c.type === "added" || c.type === "removed");
         
-        if (!isProductLoadComplete || hasAddedOrRemoved) {
-            // ആദ്യത്തെ ലോഡ്, അല്ലെങ്കിൽ ഒരു പ്രൊഡക്റ്റ് add/remove ചെയ്തു
-            filterAndRenderHomeProducts('');
-            renderProductList(allProducts);
-            
-            const productsPageEl = document.getElementById('products-page');
-            if (productsPageEl && productsPageEl.classList.contains('active')) {
-                filterProductsByCategory(activeCategoryId);
-            }
+        filterAndRenderHomeProducts('');
+        renderProductList(allProducts);
+        
+        const productsPageEl = document.getElementById('products-page');
+        if (productsPageEl && productsPageEl.classList.contains('active')) {
+            filterProductsByCategory(activeCategoryId);
         }
         
-        isProductLoadComplete = true; // ആദ്യത്തെ ലോഡ് കഴിഞ്ഞു
         showLoading(false);
-
     }, (error) => {
         console.error("Error fetching products:", error);
         showMessage("Failed to load products.", 'error');
@@ -680,11 +634,6 @@ function initializeSwipeGesture(containerId, images, productId) {
     const dots = container.querySelectorAll('.swipe-dot');
     
     if (!track) return;
-
-    // പഴയ ലിസണറുകൾ നീക്കം ചെയ്യുന്നു
-    container.removeEventListener('touchstart', handleTouchStart);
-    container.removeEventListener('touchmove', handleTouchMove);
-    container.removeEventListener('touchend', handleTouchEnd);
     
     const handleTouchStart = (e) => {
         startX = e.touches[0].clientX;
@@ -782,10 +731,6 @@ function renderHomeProductList(productsToRender) {
         const discountedPrice = retailPrice.toFixed(0);
         const categoryName = product.categoryName || 'General';
         const categoryIcon = getCategoryIcon(product.categoryId);
-        
-        // `likes` ഇല്ലെങ്കിൽ ഒരു ഒഴിഞ്ഞ array ഉറപ്പുവരുത്തുന്നു
-        product.likes = product.likes || [];
-        
         const isLiked = product.likes.includes(currentUserId);
         const likeIconClass = isLiked ? 'fas' : 'far';
         const likeCount = product.likes.length || 0;
@@ -860,7 +805,7 @@ function renderHomeProductList(productsToRender) {
                     </button>
                     <button class="flex items-center text-gray-600 hover:text-blue-500 transition duration-150" onclick="showCommentsOverlay('${product.id}', '${product.name}')">
                         <i class="far fa-comment text-2xl"></i>
-                        <span id="comment-count-${product.id}" class="ml-2 text-sm font-semibold">${product.commentCount || 0}</span>
+                        <span class="ml-2 text-sm font-semibold">${product.commentCount || 0}</span>
                     </button>
                     <button class="flex items-center text-gray-600 hover:text-green-500 transition duration-150" onclick="openShareModal('${product.id}')">
                         <i class="fas fa-share-alt text-2xl"></i>
@@ -1119,9 +1064,6 @@ window.showProductDetail = function(productId) {
 
     const categoryName = product.categoryName || 'General';
     const categoryIcon = getCategoryIcon(product.categoryId);
-    
-    // `likes` ഇല്ലെങ്കിൽ ഒരു ഒഴിഞ്ഞ array ഉറപ്പുവരുത്തുന്നു
-    product.likes = product.likes || [];
     
     const isLiked = product.likes.includes(currentUserId);
     const likeIconClass = isLiked ? 'fas' : 'far';
@@ -1413,22 +1355,42 @@ window.toggleLike = async function(productId) {
     const product = allProducts.find(p => p.id === productId);
     if (!product) return;
     
-    // `likes` ഇല്ലെങ്കിൽ ഒരു ഒഴിഞ്ഞ array ഉറപ്പുവരുത്തുന്നു
-    product.likes = product.likes || [];
-    
     const isLiked = product.likes.includes(currentUserId);
     
     // OPTIMISTIC UI UPDATE - Update immediately
-    // (ഡാറ്റാബേസിൽ അപ്ഡേറ്റ് ആവുന്നതിന് മുമ്പ് തന്നെ ഐക്കൺ മാറ്റുന്നു)
+    const likeIcon = document.getElementById(`like-icon-${productId}`);
+    const likeCount = document.getElementById(`like-count-${productId}`);
+    const detailLikeIcon = document.getElementById('detail-like-icon');
+    const detailLikeCount = document.getElementById('detail-like-count');
+    
     if (isLiked) {
         // Remove like
         product.likes = product.likes.filter(id => id !== currentUserId);
+        if (likeIcon) {
+            likeIcon.classList.remove('fas');
+            likeIcon.classList.add('far');
+        }
+        if (detailLikeIcon) {
+            detailLikeIcon.classList.remove('fas');
+            detailLikeIcon.classList.add('far');
+        }
     } else {
         // Add like
         product.likes.push(currentUserId);
+        if (likeIcon) {
+            likeIcon.classList.remove('far');
+            likeIcon.classList.add('fas');
+        }
+        if (detailLikeIcon) {
+            detailLikeIcon.classList.remove('far');
+            detailLikeIcon.classList.add('fas');
+        }
     }
-    // പുതിയ UI അപ്ഡേറ്റ് ഫംഗ്ഷൻ വിളിക്കുന്നു
-    updateLikeUI(productId, product.likes);
+    
+    // Update count
+    const newCount = product.likes.length;
+    if (likeCount) likeCount.textContent = newCount;
+    if (detailLikeCount) detailLikeCount.textContent = newCount;
     
     // Update Firebase in background
     try {
@@ -1441,14 +1403,23 @@ window.toggleLike = async function(productId) {
     } catch (error) {
         console.error("Error toggling like:", error);
         // Revert optimistic update on error
-        // തെറ്റ് സംഭവിച്ചാൽ, പഴയ അവസ്ഥയിലേക്ക് തിരികെ പോകുന്നു
         if (isLiked) {
             product.likes.push(currentUserId);
         } else {
             product.likes = product.likes.filter(id => id !== currentUserId);
         }
-        // UI വീണ്ടും പഴയതുപോലെ ആക്കുന്നു
-        updateLikeUI(productId, product.likes);
+        // Update UI back
+        if (likeIcon) {
+            likeIcon.classList.toggle('fas');
+            likeIcon.classList.toggle('far');
+        }
+        if (detailLikeIcon) {
+            detailLikeIcon.classList.toggle('fas');
+            detailLikeIcon.classList.toggle('far');
+        }
+        const revertCount = product.likes.length;
+        if (likeCount) likeCount.textContent = revertCount;
+        if (detailLikeCount) detailLikeCount.textContent = revertCount;
         
         showMessage("Failed to update like status.", 'error');
     }
@@ -1480,19 +1451,21 @@ window.closeCommentsModal = function() {
 function setupCommentsListener(productId) {
     if (unsubscribeComments) unsubscribeComments();
     const commentsCollection = collection(productsCollectionRef, productId, 'comments');
-    
-    // `orderBy` ചേർക്കുന്നു
-    unsubscribeComments = onSnapshot(query(commentsCollection, orderBy("createdAt", "desc")), (snapshot) => {
+    unsubscribeComments = onSnapshot(query(commentsCollection), (snapshot) => {
         let comments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        comments.sort((a, b) => {
+            const timeA = a.createdAt ? a.createdAt.toDate().getTime() : 0;
+            const timeB = b.createdAt ? b.createdAt.toDate().getTime() : 0;
+            return timeB - timeA;
+        });
         renderComments(comments);
-        
-        // `onSnapshot` പ്രവർത്തിക്കുമ്പോൾ തന്നെ `commentCount` അപ്ഡേറ്റ് ചെയ്യുന്നു
         const productIndex = allProducts.findIndex(p => p.id === productId);
         if (productIndex !== -1) {
-            if (allProducts[productIndex].commentCount !== comments.length) {
-                allProducts[productIndex].commentCount = comments.length;
-                // UI അപ്ഡേറ്റ് ചെയ്യുന്നു
-                updateCommentCountUI(productId, comments.length);
+            allProducts[productIndex].commentCount = comments.length;
+            // Only update detail count if on detail page
+            const detailCount = document.getElementById('detail-comment-count');
+            if (detailCount && activeProduct && activeProduct.id === productId) {
+                detailCount.textContent = comments.length;
             }
         }
     }, (error) => {
@@ -1570,18 +1543,12 @@ async function handleAddComment(e) {
             userId: currentUserId,
             createdAt: serverTimestamp()
         });
-        
-        // `commentCount` അപ്ഡേറ്റ് ചെയ്യാൻ `updateDoc` ഉപയോഗിക്കുന്നു
         const productRef = doc(db, productsCollectionRef.path, productId);
         const product = allProducts.find(p => p.id === productId);
         if (product) {
-            const newCount = (product.commentCount || 0) + 1;
             await updateDoc(productRef, {
-                commentCount: newCount
+                commentCount: (product.commentCount || 0) + 1 
             });
-            // `onSnapshot` ലിസണർ ഇത് കൈകാര്യം ചെയ്തുകൊള്ളും,
-            // എന്നാലും വേഗത്തിൽ കാണിക്കാൻ UI അപ്ഡേറ്റ് ചെയ്യുന്നു
-             updateCommentCountUI(productId, newCount);
         }
         feedbackInput.value = '';
         userNameInput.value = ''; 
@@ -1591,53 +1558,6 @@ async function handleAddComment(e) {
     }
 }
     
-// --- (പുതിയത്) UI അപ്ഡേറ്റ് ഫംഗ്ഷനുകൾ ---
-// `onSnapshot` ഇല്ലാതെ, ലൈക്കും കമന്റും തത്സമയം അപ്ഡേറ്റ് ചെയ്യാൻ
-
-// ഈ ഫംഗ്ഷൻ ലൈക്ക് ഐക്കണും കൗണ്ടും മാത്രം മാറ്റുന്നു
-function updateLikeUI(productId, likes) {
-    const likeIcon = document.getElementById(`like-icon-${productId}`);
-    const likeCount = document.getElementById(`like-count-${productId}`);
-    const detailLikeIcon = document.getElementById('detail-like-icon');
-    const detailLikeCount = document.getElementById('detail-like-count');
-    
-    const isLiked = likes.includes(currentUserId);
-    const newCount = likes.length;
-
-    if (likeIcon) {
-        likeIcon.className = `fa-heart text-2xl ${isLiked ? 'fas' : 'far'}`;
-    }
-    if (likeCount) {
-        likeCount.textContent = newCount;
-    }
-    
-    // ഡീറ്റെയിൽ പേജിലാണെങ്കിൽ അതും അപ്ഡേറ്റ് ചെയ്യുന്നു
-    if (activeProduct && activeProduct.id === productId) {
-        if (detailLikeIcon) {
-            detailLikeIcon.className = `fa-heart text-2xl ${isLiked ? 'fas' : 'far'}`;
-        }
-        if (detailLikeCount) {
-            detailLikeCount.textContent = newCount;
-        }
-    }
-}
-
-// ഈ ഫംഗ്ഷൻ കമന്റ് കൗണ്ട് മാത്രം മാറ്റുന്നു
-function updateCommentCountUI(productId, newCount) {
-    const commentCount = document.getElementById(`comment-count-${productId}`);
-    const detailCommentCount = document.getElementById('detail-comment-count');
-
-    if (commentCount) {
-        commentCount.textContent = newCount;
-    }
-    
-    if (activeProduct && activeProduct.id === productId) {
-        if (detailCommentCount) {
-            detailCommentCount.textContent = newCount;
-        }
-    }
-}
-
 
 // ---------------------------------------------------
 // കാർട്ടിന് വേണ്ടിയുള്ള ഫംഗ്ഷനുകൾ - OPTIMIZED
