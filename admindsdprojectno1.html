@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
     <title>Admin Panel - SocialShop</title>
 
     <!-- Tailwind CSS -->
@@ -16,22 +16,29 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
+    <!-- പൊതുവായ CSS ഫയൽ -->
     <link rel="stylesheet" href="admin-style.css">
 </head>
 <body class="bg-gray-100 text-gray-800">
 
+    <!-- അഡ്മിൻ പേജിന് പ്രത്യേകമായ ഹെഡർ -->
     <header class="bg-white shadow-md sticky top-0 z-50 border-b border-gray-200">
         <nav class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            
+            <!-- ഷോപ്പ് ടൈറ്റിൽ -->
             <div id="shop-header-title" class="text-2xl font-bold text-indigo-600">
                 <i id="shop-header-icon" class="fas fa-tools mr-2"></i><span id="shop-header-name">Admin Panel</span>
             </div>
+            
         </nav>
     </header>
 
+    <!-- പ്രധാന ഉള്ളടക്കം -->
     <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         <section id="admin-page" class="page active">
             
+            <!-- [സൂചന] z-40 (z-index) ചേർത്തു. ഇതാണ് ബഗ് പരിഹരിച്ചത് -->
             <div class="card p-4 mb-6 relative z-40">
                 <div class="flex justify-between items-center">
                     <h2 id="admin-current-view-title" class="text-xl font-semibold text-gray-800">Add/Edit Product</h2>
@@ -40,6 +47,7 @@
                     </button>
                 </div>
 
+                <!-- ഡ്രോപ്പ്ഡൗൺ മെനു (ഇപ്പോൾ ഇത് മുകളിൽ വരും) -->
                 <div id="admin-menu-dropdown" class="absolute right-4 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-100 z-30 hidden">
                     <ul class="py-1">
                         <li><a href="#" class="admin-menu-link active" data-view="add-product">Add/Edit Product</a></li>
@@ -55,7 +63,7 @@
             
             <div class="space-y-8">
                 
-                <!-- View 1: Add Product -->
+                <!-- View 1: Add Product (Full width card) -->
                 <div id="view-add-product" class="w-full card p-6 sm:p-8 hidden">
                     <h2 id="admin-form-title" class="text-2xl font-bold mb-6 text-gray-900">Product Details</h2>
                     <form id="admin-product-form" class="space-y-4">
@@ -87,20 +95,16 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Product Media (Images & Videos) <span class="text-red-500">*</span></label>
-                            <div id="media-urls-list" class="space-y-2">
-                                <!-- JS വഴി media inputs ഇവിടെ വരും -->
+                            <label for="product-image" class="block text-sm font-medium text-gray-700 mb-1">Main Image URL <span class="text-red-500">*</span></label>
+                            <div class="flex items-center space-x-3">
+                                <input type="url" id="product-image" class="flex-grow" placeholder="https://placehold.co/600x400" required oninput="renderMainImagePreview(this.value)">
+                                <img id="main-image-preview" src="https://placehold.co/60x60/f0f0f0/999?text=Main" class="w-16 h-16 object-cover rounded-lg border border-gray-300 flex-shrink-0" onerror="this.src='https://placehold.co/60x60/f0f0f0/999?text=Error'">
                             </div>
-                            <button type="button" class="w-full mt-2 bg-gray-200 text-gray-800 font-bold py-2 rounded-lg hover:bg-gray-300 transition duration-300" onclick="addMediaInput()">
-                                <i class="fas fa-plus mr-2"></i> Add Image/Video URL
-                            </button>
-                            <p class="text-xs text-gray-500 mt-1">Support: Images (JPG, PNG), Videos (MP4, WebM), YouTube, Vimeo</p>
                         </div>
 
                         <div>
                             <label for="product-description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                            <textarea id="product-description" rows="4" class="w-full" placeholder="Add links like https://example.com - they will be clickable"></textarea>
-                            <p class="text-xs text-gray-500 mt-1">URLs will automatically become clickable links</p>
+                            <textarea id="product-description" rows="4" class="w-full"></textarea>
                         </div>
                         
                         <div>
@@ -136,6 +140,17 @@
                                     <label for="product-sku" class="block text-sm font-medium text-gray-700 mb-1">SKU / Code</label>
                                     <input type="text" id="product-sku" placeholder="Optional" class="w-full">
                                 </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Other Image URLs (Optional)</label>
+                                <div id="other-images-list" class="space-y-2">
+                                    <!-- JS വഴി ഇമേജ് ഇൻപുട്ടുകൾ ഇവിടെ വരും -->
+                                </div>
+                                <button type="button" class="w-full mt-2 bg-gray-200 text-gray-800 font-bold py-2 rounded-lg hover:bg-gray-300 transition duration-300" onclick="addOtherImageInput()">
+                                    <i class="fas fa-plus mr-2"></i> Add Image Link
+                                </button>
+                                <p class="text-xs text-gray-500 mt-1">These images will be part of the product image slider.</p>
                             </div>
 
                             <div>
@@ -196,18 +211,18 @@
                             <input type="text" id="new-category-name" required class="w-full px-4 py-2" placeholder="e.g., Electronics">
                         </div>
                         <div>
-                            <label for="new-category-icon-url" class="block text-sm font-medium text-gray-700 mb-1">Category Icon Image URL</label>
+                            <label for="new-category-icon" class="block text-sm font-medium text-gray-700 mb-1">Category Icon (Font Awesome)</label>
                             <div class="flex items-center space-x-3">
-                                <input type="url" id="new-category-icon-url" class="flex-grow" placeholder="https://example.com/icon.png">
-                                <img id="new-category-icon-preview" src="https://placehold.co/80x80/6366f1/fff?text=Icon" class="w-12 h-12 rounded-full object-cover border-2 border-indigo-200 flex-shrink-0">
+                                <input type="text" id="new-category-icon" class="flex-grow" placeholder="e.g., fas fa-mobile-alt">
+                                <i id="new-category-icon-preview" class="fas fa-tag text-2xl text-indigo-600 flex-shrink-0"></i>
                             </div>
-                            <p class="text-xs text-gray-500 mt-1">Upload icon to image hosting service (e.g., Imgur, ImgBB) and paste URL</p>
+                            <p class="text-xs text-gray-500 mt-1">Find icons at <a href="https://fontawesome.com/v6/search?o=r&m=free" target="_blank" class="text-blue-500 hover:underline">Font Awesome</a> (e.g., "fas fa-tag").</p>
                         </div>
                         <button type="submit" class="w-full sm:w-auto bg-blue-600 text-white py-2 px-4 font-semibold shadow-md">
                             Add Category
                         </button>
                     </form>
-                    <h3 class="text-xl font-semibold mb-4 text-gray-700">Existing Categories</h3>
+                    <h3 class="text-xl font-semibold mb-4 text-gray-700">Existing Categories (Public)</h3>
                     <div id="category-list-container" class="space-y-3">
                         <p id="no-categories" class="text-gray-500 italic">No categories have been added yet.</p>
                     </div>
@@ -222,27 +237,17 @@
                             <div>
                                 <label for="shop-name" class="block text-sm font-medium text-gray-700 mb-1">Shop Name</label>
                                 <input type="text" id="shop-name" placeholder="e.g., Your Online Store" class="w-full">
-                                <p class="text-xs text-gray-500 mt-1">This name appears in the header.</p>
+                                <p class="text-xs text-gray-500 mt-1">This name appears next to the icon in the header.</p>
                             </div>
                             <div>
-                                <label for="shop-logo-url" class="block text-sm font-medium text-gray-700 mb-1">Shop Logo Image URL</label>
+                                <label for="shop-icon-class" class="block text-sm font-medium text-gray-700 mb-1">Header Icon (Font Awesome Class)</label>
                                 <div class="flex items-center space-x-3">
-                                    <input type="url" id="shop-logo-url" placeholder="https://example.com/logo.png" class="flex-grow">
-                                    <img id="shop-logo-preview" src="https://placehold.co/100x100/6366f1/fff?text=Logo" class="w-16 h-16 rounded-lg object-cover border-2 border-indigo-200 flex-shrink-0">
+                                    <input type="text" id="shop-icon-class" placeholder="e.g., fas fa-shopping-bag or fas fa-store" class="flex-grow">
+                                    <i id="shop-icon-preview" class="fas fa-camera-retro text-2xl text-indigo-600 flex-shrink-0"></i>
                                 </div>
-                                <p class="text-xs text-gray-500 mt-1">Upload logo to image hosting service and paste URL (Recommended: 100x100px)</p>
+                                <p class="text-xs text-gray-500 mt-1">Use standard Font Awesome 6 classes. <a href="https://fontawesome.com/v6/search?o=r&m=free" target="_blank" class="text-blue-500 hover:underline">Find icons here</a></p>
                             </div>
                         </div>
-
-                        <div class="border p-4 rounded-lg bg-yellow-50/50 space-y-3">
-                            <h3 class="text-xl font-medium mb-3 text-yellow-700 border-b pb-2">Common Product Instructions</h3>
-                            <div>
-                                <label for="common-instructions" class="block text-sm font-medium text-gray-700 mb-1">Instructions (Shown below all products)</label>
-                                <textarea id="common-instructions" rows="5" class="w-full" placeholder="e.g., Delivery within 3-5 days. Returns accepted within 7 days. Cash on delivery available."></textarea>
-                                <p class="text-xs text-gray-500 mt-1">This will be displayed below every product on the product detail page</p>
-                            </div>
-                        </div>
-
                         <div class="border p-4 rounded-lg bg-gray-50/50 space-y-3">
                             <h3 class="text-xl font-medium mb-3 text-gray-700 border-b pb-2">Follow Us Links</h3>
                             <div>
@@ -266,6 +271,7 @@
                             <h3 class="text-xl font-medium mb-3 text-gray-700 border-b pb-2">Contact Information</h3>
                             <div>
                                 <label for="contact-phone" class="block text-sm font-medium text-gray-700 mb-1">Contact Phone</label>
+
                                 <input type="tel" id="contact-phone" placeholder="e.g., +919876543210" class="w-full">
                             </div>
                             <div>
@@ -313,11 +319,12 @@
 
     </main>
 
-    <!-- Modals -->
+    <!-- പൊതുവായ മോഡലുകൾ -->
     <div id="message-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
             <p id="message-modal-text" class="lg mb-4"></p>
             <button class="bg-indigo-600 text-white py-2 px-6 rounded-lg hover:bg-indigo-700 transition" onclick="closeModal()">OK</button>
+
         </div>
     </div>
 
@@ -335,6 +342,7 @@
            <i class="fas fa-spinner fa-spin text-indigo-600 text-5xl"></i>
     </div>
     
+    <!-- അഡ്മിൻ പേജിന് ആവശ്യമായ സ്ക്രിപ്റ്റുകൾ -->
     <script src="firebase-config.js" type="module"></script>
     <script src="admin.js" type="module"></script>
 </body>

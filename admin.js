@@ -12,7 +12,7 @@ let allProducts = [];
 let categoriesCache = []; 
 let whatsappNumber = '';
 let infoContent = {}; 
-let headerSettings = { shopName: 'SocialShop', logoUrl: 'https://placehold.co/100x100/6366f1/fff?text=Logo' };
+let headerSettings = { shopName: 'SocialShop', iconClass: 'fas fa-camera-retro' }; // Default header
 
 // Firestore References (Admin)
 let productsCollectionRef;
@@ -35,7 +35,8 @@ let adminFilterCategoryId = 'all';
 let pages, loadingSpinner, messageModal, messageModalText, confirmModal, confirmModalText, confirmModalButton;
 let $viewAddProduct, $viewManageProducts, $viewControlCategory, $viewManageContent, $viewWhatsAppSettings;
 let $adminMenuButton, $adminMenuDropdown, $adminCurrentViewTitle;
-let $categorySelect, $categoryHelp, $addCategoryForm, $categoryListContainer, $noCategoriesMsg, $userIdDisplay, $whatsappInput, $contentForm, $adminProductFilterSelect, $shopNameInput, $shopLogoInput, $shopLogoPreview;
+let $categorySelect, $categoryHelp, $addCategoryForm, $categoryListContainer, $noCategoriesMsg, $userIdDisplay, $whatsappInput, $contentForm, $adminProductFilterSelect, $shopNameInput, $shopIconClassInput, $shopIconPreview;
+
 
 // ========= App Initialization & Setup (Admin) =========
 
@@ -70,8 +71,8 @@ document.addEventListener('DOMContentLoaded', () => {
     $contentForm = document.getElementById('content-form'); 
     $adminProductFilterSelect = document.getElementById('admin-product-category-filter');
     $shopNameInput = document.getElementById('shop-name');
-    $shopLogoInput = document.getElementById('shop-logo-url');
-    $shopLogoPreview = document.getElementById('shop-logo-preview');
+    $shopIconClassInput = document.getElementById('shop-icon-class');
+    $shopIconPreview = document.getElementById('shop-icon-preview');
 
     if (!db || !auth) {
         console.error("Firebase is not initialized. Check firebase-config.js");
@@ -82,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
         setupAuthListener();
 
-        // അഡ്മിൻ ഫോം ഇവന്റ് ലിസനറുകൾ
+        // അഡ്മിൻ ഫോം ഇവന്റ് ലിസ്‌നറുകൾ
         document.getElementById('admin-product-form').addEventListener('submit', handleAdminFormSubmit);
         document.getElementById('product-price').addEventListener('input', calculateDiscountDisplay);
         document.getElementById('product-retail-price').addEventListener('input', calculateDiscountDisplay);
@@ -102,24 +103,24 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         
-        // അഡ്മിൻ ടാബ് ഇവന്റ് ലിസനറുകൾ
+        // അഡ്മിൻ ടാബ് ഇവന്റ് ലിസ്‌നറുകൾ
         $addCategoryForm.addEventListener('submit', handleAddCategory);
         $categoryListContainer.addEventListener('click', handleDeleteCategoryClick);
         $contentForm.addEventListener('submit', handleSaveContent); 
         
-        // ലോഗോ ഇൻപുട്ട് ലൈവ് പ്രിവ്യൂ
-        $shopLogoInput.addEventListener('input', updateLogoPreview);
+        // ഹെഡർ ഇൻപുട്ട് ലൈവ് പ്രിവ്യൂ
+        $shopIconClassInput.addEventListener('input', updateIconPreview);
         
         // കാറ്റഗറി ഐക്കൺ ലൈവ് പ്രിവ്യൂ
-        document.getElementById('new-category-icon-url').addEventListener('input', updateCategoryIconPreview);
+        document.getElementById('new-category-icon').addEventListener('input', updateCategoryIconPreview);
 
-        // അഡ്മിൻ പ്രൊഡക്ട് ഫിൽട്ടർ ലിസ്നർ
+        // അഡ്മിൻ പ്രൊഡക്റ്റ് ഫിൽറ്റർ ലിസ്‌നർ
         $adminProductFilterSelect.addEventListener('change', (e) => {
             adminFilterCategoryId = e.target.value;
             filterAdminProducts();
         });
         
-        // അഡ്മിൻ മെനു ലിസനറുകൾ
+        // അഡ്മിൻ മെനു ലിസ്‌നറുകൾ
         $adminMenuButton.addEventListener('click', (e) => {
             e.stopPropagation(); 
             $adminMenuDropdown.classList.toggle('hidden');
@@ -131,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (link) {
                 const viewId = link.dataset.view;
                 changeAdminView(viewId);
-                $adminMenuDropdown.classList.add('hidden');
+                $adminMenuDropdown.classList.add('hidden'); // Close menu on selection
             }
         });
 
@@ -155,6 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // --- AUTH (Admin) ---
 function setupAuthListener() {
+    // [സൂചന] അനാവശ്യമായ 'noop' സ്നാപ്പ്ഷോട്ട് നീക്കം ചെയ്തു.
     auth.onAuthStateChanged(async (user) => {
         if (user) {
             currentUserId = user.uid;
@@ -166,10 +168,12 @@ function setupAuthListener() {
             settingsDocRef = doc(db, `artifacts/${APP_ID}/public/data/settings/admin`);
             infoDocRef = doc(db, `artifacts/${APP_ID}/public/data/content/info`); 
             
+            // യൂസർ ലോഗിൻ ആയതിനു ശേഷം മാത്രം ഡാറ്റ ലോഡ് ചെയ്യുന്നു
             loadAdminData();
         } else {
             currentUserId = null;
             try {
+                // യൂസർ ലോഗിൻ അല്ലെങ്കിൽ, അനോണിമസ് ആയി സൈൻ ഇൻ ചെയ്യുന്നു
                 await signInAnonymously(auth);
             } catch (error) {
                 console.error("Anonymous authentication failed:", error);
@@ -179,11 +183,11 @@ function setupAuthListener() {
     });
 }
 
-// --- അഡ്മിൻ ഹെഡർ അപ്ഡേറ്റർ ---
+// --- അഡ്മിൻ ഹെഡർ അപ്‌ഡേറ്റർ ---
 function updateAdminHeader(settings) {
     headerSettings = {
         shopName: settings.shopName || 'SocialShop',
-        logoUrl: settings.logoUrl || 'https://placehold.co/100x100/6366f1/fff?text=Logo',
+        iconClass: settings.iconClass || 'fas fa-camera-retro',
         whatsappNumber: settings.whatsappNumber || ''
     };
     whatsappNumber = headerSettings.whatsappNumber;
@@ -203,12 +207,12 @@ function loadAdminData() {
         populateCategorySelect(categoriesCache); 
         populateAdminFilterSelect(categoriesCache);
     }, (error) => {
-        console.error("Error fetching categories:", error);
+        console.error("Error fetching categories (Check Firestore Security Rules):", error);
         showMessage("Failed to load categories. Permission Denied.", 'error');
         showLoading(false);
     });
 
-    // 2. Load Settings (Public) - WhatsApp, Logo
+    // 2. Load Settings (Public) - WhatsApp, Header
     if (unsubscribeSettings) unsubscribeSettings();
     unsubscribeSettings = onSnapshot(settingsDocRef, (docSnap) => {
         const settings = docSnap.exists() ? docSnap.data() : {};
@@ -222,7 +226,7 @@ function loadAdminData() {
     if (unsubscribeProducts) unsubscribeProducts();
     unsubscribeProducts = onSnapshot(productsCollectionRef, (snapshot) => {
         allProducts = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        filterAdminProducts();
+        filterAdminProducts(); // അഡ്മിൻ ലിസ്റ്റ് റെൻഡർ ചെയ്യുന്നു
         showLoading(false);
     }, (error) => {
         console.error("Error fetching products:", error);
@@ -235,6 +239,7 @@ function loadAdminData() {
     unsubscribeInfo = onSnapshot(infoDocRef, (docSnap) => {
         infoContent = docSnap.exists() ? docSnap.data() : {};
         
+        // 'Manage Content' ടാബ് ആക്റ്റീവ് ആണെങ്കിൽ ഫോം പ്രീ-ഫിൽ ചെയ്യുന്നു
         if ($viewManageContent && $viewManageContent.classList.contains('active')) {
             prefillContentForm(infoContent);
         }
@@ -243,57 +248,59 @@ function loadAdminData() {
     });
 }
 
-// --- WHATSAPP UPDATE ---
+
+// --- WHATSAPP UPDATE FUNCTION (Triggered by Save button) ---
 window.updateWhatsAppNumber = async function() {
     if (!$whatsappInput) return;
     const newNumber = $whatsappInput.value.trim().replace(/[^0-9]/g, '');
-    if (!currentUserId) { showMessage('Authentication required.', 'error'); return; }
+    if (!currentUserId) { showMessage('Authentication required to update settings.', 'error'); return; }
 
     showLoading(true);
     try {
         await setDoc(settingsDocRef, { whatsappNumber: newNumber }, { merge: true });
         showMessage("WhatsApp number updated successfully.", 'success');
     } catch (error) {
-        console.error("Error updating WhatsApp:", error);
-        showMessage("Failed to update WhatsApp number.", 'error');
+        console.error("Error updating WhatsApp number:", error);
+        showMessage("Failed to update WhatsApp number. Check Firestore write permissions.", 'error');
     } finally {
         showLoading(false);
     }
 }
 
-// --- ലോഗോ ലൈവ് പ്രിവ്യൂ ---
-function updateLogoPreview() {
-    if (!$shopLogoInput || !$shopLogoPreview) return;
-    const newUrl = $shopLogoInput.value.trim();
-    if (newUrl) {
-        $shopLogoPreview.src = newUrl;
-    } else {
-        $shopLogoPreview.src = 'https://placehold.co/100x100/6366f1/fff?text=Logo';
+// --- അഡ്മിൻ ഹെഡർ ലൈവ് പ്രിവ്യൂ ---
+function updateIconPreview() {
+    if (!$shopIconClassInput || !$shopIconPreview) return;
+    const newClass = $shopIconClassInput.value.trim();
+    $shopIconPreview.className = '';
+    $shopIconPreview.classList.add(...newClass.split(' '));
+    if (!newClass) {
+        $shopIconPreview.classList.add('fas', 'fa-question-circle');
     }
+    $shopIconPreview.classList.add('text-2xl', 'text-indigo-600', 'flex-shrink-0');
 }
 
 // --- കാറ്റഗറി ഐക്കൺ ലൈവ് പ്രിവ്യൂ ---
 function updateCategoryIconPreview() {
-    const newUrl = document.getElementById('new-category-icon-url').value.trim();
+    const newClass = document.getElementById('new-category-icon').value.trim();
     const previewEl = document.getElementById('new-category-icon-preview');
-    if (newUrl) {
-        previewEl.src = newUrl;
+    previewEl.className = '';
+    if (newClass) {
+        previewEl.classList.add(...newClass.split(' '));
     } else {
-        previewEl.src = 'https://placehold.co/80x80/6366f1/fff?text=Icon';
+        previewEl.classList.add('fas', 'fa-tag'); // Default
     }
+    previewEl.classList.add('text-2xl', 'text-indigo-600', 'flex-shrink-0');
 }
 
-// --- Content Form Prefill ---
+// --- Admin Content Handlers ---
+
 function prefillContentForm(data) {
-    if (!$shopNameInput || !$shopLogoInput) return;
+    if (!$shopNameInput || !$shopIconClassInput) return;
     
     // Header
     $shopNameInput.value = data.shopName || headerSettings.shopName;
-    $shopLogoInput.value = data.logoUrl || headerSettings.logoUrl;
-    updateLogoPreview(); 
-
-    // Common Instructions
-    document.getElementById('common-instructions').value = data.commonInstructions || '';
+    $shopIconClassInput.value = data.iconClass || headerSettings.iconClass;
+    updateIconPreview(); 
 
     // Follow/Contact
     document.getElementById('follow-whatsapp').value = data.followWhatsapp || '';
@@ -311,21 +318,24 @@ function prefillContentForm(data) {
     document.getElementById('copyright-text').value = data.copyrightText || '';
 }
 
-// --- Save Content ---
 async function handleSaveContent(e) {
     e.preventDefault();
-    if (!currentUserId) { showMessage('Authentication required.', 'error'); return; }
+    if (!currentUserId) { showMessage('Authentication required to manage content.', 'error'); return; }
 
     const contentToSave = {
+        // Header Settings
         shopName: $shopNameInput.value.trim() || 'SocialShop',
-        logoUrl: $shopLogoInput.value.trim() || 'https://placehold.co/100x100/6366f1/fff?text=Logo',
-        commonInstructions: document.getElementById('common-instructions').value.trim(),
+        iconClass: $shopIconClassInput.value.trim() || 'fas fa-camera-retro',
+
+        // Follow/Contact
         followWhatsapp: document.getElementById('follow-whatsapp').value.trim(),
         followInstagram: document.getElementById('follow-instagram').value.trim(),
         followFacebook: document.getElementById('follow-facebook').value.trim(),
         followYoutube: document.getElementById('follow-youtube').value.trim(),
         contactPhone: document.getElementById('contact-phone').value.trim(),
         contactEmail: document.getElementById('contact-email').value.trim(),
+
+        // Account Content
         aboutTitle: document.getElementById('about-title').value.trim(),
         aboutContent: document.getElementById('about-content').value.trim(),
         conditionsTitle: document.getElementById('conditions-title').value.trim(),
@@ -336,39 +346,46 @@ async function handleSaveContent(e) {
     
     showLoading(true);
     try {
+        // ഹെഡർ സെറ്റിംഗ്സ് admin ഡോക്യുമെന്റിൽ സേവ് ചെയ്യുന്നു
         await setDoc(settingsDocRef, { 
             shopName: contentToSave.shopName,
-            logoUrl: contentToSave.logoUrl,
+            iconClass: contentToSave.iconClass,
             updatedAt: serverTimestamp()
         }, { merge: true });
 
+        // ഇൻഫോ കണ്ടന്റ് info ഡോക്യുമെന്റിൽ സേവ് ചെയ്യുന്നു
         const infoSaveData = { ...contentToSave };
         delete infoSaveData.shopName; 
-        delete infoSaveData.logoUrl;
+        delete infoSaveData.iconClass;
         await setDoc(infoDocRef, infoSaveData, { merge: true });
 
-        showMessage("Content saved successfully!", 'success');
+        showMessage("Content saved successfully! Header updated.", 'success');
     } catch (error) {
         console.error("Error saving content:", error);
-        showMessage("Failed to save content.", 'error');
+        showMessage("Failed to save content. Check Firebase permissions.", 'error');
     } finally {
         showLoading(false);
     }
 }
 
+
 // ========= UI NAVIGATION (Admin) =========
+
+// --- അഡ്മിൻ ടാബ് നാവിഗേഷൻ ---
 window.changeAdminView = function(viewId) {
     if (!$viewAddProduct || !$viewManageProducts || !$viewControlCategory || !$viewManageContent || !$viewWhatsAppSettings || !$adminCurrentViewTitle) {
         console.warn("Admin view elements not initialized yet.");
         return;
     }
 
+    // 1. എല്ലാ വ്യൂ പാനലുകളും മറയ്ക്കുന്നു
     $viewAddProduct.classList.add('hidden');
     $viewManageProducts.classList.add('hidden');
     $viewControlCategory.classList.add('hidden');
     $viewManageContent.classList.add('hidden');
     $viewWhatsAppSettings.classList.add('hidden');
 
+    // 2. ഡ്രോപ്പ്ഡൗൺ ആക്റ്റീവ് സ്റ്റേറ്റ് അപ്‌ഡേറ്റ് ചെയ്യുന്നു
     document.querySelectorAll('.admin-menu-link').forEach(link => {
         link.classList.remove('active');
         if (link.dataset.view === viewId) {
@@ -378,30 +395,38 @@ window.changeAdminView = function(viewId) {
 
     let currentTitle = '';
 
+    // 3. ശരിയായ വ്യൂ പാനൽ കാണിക്കുകയും ടൈറ്റിൽ സെറ്റ് ചെയ്യുകയും ചെയ്യുന്നു
     if (viewId === 'add-product') {
         $viewAddProduct.classList.remove('hidden');
         currentTitle = 'Add/Edit Product';
         resetAdminForm();
+        
     } else if (viewId === 'manage-products') {
         $viewManageProducts.classList.remove('hidden');
         currentTitle = 'Manage Products';
         filterAdminProducts();
+        
     } else if (viewId === 'control-category') {
         $viewControlCategory.classList.remove('hidden');
         currentTitle = 'Manage Categories';
+        
     } else if (viewId === 'manage-content') {
         $viewManageContent.classList.remove('hidden');
         currentTitle = 'Manage Content';
         prefillContentForm(infoContent); 
+    
     } else if (viewId === 'whatsapp-settings') {
         $viewWhatsAppSettings.classList.remove('hidden');
         currentTitle = 'WhatsApp Settings';
     }
     
+    // 4. ഹെഡർ ടൈറ്റിൽ സെറ്റ് ചെയ്യുന്നു
     $adminCurrentViewTitle.textContent = currentTitle;
 }
 
-// --- Delivery Charge Toggle ---
+// --- Admin Panel Functions (Product) ---
+    
+// ഡെലിവറി ചാർജ് ഇൻപുട്ട് കാണിക്കുക/മറയ്ക്കുക
 function toggleDeliveryChargeInput() {
     const chargeContainer = document.getElementById('delivery-charge-input-container');
     const chargeInput = document.getElementById('product-delivery-charge');
@@ -411,11 +436,11 @@ function toggleDeliveryChargeInput() {
         chargeContainer.classList.remove('hidden');
     } else {
         chargeContainer.classList.add('hidden');
-        chargeInput.value = '';
+        chargeInput.value = ''; // ഫ്രീ ആക്കുമ്പോൾ വാല്യൂ ക്ലിയർ ചെയ്യുന്നു
     }
 }
 
-// --- Discount Display ---
+// ഡിസ്‌കൗണ്ട് ശതമാനം കണക്കാക്കുന്നു
 function calculateDiscountDisplay() { 
     const priceEl = document.getElementById('product-price');
     const retailPriceEl = document.getElementById('product-retail-price');
@@ -447,7 +472,7 @@ function calculateDiscountDisplay() {
     }
 }
 
-// --- Populate Filter Select ---
+// അഡ്മിൻ പ്രൊഡക്റ്റ് ഫിൽറ്റർ ഡ്രോപ്പ്ഡൗൺ നിറയ്ക്കുന്നു
 function populateAdminFilterSelect(categories) {
     if (!$adminProductFilterSelect) return;
     $adminProductFilterSelect.innerHTML = '<option value="all">All Categories</option>';
@@ -460,14 +485,20 @@ function populateAdminFilterSelect(categories) {
     $adminProductFilterSelect.value = adminFilterCategoryId;
 }
 
-// --- Filter Products ---
+// ഡ്രോപ്പ്ഡൗൺ അനുസരിച്ച് അഡ്മിൻ പ്രൊഡക്റ്റ് ലിസ്റ്റ് ഫിൽറ്റർ ചെയ്യുന്നു
 window.filterAdminProducts = function() {
     const categoryId = adminFilterCategoryId;
-    let filteredProducts = categoryId === 'all' ? allProducts : allProducts.filter(p => p.categoryId === categoryId);
+    
+    let filteredProducts;
+    if (categoryId === 'all') {
+        filteredProducts = allProducts;
+    } else {
+        filteredProducts = allProducts.filter(p => p.categoryId === categoryId);
+    }
     renderAdminProductList(filteredProducts);
 }
 
-// --- Render Admin Product List ---
+// അഡ്മിൻ പ്രൊഡക്റ്റ് ലിസ്റ്റ് റെൻഡർ ചെയ്യുന്നു
 function renderAdminProductList(products) { 
     const tbody = document.getElementById('admin-product-list-body');
     const emptyMsg = document.getElementById('admin-product-list-empty');
@@ -482,8 +513,7 @@ function renderAdminProductList(products) {
     emptyMsg.classList.add('hidden');
 
     products.forEach(product => {
-        const firstMedia = product.mediaUrls && product.mediaUrls.length > 0 ? product.mediaUrls[0] : null;
-        const imageUrl = firstMedia?.url || product.imageUrl || `https://placehold.co/40x40/E2E8F0/333?text=Img`;
+        const imageUrl = product.imageUrl || `https://placehold.co/40x40/E2E8F0/333?text=Img`;
         const retailPrice = product.retailPrice || product.price || 0;
         
         const row = `
@@ -502,33 +532,10 @@ function renderAdminProductList(products) {
     });
 }
 
-// --- Detect Media Type ---
-function detectMediaType(url) {
-    if (!url) return 'image';
-    const lowerUrl = url.toLowerCase();
-    
-    // YouTube detection
-    if (lowerUrl.includes('youtube.com') || lowerUrl.includes('youtu.be')) {
-        return 'youtube';
-    }
-    
-    // Vimeo detection
-    if (lowerUrl.includes('vimeo.com')) {
-        return 'vimeo';
-    }
-    
-    // Video file extensions
-    if (lowerUrl.match(/\.(mp4|webm|ogg|mov)$/)) {
-        return 'video';
-    }
-    
-    return 'image';
-}
-
-// --- Handle Admin Form Submit ---
+// അഡ്മിൻ പ്രൊഡക്റ്റ് ഫോം സബ്മിറ്റ് ഹാൻഡിൽ ചെയ്യുന്നു
 async function handleAdminFormSubmit(event) { 
     event.preventDefault();
-    if (!currentUserId) { showMessage("Authentication required.", 'error'); return; }
+    if (!currentUserId) { showMessage("Authentication is required to add/edit products.", 'error'); return; }
 
     const id = document.getElementById('product-edit-id').value;
     const name = document.getElementById('product-name').value;
@@ -537,24 +544,17 @@ async function handleAdminFormSubmit(event) {
     const price = parseFloat(document.getElementById('product-price').value);
     const retailPriceInput = document.getElementById('product-retail-price').value;
     const retailPrice = parseFloat(retailPriceInput) || price; 
-    
-    // Collect all media URLs
-    const mediaInputs = document.querySelectorAll('#media-urls-list .media-url-input');
-    const mediaUrls = Array.from(mediaInputs)
-        .map(input => {
-            const url = input.value.trim();
-            if (!url) return null;
-            return {
-                url: url,
-                type: detectMediaType(url)
-            };
-        })
-        .filter(item => item !== null);
+    const imageUrl = document.getElementById('product-image').value;
     
     // Advanced Fields
     const brand = document.getElementById('product-brand').value;
     const sku = document.getElementById('product-sku').value;
+    const otherImageInputs = document.querySelectorAll('#other-images-list .image-url-input');
+    const otherImages = Array.from(otherImageInputs)
+        .map(input => input.value.trim())
+        .filter(url => url.length > 0);
     const specifications = document.getElementById('product-specifications').value;
+    
     const description = document.getElementById('product-description').value;
     
     // Delivery Logic
@@ -567,23 +567,19 @@ async function handleAdminFormSubmit(event) {
         deliveryCharge = parseFloat(chargeVal) || 0;
         
         if (deliveryCharge <= 0) {
-            showMessage("Please enter a valid delivery charge.", 'error');
-            return;
+            showMessage("Please enter a valid delivery charge amount (greater than 0).", 'error');
+            return; // Stop submission
         }
     }
 
     if (retailPrice > price) {
-         showMessage("Retail Price cannot be higher than MRP.", 'error');
+         showMessage("Retail Price cannot be higher than Original Price (MRP).", 'error');
          return;
     }
 
     const discountPercentage = price > 0 && retailPrice < price 
         ? Math.round(((price - retailPrice) / price) * 100) 
         : 0;
-
-    // Keep backward compatibility
-    const firstImage = mediaUrls.find(m => m.type === 'image');
-    const imageUrl = firstImage?.url || 'https://placehold.co/400x300/E2E8F0/333?text=No+Image';
 
     let productData = {
         name, categoryId, categoryName,
@@ -592,12 +588,12 @@ async function handleAdminFormSubmit(event) {
         price: price || 0,
         retailPrice: retailPrice,
         discountPercentage,
-        imageUrl: imageUrl, // Backward compatibility
-        mediaUrls: mediaUrls, // New structure
+        imageUrl,
+        otherImages, 
         description: description || '',
         specifications,
-        freeDelivery,
-        deliveryCharge,
+        freeDelivery, // boolean
+        deliveryCharge, // number (0 or charge amount)
         updatedAt: serverTimestamp(),
     };
     
@@ -616,41 +612,42 @@ async function handleAdminFormSubmit(event) {
             showMessage("Product added successfully!", 'success');
         }
         resetAdminForm();
-        changeAdminView('manage-products');
+        changeAdminView('manage-products'); // Switch to view list
     } catch (error) {
         console.error("Error saving product:", error);
-        showMessage(`Failed to save product: ${error.message}`, 'error');
+        showMessage(`Failed to save product. Check Firestore write permissions: ${error.message}`, 'error');
     } finally {
         showLoading(false);
     }
 }
 
-// --- Edit Product ---
+// പ്രൊഡക്റ്റ് എഡിറ്റ് ചെയ്യാൻ ഫോം നിറയ്ക്കുന്നു
 window.editProduct = function(productId) { 
     const product = allProducts.find(p => p.id === productId);
-    if (!product) { showMessage("Product not found.", 'error'); return; }
+    if (!product) { showMessage("Product not found for editing.", 'error'); return; }
 
     changeAdminView('add-product');
     
+    // ഫോം നിറയ്ക്കുന്നു
     document.getElementById('product-edit-id').value = product.id;
     document.getElementById('product-name').value = product.name;
     document.getElementById('product-price').value = product.price || '';
     document.getElementById('product-retail-price').value = product.retailPrice || product.price || '';
+    document.getElementById('product-image').value = product.imageUrl || '';
+    window.renderMainImagePreview(product.imageUrl || ''); 
     document.getElementById('product-description').value = product.description || '';
     $categorySelect.value = product.categoryId || '';
-    
-    // Media URLs
-    renderMediaInputs(product.mediaUrls || []);
     
     // Advanced Fields
     document.getElementById('product-brand').value = product.brand || '';
     document.getElementById('product-sku').value = product.sku || '';
+    renderOtherImageInputs(product.otherImages || []); 
     document.getElementById('product-specifications').value = product.specifications || '';
     
-    // Show advanced options if needed
+    // Show advanced options
     const advancedOptions = document.getElementById('advanced-product-options');
     const btn = document.getElementById('toggle-advanced-options-btn');
-    if (product.brand || product.sku || product.specifications) {
+    if (product.brand || product.sku || (product.otherImages && product.otherImages.length > 0) || product.specifications) {
         advancedOptions.classList.remove('hidden');
         btn.innerHTML = '<span>Hide Advanced Options</span> <i class="fas fa-chevron-up ml-1 text-xs"></i>';
     } else {
@@ -682,7 +679,7 @@ window.editProduct = function(productId) {
     window.scrollTo(0, 0); 
 }
 
-// --- Reset Admin Form ---
+// അഡ്മിൻ ഫോം റീസെറ്റ് ചെയ്യുന്നു
 window.resetAdminForm = function() { 
     document.getElementById('admin-product-form').reset();
     document.getElementById('product-edit-id').value = '';
@@ -705,21 +702,22 @@ window.resetAdminForm = function() {
         btn.innerHTML = '<span>Show Advanced Options</span> <i class="fas fa-chevron-down ml-1 text-xs"></i>';
     }
     
-    renderMediaInputs([]);
+    window.renderMainImagePreview('');
+    renderOtherImageInputs([]); 
 }
 
-// --- Delete Product Confirm ---
+// പ്രൊഡക്റ്റ് ഡിലീറ്റ് കൺഫർമേഷൻ
 window.showDeleteProductConfirm = function(productId) {
-    showConfirmModal(`Are you sure you want to delete this product?`, async (confirmed) => {
+    showConfirmModal(`Are you sure you want to delete product ID: ${productId}?`, async (confirmed) => {
         if (confirmed) {
             await deleteProduct(productId);
         }
     }, 'Delete Product');
 }
 
-// --- Delete Product ---
+// പ്രൊഡക്റ്റ് ഡിലീറ്റ് ചെയ്യുന്നു
 async function deleteProduct(productId) { 
-    if (!currentUserId) { showMessage("Authentication required.", 'error'); return; }
+    if (!currentUserId) { showMessage("Authentication is required to delete products.", 'error'); return; }
 
     showLoading(true);
     try {
@@ -728,30 +726,37 @@ async function deleteProduct(productId) {
         showMessage("Product deleted successfully!", 'success');
     } catch (error) {
         console.error("Error deleting product:", error);
-        showMessage(`Failed to delete product: ${error.message}`, 'error');
+        showMessage(`Failed to delete product. Check Firestore write permissions: ${error.message}`, 'error');
     } finally {
         showLoading(false);
     }
 }
 
-// --- Media Input Management ---
-function createMediaInput(mediaItem = null) {
+// --- Image Handling Functions (Admin) ---
+
+// മെയിൻ ഇമേജ് പ്രിവ്യൂ
+window.renderMainImagePreview = function(url) {
+    const previewEl = document.getElementById('main-image-preview');
+    if (previewEl) {
+        previewEl.src = url || 'https://placehold.co/60x60/f0f0f0/999?text=Main';
+    }
+}
+
+// മറ്റ് ഇമേജ് ഇൻപുട്ട് ഫീൽഡ് ഉണ്ടാക്കുന്നു
+function createOtherImageInput(url = '') {
     const container = document.createElement('div');
-    container.className = 'flex items-center space-x-2 media-input-group';
-    
-    const url = mediaItem?.url || '';
-    const type = mediaItem?.type || 'image';
+    container.className = 'flex items-center space-x-2 other-image-input-group';
     
     const input = document.createElement('input');
     input.type = 'url';
     input.value = url;
-    input.placeholder = 'https://example.com/image.jpg or video.mp4';
-    input.className = 'flex-grow border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-2 media-url-input'; 
+    input.placeholder = 'https://example.com/image.jpg';
+    input.className = 'flex-grow border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-2 image-url-input'; 
     
-    const preview = document.createElement('div');
-    preview.className = 'w-10 h-10 rounded-lg border border-gray-300 flex-shrink-0 overflow-hidden bg-gray-100';
-    
-    updateMediaPreview(preview, url, type);
+    const preview = document.createElement('img');
+    preview.src = url || 'https://placehold.co/40x40/f0f0f0/999?text=Img';
+    preview.className = 'w-10 h-10 object-cover rounded-lg border border-gray-300 flex-shrink-0';
+    preview.onerror = function() { this.src='https://placehold.co/40x40/f0f0f0/999?text=Error'; };
 
     const deleteBtn = document.createElement('button');
     deleteBtn.type = 'button';
@@ -762,9 +767,7 @@ function createMediaInput(mediaItem = null) {
     };
 
     input.oninput = function() {
-        const newUrl = this.value.trim();
-        const newType = detectMediaType(newUrl);
-        updateMediaPreview(preview, newUrl, newType);
+        preview.src = this.value || 'https://placehold.co/40x40/f0f0f0/999?text=Img';
     };
 
     container.appendChild(input);
@@ -774,49 +777,30 @@ function createMediaInput(mediaItem = null) {
     return container;
 }
 
-function updateMediaPreview(previewEl, url, type) {
-    previewEl.innerHTML = '';
-    
-    if (!url) {
-        previewEl.innerHTML = '<i class="fas fa-image text-gray-400 text-2xl"></i>';
-        previewEl.className = 'w-10 h-10 rounded-lg border border-gray-300 flex-shrink-0 bg-gray-100 flex items-center justify-center';
-        return;
-    }
-    
-    if (type === 'image') {
-        const img = document.createElement('img');
-        img.src = url;
-        img.className = 'w-full h-full object-cover';
-        img.onerror = function() { 
-            previewEl.innerHTML = '<i class="fas fa-exclamation-triangle text-red-400"></i>';
-        };
-        previewEl.appendChild(img);
-    } else if (type === 'video' || type === 'youtube' || type === 'vimeo') {
-        previewEl.innerHTML = '<i class="fas fa-play-circle text-indigo-600 text-2xl"></i>';
-        previewEl.className = 'w-10 h-10 rounded-lg border border-indigo-300 flex-shrink-0 bg-indigo-50 flex items-center justify-center';
-    }
-}
-
-window.addMediaInput = function() {
-    const container = document.getElementById('media-urls-list');
+// മറ്റ് ഇമേജ് ഇൻപുട്ട് ഫീൽഡ് ചേർക്കുന്നു
+window.addOtherImageInput = function(url = '') {
+    const container = document.getElementById('other-images-list');
     if (container) {
-        container.appendChild(createMediaInput());
+        container.appendChild(createOtherImageInput(url));
     }
 }
 
-function renderMediaInputs(mediaItems) {
-    const container = document.getElementById('media-urls-list');
+// മറ്റ് ഇമേജ് ഇൻപുട്ടുകൾ റെൻഡർ ചെയ്യുന്നു (എഡിറ്റ് ചെയ്യുമ്പോൾ)
+function renderOtherImageInputs(urls) {
+    const container = document.getElementById('other-images-list');
     if (container) {
         container.innerHTML = ''; 
-        if (mediaItems && mediaItems.length > 0) {
-            mediaItems.forEach(item => {
-                container.appendChild(createMediaInput(item));
+        if (urls && urls.length > 0) {
+            urls.forEach(url => {
+                container.appendChild(createOtherImageInput(url));
             });
         }
     }
 }
 
-// --- Category Management ---
+
+// --- Admin Panel Functions (Category) ---
+// പ്രൊഡക്റ്റ് ഫോമിലെ കാറ്റഗറി സെലക്ട് നിറയ്ക്കുന്നു
 function populateCategorySelect(categories) { 
     if (!$categorySelect) return;
     $categorySelect.innerHTML = '<option value="" disabled selected>Select a Category</option>';
@@ -835,6 +819,7 @@ function populateCategorySelect(categories) {
     }
 }
 
+// കാറ്റഗറി മാനേജ്മെന്റ് ലിസ്റ്റ് റെൻഡർ ചെയ്യുന്നു
 function renderCategoryList(categories) { 
     if (!$categoryListContainer || !$noCategoriesMsg) return;
 
@@ -849,11 +834,11 @@ function renderCategoryList(categories) {
 
     categories.forEach(cat => {
         const div = document.createElement('div');
-        const iconUrl = cat.iconUrl || 'https://placehold.co/40x40/6366f1/fff?text=Icon';
+        const iconClass = cat.iconClass || 'fas fa-tag'; // Default icon
         div.className = 'flex justify-between items-center p-3 bg-white border rounded-lg shadow-sm';
         div.innerHTML = `
             <div class="flex items-center">
-                <img src="${iconUrl}" alt="${cat.name}" class="w-8 h-8 rounded-full object-cover mr-3" onerror="this.src='https://placehold.co/40x40/6366f1/fff?text=Icon'">
+                <i class="${iconClass} text-indigo-600 text-lg mr-3"></i>
                 <span class="font-medium text-gray-800">${cat.name}</span>
             </div>
             <button data-category-id="${cat.id}" class="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition duration-150">
@@ -864,12 +849,14 @@ function renderCategoryList(categories) {
     });
 }
 
+// പുതിയ കാറ്റഗറി ചേർക്കുന്നു
 async function handleAddCategory(e) { 
     e.preventDefault();
-    if (!currentUserId) { showMessage("Authentication required.", 'error'); return; }
+    if (!currentUserId) { showMessage("Authentication is required to manage categories.", 'error'); return; }
 
     const name = document.getElementById('new-category-name').value.trim();
-    const iconUrl = document.getElementById('new-category-icon-url').value.trim() || 'https://placehold.co/80x80/6366f1/fff?text=Icon';
+    const iconClassInput = document.getElementById('new-category-icon').value.trim();
+    const iconClass = iconClassInput || 'fas fa-tag'; // Default icon
     
     if (!name) return;
     
@@ -877,35 +864,37 @@ async function handleAddCategory(e) {
     try {
         await addDoc(categoriesCollectionRef, { 
             name, 
-            iconUrl,
+            iconClass, // ഐക്കൺ ക്ലാസ് സേവ് ചെയ്യുന്നു
             createdAt: serverTimestamp() 
         });
         document.getElementById('new-category-name').value = '';
-        document.getElementById('new-category-icon-url').value = '';
-        updateCategoryIconPreview();
+        document.getElementById('new-category-icon').value = ''; // ഐക്കൺ ഇൻപുട്ട് റീസെറ്റ് ചെയ്യുന്നു
+        updateCategoryIconPreview(); // പ്രിവ്യൂ റീസെറ്റ് ചെയ്യുന്നു
         showMessage(`Category '${name}' added successfully!`, 'success');
     } catch (error) {
         console.error("Error adding category:", error);
-        showMessage(`Failed to add category: ${error.message}`, 'error');
+        showMessage(`Failed to add category. Check Firestore write permissions: ${error.message}`, 'error');
     } finally {
         showLoading(false);
     }
 }
 
+// കാറ്റഗറി ഡിലീറ്റ് ബട്ടൺ ക്ലിക്ക് ഹാൻഡിൽ ചെയ്യുന്നു
 function handleDeleteCategoryClick(e) { 
     const categoryButton = e.target.closest('button');
     const categoryId = categoryButton?.dataset.categoryId;
     if (!categoryId) return;
 
-    showConfirmModal(`Are you sure you want to delete this category?`, async (confirmed) => {
+    showConfirmModal(`Are you sure you want to delete this category? All related products must be updated manually.`, async (confirmed) => {
         if (confirmed) {
             await deleteCategory(categoryId);
         }
     }, 'Delete Category');
 }
 
+// കാറ്റഗറി ഡിലീറ്റ് ചെയ്യുന്നു
 async function deleteCategory(categoryId) { 
-    if (!currentUserId) { showMessage("Authentication required.", 'error'); return; }
+    if (!currentUserId) { showMessage("Authentication is required to manage categories.", 'error'); return; }
     
     showLoading(true);
     try {
@@ -914,17 +903,16 @@ async function deleteCategory(categoryId) {
         showMessage("Category deleted successfully.", 'success');
     } catch (error) {
         console.error("Error deleting category:", error);
-        showMessage(`Failed to delete category: ${error.message}`, 'error');
+        showMessage(`Failed to delete category. Check Firestore write permissions: ${error.message}`, 'error');
     } finally {
         showLoading(false);
     }
 }
 
-// --- Utility Functions ---
+// --- Utility Functions (Modularized/Fixed) ---
 function showLoading(show) { 
     if (loadingSpinner) loadingSpinner.classList.toggle('hidden', !show);
 }
-
 function showMessage(message, type = 'info') { 
     if (!messageModal || !messageModalText) return;
     messageModalText.innerText = message;
@@ -935,11 +923,9 @@ function showMessage(message, type = 'info') {
     messageModalText.classList.add(colorClass);
     messageModal.classList.remove('hidden');
 }
-
 window.closeModal = function() { 
     if (messageModal) messageModal.classList.add('hidden');
 }
-
 function showConfirmModal(message, callback, buttonText = 'Confirm') {
     if (!confirmModal || !confirmModalText || !confirmModalButton) return;
     confirmModalText.textContent = message;
@@ -947,7 +933,6 @@ function showConfirmModal(message, callback, buttonText = 'Confirm') {
     confirmCallback = callback;
     confirmModal.classList.remove('hidden');
 }
-
 window.closeConfirmModal = function(isConfirmed) {
     if (confirmModal) confirmModal.classList.add('hidden');
     if (confirmCallback) {
