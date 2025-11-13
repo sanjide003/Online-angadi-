@@ -1,0 +1,138 @@
+/* ================================
+    VIDEO & MEDIA SUPPORT STYLES
+    വീഡിയോ പിന്തുണയ്ക്കുള്ള സ്റ്റൈലുകൾ
+    ================================ */
+
+/* --- VIDEO PLAYER STYLES --- */
+.swipe-slide video,
+.carousel-slide video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #000;
+}
+
+/* --- IFRAME (YouTube/Vimeo) STYLES --- */
+.swipe-slide iframe,
+.carousel-slide iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* --- CATEGORY ICON IMAGE STYLES --- */
+.category-chip img {
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+/* --- HEADER LOGO STYLES --- */
+#shop-header-logo {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#shop-header-logo:hover {
+    transform: scale(1.05) rotate(3deg);
+}
+
+/* --- MEDIA PREVIEW IN ADMIN --- */
+.media-input-group img,
+.media-input-group .w-10.h-10 {
+    transition: transform 0.3s ease;
+}
+
+.media-input-group:hover img,
+.media-input-group:hover .w-10.h-10 {
+    transform: scale(1.1);
+}
+
+/* --- LINKED TEXT IN DESCRIPTIONS --- */
+.text-gray-700 a,
+.text-gray-600 a {
+    color: #2563eb;
+    text-decoration: underline;
+    transition: color 0.2s ease;
+}
+
+.text-gray-700 a:hover,
+.text-gray-600 a:hover {
+    color: #1d4ed8;
+}
+
+/* --- COMMON INSTRUCTIONS BOX --- */
+.bg-yellow-50 {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- VIDEO LOADING INDICATOR --- */
+video:not([src]) {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+video:not([src])::after {
+    content: 'Loading video...';
+    color: white;
+    font-size: 14px;
+}
+
+/* --- IFRAME LOADING --- */
+iframe {
+    background: #f3f4f6;
+}
+
+/* --- MEDIA TYPE INDICATOR (OPTIONAL) --- */
+.swipe-slide[data-type="video"]::before,
+.carousel-slide[data-type="video"]::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+/* --- RESPONSIVE VIDEO CONTROLS --- */
+@media (max-width: 640px) {
+    video::-webkit-media-controls-panel {
+        padding: 0 4px;
+    }
+    
+    video::-webkit-media-controls-play-button,
+    video::-webkit-media-controls-timeline {
+        transform: scale(0.9);
+    }
+}
+
+/* --- SWIPE CONTAINER VIDEO SPECIFIC --- */
+.swipe-container video {
+    pointer-events: auto;
+}
+
+/* Prevent accidental swipes while interacting with video controls */
+.swipe-container video:focus,
+.swipe-container video:active {
+    pointer-events: all;
+}
+
+/* --- END OF VIDEO STYLES --- */
