@@ -9,6 +9,7 @@ let currentUserId = null;
 let allProducts = [];
 let categoriesCache = []; 
 let headerSettings = { shopName: 'SocialShop', iconClass: 'fas fa-camera-retro' };
+let infoContent = {}; // Cache for content settings
 
 let productsCollectionRef, categoriesCollectionRef, settingsDocRef, infoDocRef; 
 let unsubscribeProducts, unsubscribeCategories, unsubscribeSettings, unsubscribeInfo; 
@@ -113,7 +114,6 @@ async function handleLogin(e) {
 
     try {
         await signInWithEmailAndPassword(auth, email, password);
-        // Auth listener will handle UI switch
     } catch (error) {
         console.error(error);
         $loginErrorMsg.textContent = "Invalid Email or Password!";
@@ -216,8 +216,12 @@ function loadAdminData() {
     
     if (unsubscribeInfo) unsubscribeInfo();
     unsubscribeInfo = onSnapshot(infoDocRef, (docSnap) => {
-        if ($viewManageContent && $viewManageContent.classList.contains('active')) {
-            prefillContentForm(docSnap.exists() ? docSnap.data() : {});
+        const data = docSnap.exists() ? docSnap.data() : {};
+        infoContent = data; // Update global cache
+        
+        // If currently viewing Manage Content, update the form live
+        if ($viewManageContent && !$viewManageContent.classList.contains('hidden')) {
+             prefillContentForm(data);
         }
     });
 }
@@ -244,7 +248,7 @@ window.changeAdminView = function(viewId) {
     } else if (viewId === 'manage-content') {
         $viewManageContent.classList.remove('hidden');
         title = 'Manage Content';
-        getDoc(infoDocRef).then(doc => prefillContentForm(doc.exists() ? doc.data() : {}));
+        prefillContentForm(infoContent); // Use cached data
     } else if (viewId === 'whatsapp-settings') {
         $viewWhatsAppSettings.classList.remove('hidden');
         title = 'WhatsApp Settings';
