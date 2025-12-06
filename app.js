@@ -6,7 +6,6 @@ import {
     signInAnonymously 
 } from './firebase-config.js';
 
-// --- Global Variables ---
 let currentUserId = null;
 let allProducts = [];
 let categoriesCache = []; 
@@ -16,11 +15,9 @@ let headerSettings = { shopName: 'SocialShop', iconClass: 'fas fa-camera-retro' 
 let cart = [];
 let pageHistory = [];
 
-// Firestore References
 let productsCollectionRef, categoriesCollectionRef, settingsDocRef, infoDocRef; 
 let unsubscribeProducts, unsubscribeCategories, unsubscribeSettings, unsubscribeComments, unsubscribeInfo; 
 
-// UI State
 let activeProduct = null;
 let cartProductIds = new Set();
 let searchDebounceTimer = null;
@@ -34,10 +31,7 @@ let $scrollToTopBtn, $shareModal;
 
 const APP_BASE_URL = window.location.origin;
 
-// ========= Initialization =========
-
 document.addEventListener('DOMContentLoaded', () => {
-    // DOM Elements Selection
     pages = document.querySelectorAll('.page');
     loadingSpinner = document.getElementById('loading-spinner');
     messageModal = document.getElementById('message-modal');
@@ -73,7 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setupAuthListener();
         initializeImageObserver();
 
-        // Search Listener
         const searchInput = document.getElementById('search-input');
         if (searchInput) {
             searchInput.addEventListener('input', (event) => {
@@ -84,11 +77,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Comment Form Listener
         const commentForm = document.getElementById('add-comment-form');
         if (commentForm) commentForm.addEventListener('submit', handleAddComment);
         
-        // Category Filter Listener
         const categoryFilters = document.getElementById('category-filters');
         if (categoryFilters) {
             categoryFilters.addEventListener('click', (e) => {
@@ -100,22 +91,13 @@ document.addEventListener('DOMContentLoaded', () => {
         loadCartFromStorage();
         updateCartUI();
         
-        // Scroll Listener
         window.addEventListener('scroll', () => {
              if ($scrollToTopBtn) $scrollToTopBtn.classList.toggle('hidden', window.pageYOffset <= 300);
         });
 
-        // URL Parameter Check (Deep Linking)
         const urlParams = new URLSearchParams(window.location.search);
         const pid = urlParams.get('product');
-        if (pid) {
-            const checkInterval = setInterval(() => {
-                if (allProducts.length > 0) {
-                    clearInterval(checkInterval);
-                    showProductDetail(pid);
-                }
-            }, 500);
-        }
+        if (pid) setTimeout(() => { if (allProducts.length) showProductDetail(pid); }, 1000);
 
     } catch (error) {
         console.error("Init failed:", error);
@@ -140,8 +122,6 @@ function initializeImageObserver() {
 }
 
 function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
-
-// ========= Auth & Data Loading =========
 
 function setupAuthListener() {
     auth.onAuthStateChanged(async (user) => {
@@ -175,20 +155,15 @@ function updateAppHeader(settings) {
 }
 
 function loadInitialData() {
-    showLoading(true);
-
-    // Load Categories
     if (unsubscribeCategories) unsubscribeCategories();
     unsubscribeCategories = onSnapshot(categoriesCollectionRef, (snap) => {
         categoriesCache = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderProductPage();
     });
 
-    // Load Settings
     if (unsubscribeSettings) unsubscribeSettings();
     unsubscribeSettings = onSnapshot(settingsDocRef, (snap) => updateAppHeader(snap.exists() ? snap.data() : {}));
     
-    // Load Products
     if (unsubscribeProducts) unsubscribeProducts();
     unsubscribeProducts = onSnapshot(productsCollectionRef, (snap) => {
         allProducts = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
@@ -197,7 +172,6 @@ function loadInitialData() {
         showLoading(false);
     });
     
-    // Load Info
     if (unsubscribeInfo) unsubscribeInfo();
     unsubscribeInfo = onSnapshot(infoDocRef, (snap) => {
         infoContent = snap.exists() ? snap.data() : {};
@@ -207,13 +181,9 @@ function loadInitialData() {
     });
 }
 
-// ========= Navigation =========
-
 window.showPage = function(pageId) {
     pages.forEach(p => p.classList.remove('active'));
-    const target = document.getElementById(`${pageId}-page`);
-    if(target) target.classList.add('active');
-    
+    document.getElementById(`${pageId}-page`)?.classList.add('active');
     document.getElementById('main-mobile-nav')?.classList.toggle('hidden', pageId === 'product-detail');
     
     if (pageId === 'cart') renderCartPage();
@@ -230,24 +200,14 @@ window.goBack = () => showPage('home');
 window.navigateToCategory = (cid) => {
     showPage('products');
     filterProductsByCategory(cid);
-    setTimeout(() => {
-        const chip = document.querySelector(`.category-chip[data-id="${cid}"]`);
-        if(chip) chip.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    }, 100);
 }
 
-// ========= Home Page Logic =========
-
+// --- HOME & PRODUCT RENDERING (Original Logic) ---
 function renderHomeProductList(list) {
     const container = document.getElementById('home-product-list-container');
     if (!container) return;
     container.innerHTML = '';
     
-    if (list.length === 0) {
-        container.innerHTML = '<p class="text-center p-4 text-gray-500">No products found.</p>';
-        return;
-    }
-
     list.forEach(p => {
         const img = p.imageUrl || 'https://placehold.co/600x400';
         const price = p.retailPrice || p.price;
@@ -256,34 +216,33 @@ function renderHomeProductList(list) {
         const isLiked = p.likes?.includes(currentUserId);
         
         container.innerHTML += `
-            <div class="bg-white rounded-lg shadow-sm mb-4 overflow-hidden">
-                <div class="flex items-center p-3 border-b border-gray-100 justify-between">
-                    <span class="font-semibold text-gray-700 text-sm">${p.categoryName || 'Product'}</span>
+            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6 transition duration-300">
+                <div class="flex items-center p-3">
+                    <div class="w-10 h-10 rounded-full border-2 border-gray-200 flex items-center justify-center mr-3 bg-gray-50">
+                         <i class="fas fa-tag text-indigo-500"></i>
+                    </div>
+                    <div class="flex-grow font-semibold text-gray-800">${p.categoryName || 'Product'}</div>
                     <button class="text-gray-400" onclick="openShareModal('${p.id}')"><i class="fas fa-share-alt"></i></button>
                 </div>
                 <div onclick="showProductDetail('${p.id}')" class="relative">
-                    <img src="${img}" class="w-full h-64 object-cover" onerror="this.src='https://placehold.co/600x400'">
-                    ${p.brand ? `<span class="absolute top-2 left-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">${p.brand}</span>` : ''}
+                    <img src="${img}" class="w-full object-cover max-h-[400px]" onerror="this.src='https://placehold.co/600x400'">
                 </div>
-                <div class="p-3">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="font-bold text-gray-800 line-clamp-1">${p.name}</h3>
+                <div class="p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex gap-4">
+                            <button onclick="toggleLike('${p.id}')"><i class="${isLiked ? 'fas text-red-500' : 'far text-gray-400'} fa-heart text-2xl"></i></button>
+                            <button onclick="showCommentsOverlay('${p.id}', '${p.name}')"><i class="far fa-comment text-2xl text-gray-600"></i></button>
                         </div>
-                        <button onclick="toggleLike('${p.id}')"><i class="${isLiked ? 'fas text-red-500' : 'far text-gray-400'} fa-heart text-xl"></i></button>
-                    </div>
-                    <div class="mt-2 flex items-baseline gap-2">
-                        <span class="text-lg font-bold">₹${price}</span>
-                        ${discount > 0 ? `<span class="text-sm text-gray-400 line-through">₹${p.price}</span><span class="text-xs text-green-600 font-bold">${discount}% OFF</span>` : ''}
-                    </div>
-                    <div class="mt-3 flex gap-2">
-                        <button class="flex-1 bg-indigo-600 text-white py-2 rounded-lg font-bold text-sm" onclick="addToCart('${p.id}')">
-                            ${inCart ? 'ADD MORE' : 'ADD TO CART'}
-                        </button>
-                        <button class="flex-1 border border-gray-300 py-2 rounded-lg font-bold text-sm text-gray-700" onclick="openWhatsAppChat('${p.name}', '${p.id}')">
-                            CHAT
+                        <button onclick="addToCart('${p.id}')">
+                            <i class="${inCart ? 'fas text-indigo-600' : 'far text-gray-600'} fa-bookmark text-2xl"></i>
                         </button>
                     </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-1">${p.name}</h3>
+                    <div class="text-xl font-bold mb-2">
+                        <span class="text-green-600 mr-2">₹${price}</span>
+                        ${discount > 0 ? `<span class="text-gray-400 line-through text-sm">₹${p.price}</span> <span class="text-red-500 text-sm">(${discount}% Off)</span>` : ''}
+                    </div>
+                    ${p.description ? `<p class="text-gray-600 text-sm line-clamp-2">${p.description}</p>` : ''}
                 </div>
             </div>`;
     });
@@ -294,8 +253,6 @@ window.filterAndRenderHomeProducts = (term) => {
     renderHomeProductList(list);
 }
 
-// ========= Products Page Logic =========
-
 window.filterProductsByCategory = (cid) => {
     document.querySelectorAll('.category-chip').forEach(c => c.classList.toggle('active', c.dataset.id === cid));
     renderProductList(cid === 'all' ? allProducts : allProducts.filter(p => p.categoryId === cid));
@@ -304,9 +261,9 @@ window.filterProductsByCategory = (cid) => {
 function renderProductPage() {
     const container = document.getElementById('category-filters');
     if(!container) return;
-    container.innerHTML = `<div class="category-chip active" data-id="all">All</div>`;
+    container.innerHTML = `<div class="category-chip active" data-id="all"><i class="fas fa-border-all mr-2"></i> All</div>`;
     categoriesCache.forEach(c => {
-        container.innerHTML += `<div class="category-chip" data-id="${c.id}">${c.name}</div>`;
+        container.innerHTML += `<div class="category-chip" data-id="${c.id}"><i class="${c.iconClass || 'fas fa-tag'} mr-2"></i> ${c.name}</div>`;
     });
     filterProductsByCategory('all');
 }
@@ -321,20 +278,25 @@ function renderProductList(list) {
         const price = p.retailPrice || p.price;
         
         container.innerHTML += `
-            <div class="bg-white rounded-lg shadow-sm overflow-hidden" onclick="showProductDetail('${p.id}')">
-                <img src="${img}" class="w-full h-40 object-cover">
-                <div class="p-2">
-                    <h3 class="text-sm font-semibold truncate">${p.name}</h3>
-                    <div class="flex items-baseline gap-1 mt-1">
-                        <span class="font-bold text-sm">₹${price}</span>
-                        ${p.discountPercentage > 0 ? `<span class="text-xs text-green-600">${p.discountPercentage}% off</span>` : ''}
+            <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition duration-300" onclick="showProductDetail('${p.id}')">
+                <div class="relative">
+                    <img src="${img}" class="w-full h-48 object-cover">
+                    ${p.brand ? `<span class="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">${p.brand}</span>` : ''}
+                </div>
+                <div class="p-3">
+                    <h3 class="font-bold text-gray-800 mb-1 truncate">${p.name}</h3>
+                    <div class="flex items-baseline">
+                        <span class="text-lg font-bold text-gray-900 mr-2">₹${price}</span>
+                        ${p.discountPercentage > 0 ? `<span class="text-green-600 text-xs font-semibold">${p.discountPercentage}% Off</span>` : ''}
+                    </div>
+                    <div class="flex gap-2 mt-3">
+                        <button class="flex-1 bg-green-500 text-white text-sm font-bold py-2 rounded" onclick="event.stopPropagation(); openWhatsAppChat('${p.name}', '${p.id}')">Chat</button>
+                        <button class="flex-1 bg-indigo-600 text-white text-sm font-bold py-2 rounded" onclick="event.stopPropagation(); addToCart('${p.id}')">Add</button>
                     </div>
                 </div>
             </div>`;
     });
 }
-
-// ========= Product Detail =========
 
 window.showProductDetail = (pid) => {
     const p = allProducts.find(x => x.id === pid);
@@ -346,60 +308,59 @@ window.showProductDetail = (pid) => {
     const price = p.retailPrice || p.price;
     const isLiked = p.likes?.includes(currentUserId);
     
-    // Image Carousel Logic
-    let imgHtml;
+    let imgHtml = `<img src="${imgs[0]}" class="w-full h-full object-contain">`;
     if (imgs.length > 1) {
-         imgHtml = `<div class="flex overflow-x-auto snap-x h-80 bg-white">
-            ${imgs.map(u => `<img src="${u}" class="w-full h-full object-contain flex-shrink-0 snap-center">`).join('')}
-        </div>`;
-    } else {
-        imgHtml = `<img src="${imgs[0]}" class="w-full h-80 object-contain bg-white">`;
+        // Basic swipe container structure
+        imgHtml = `<div class="swipe-container h-full"><div class="swipe-track flex h-full">${imgs.map(u => `<div class="swipe-slide h-full flex items-center justify-center"><img src="${u}" class="max-h-full max-w-full"></div>`).join('')}</div></div>`;
     }
 
     container.innerHTML = `
-        <div class="bg-white pb-4">
-            <div class="p-2 flex items-center bg-white sticky top-0 z-10 border-b">
-                <button onclick="goBack()" class="mr-4 text-xl p-2"><i class="fas fa-arrow-left"></i></button>
-                <span class="font-bold text-gray-700 truncate flex-1">${p.name}</span>
-                <button onclick="openShareModal('${p.id}')" class="p-2"><i class="fas fa-share-alt"></i></button>
+        <div class="bg-white min-h-screen pb-20">
+            <div class="sticky top-0 z-20 bg-white shadow-sm p-3 flex justify-between items-center">
+                <button onclick="goBack()" class="text-gray-600"><i class="fas fa-arrow-left text-xl"></i></button>
+                <div class="flex gap-4">
+                    <button onclick="openShareModal('${p.id}')"><i class="fas fa-share-alt text-xl text-gray-600"></i></button>
+                </div>
             </div>
-            ${imgHtml}
-            <div class="p-4">
-                <div class="flex justify-between items-start">
-                     <h1 class="text-xl font-bold text-gray-800 flex-1">${p.name}</h1>
-                     <button onclick="toggleLike('${p.id}')" class="ml-2"><i class="${isLiked ? 'fas text-red-500' : 'far text-gray-400'} fa-heart text-2xl"></i></button>
+            
+            <div class="h-[60vh] bg-gray-100 relative">
+                ${imgHtml}
+            </div>
+            
+            <div class="p-5 bg-white -mt-4 rounded-t-3xl relative z-10 shadow-up">
+                <div class="flex justify-between items-start mb-2">
+                    <h1 class="text-2xl font-bold text-gray-800 flex-1 mr-2">${p.name}</h1>
+                    <button onclick="toggleLike('${p.id}')"><i class="${isLiked ? 'fas text-red-500' : 'far text-gray-400'} fa-heart text-2xl"></i></button>
                 </div>
                 
-                <div class="mt-2 flex items-baseline gap-2">
-                    <span class="text-2xl font-bold">₹${price}</span>
-                    ${p.discountPercentage > 0 ? `<span class="text-gray-500 line-through">₹${p.price}</span><span class="text-green-600 font-bold">${p.discountPercentage}% OFF</span>` : ''}
+                <div class="flex items-baseline mb-4">
+                    <span class="text-3xl font-bold text-green-600 mr-3">₹${price}</span>
+                    ${p.discountPercentage > 0 ? `<span class="text-xl text-gray-400 line-through mr-2">₹${p.price}</span><span class="text-red-500 font-bold">(${p.discountPercentage}% OFF)</span>` : ''}
                 </div>
                 
-                ${p.freeDelivery ? '<div class="mt-2 text-green-600 text-sm font-bold"><i class="fas fa-truck"></i> Free Delivery</div>' : ''}
+                ${p.freeDelivery ? '<div class="inline-block bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded mb-4">Free Delivery</div>' : ''}
                 
-                <div class="mt-6 border-t pt-4">
-                    <h3 class="font-bold text-gray-700">Description</h3>
-                    <p class="text-gray-600 mt-2 text-sm whitespace-pre-wrap leading-relaxed">${p.description || 'No description available.'}</p>
+                <div class="border-t pt-4">
+                    <h3 class="font-bold text-gray-800 mb-2">Description</h3>
+                    <p class="text-gray-600 leading-relaxed whitespace-pre-wrap">${p.description || 'No description available.'}</p>
                 </div>
-
-                 <div class="mt-4 border-t pt-4">
-                    <button class="text-indigo-600 font-semibold" onclick="showCommentsOverlay('${p.id}', '${p.name}')">
-                        View Comments (${p.commentCount || 0})
-                    </button>
-                </div>
+                
+                ${p.specifications ? `<div class="mt-4 bg-gray-50 p-3 rounded">
+                    <h3 class="font-bold text-gray-800 mb-2">Specifications</h3>
+                    <p class="text-sm text-gray-600 whitespace-pre-wrap">${p.specifications}</p>
+                </div>` : ''}
             </div>
         </div>
         
-        <div class="fixed bottom-0 left-0 right-0 bg-white p-2 border-t flex gap-2 z-20 shadow-lg">
-            <button class="flex-1 bg-white border border-gray-300 text-gray-800 py-3 font-bold rounded" onclick="addToCart('${p.id}')">ADD TO CART</button>
-            <button class="flex-1 bg-indigo-600 text-white py-3 font-bold rounded" onclick="openWhatsAppChat('${p.name}', '${p.id}')">BUY NOW</button>
-        </div>
-        <div class="h-16"></div>`;
+        <div class="fixed bottom-0 left-0 right-0 p-3 bg-white border-t flex gap-3 z-30">
+            <button class="flex-1 bg-indigo-600 text-white font-bold py-3 rounded-xl shadow-lg" onclick="addToCart('${p.id}')">ADD TO CART</button>
+            <button class="flex-1 bg-green-500 text-white font-bold py-3 rounded-xl shadow-lg" onclick="openWhatsAppChat('${p.name}', '${p.id}')">CHAT NOW</button>
+        </div>`;
         
     showPage('product-detail');
 }
 
-// ========= CART FUNCTIONS (Flipkart Style) =========
+// ========= CART FUNCTIONS (New Flipkart Style) =========
 
 function loadCartFromStorage() {
     cart = JSON.parse(localStorage.getItem('socialShopCart')) || [];
@@ -452,14 +413,15 @@ window.renderCartPage = () => {
         
         $cartItemsContainer.innerHTML += `
             <div class="cart-item">
-                <div class="cart-item-top">
-                    <img src="${img}" class="cart-item-img" onclick="showProductDetail('${item.id}')">
-                    <div class="cart-item-details">
-                        <h3 class="cart-item-title">${item.name}</h3>
-                        <p class="cart-item-price">₹${item.price}</p>
-                    </div>
-                </div>
+                <div class="cart-item-img" onclick="showProductDetail('${item.id}')" style="background-image: url('${img}'); background-size: contain; background-repeat: no-repeat; background-position: center;"></div>
                 
+                <div class="cart-item-details">
+                     <div class="flex justify-between">
+                        <h3 class="cart-item-title">${item.name}</h3>
+                     </div>
+                     <p class="cart-item-price">₹${item.price}</p>
+                </div>
+
                 <div class="cart-actions-row">
                     <div class="quantity-control">
                         <button class="qty-btn" onclick="updateCartQuantity('${item.id}', -1)">-</button>
@@ -468,10 +430,7 @@ window.renderCartPage = () => {
                     </div>
                     
                     <div class="action-btn-container">
-                        <button class="cart-action-btn btn-remove" onclick="removeFromCart('${item.id}')">
-                            Remove
-                        </button>
-                        <!-- Updated Button: Buy This Now -->
+                        <button class="cart-action-btn btn-remove" onclick="removeFromCart('${item.id}')">Remove</button>
                         <button class="cart-action-btn btn-buy-now" onclick="buySingleProduct('${item.id}')">
                             <i class="fab fa-whatsapp"></i> Buy this now
                         </button>
@@ -498,7 +457,6 @@ window.removeFromCart = (pid) => {
     saveCartToStorage(); renderCartPage(); updateCartUI();
 }
 
-// === NEW: Buy Single Product Function ===
 window.buySingleProduct = (pid) => {
     const item = cart.find(i => i.id === pid);
     if (!item) return;
@@ -510,29 +468,36 @@ window.buySingleProduct = (pid) => {
     window.open(url, '_blank');
 }
 
-// ========= Interaction Functions =========
+// ========= GENERAL INTERACTION =========
 
 window.openWhatsAppChat = (name, pid) => {
     if (!whatsappNumber) { showMessage("WhatsApp number not set!", 'error'); return; }
-    const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Hi, I want to buy:\n*${name}*\nID: ${pid}`)}`;
+    
+    // Original Message Format
+    const product = allProducts.find(p => p.id === pid);
+    const price = product?.retailPrice || product?.price || 0;
+    const productLink = `${APP_BASE_URL}?product=${pid}`;
+    
+    const message = `🛍️ *${name}*\n\n💰 Price: ₹${price}\n🆔 Product ID: ${pid}\n\n📱 View Product: ${productLink}\n\nHello, I'm interested in this product. Could you provide more details?`;
+    
+    const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
 }
 
 window.openWhatsAppChatForCart = () => {
     if (!whatsappNumber || cart.length === 0) return;
-    let msg = "Order Summary:\n";
+    let msg = "🛒 *My Shopping Cart*\n\n";
     let total = 0;
-    cart.forEach(i => {
-        msg += `${i.name} (x${i.quantity}) - ₹${i.price * i.quantity}\n`;
+    cart.forEach((i, idx) => {
+        msg += `${idx+1}. *${i.name}*\n   Qty: ${i.quantity} × ₹${i.price} = ₹${i.price * i.quantity}\n\n`;
         total += i.price * i.quantity;
     });
-    msg += `\nTotal: ₹${total}`;
-    const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(msg)}`;
-    window.open(url, '_blank');
+    msg += `━━━━━━━━━━━━━━━\n💵 *Total: ₹${total}*\n\nI would like to place this order.`;
+    window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
 window.toggleLike = async (pid) => {
-    if (!currentUserId) { showMessage("Please login to like", 'error'); return; }
+    if (!currentUserId) { showMessage("Login required", 'error'); return; }
     const p = allProducts.find(x => x.id === pid);
     if (!p) return;
     
@@ -543,50 +508,10 @@ window.toggleLike = async (pid) => {
     else await updateDoc(ref, { likes: arrayUnion(currentUserId) });
 }
 
-// Account & Info
-function renderAccountPageExtras(data) {
-    const followSec = document.getElementById('follow-us-section');
-    if(!followSec) return;
-    
-    const setLink = (id, url) => {
-        const el = document.getElementById(id);
-        if(el) {
-            if(url) { el.href = url; el.classList.remove('hidden'); }
-            else el.classList.add('hidden');
-        }
-    };
-    
-    setLink('follow-whatsapp-link', data.followWhatsapp);
-    setLink('follow-instagram-link', data.followInstagram);
-    setLink('follow-facebook-link', data.followFacebook);
-    
-    const phoneEl = document.getElementById('contact-phone-link');
-    if(phoneEl && data.contactPhone) {
-        document.getElementById('contact-phone-text').textContent = data.contactPhone;
-        phoneEl.href = `tel:${data.contactPhone}`;
-        phoneEl.classList.remove('hidden');
-    }
-    
-    followSec.classList.remove('hidden');
-}
-
-window.showInfoSection = function(section) {
-    const data = {
-        'about': { t: infoContent.aboutTitle, c: infoContent.aboutContent },
-        'conditions': { t: infoContent.conditionsTitle, c: infoContent.conditionsContent },
-        'copyright': { t: 'Copyright', c: infoContent.copyrightText }
-    }[section] || {};
-    if ($infoTitle) $infoTitle.textContent = data.t || 'Information';
-    if ($infoContent) $infoContent.innerText = data.c || 'No information available.'; 
-}
-
-// Comments Overlay (Simple Version)
 window.showCommentsOverlay = (pid, name) => {
     if(!commentsModal) return;
-    const title = document.getElementById('comment-product-name');
-    const input = document.getElementById('comment-product-id');
-    if(title) title.textContent = name;
-    if(input) input.value = pid;
+    document.getElementById('comment-product-name').textContent = name;
+    document.getElementById('comment-product-id').value = pid;
     
     const list = document.getElementById('comments-list');
     list.innerHTML = '<p class="text-center p-4">Loading...</p>';
@@ -602,8 +527,11 @@ window.showCommentsOverlay = (pid, name) => {
             const c = d.data();
             list.innerHTML += `
                 <div class="border-b p-3">
-                    <div class="font-bold text-sm">${c.userName || 'User'}</div>
-                    <div class="text-gray-700">${c.feedback}</div>
+                    <div class="flex items-center gap-2">
+                        <div class="bg-gray-200 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">${(c.userName||'U')[0]}</div>
+                        <div class="font-bold text-sm">${c.userName || 'Guest'}</div>
+                    </div>
+                    <div class="text-gray-700 mt-1 ml-8">${c.feedback}</div>
                 </div>`;
         });
     });
@@ -630,14 +558,11 @@ async function handleAddComment(e) {
         feedback: txt, userName: name, userId: currentUserId, createdAt: serverTimestamp()
     });
     
-    // Update count on product
     const p = allProducts.find(x => x.id === pid);
     await updateDoc(doc(productsCollectionRef, pid), { commentCount: (p.commentCount || 0) + 1 });
-    
     document.getElementById('comment-feedback').value = '';
 }
 
-// Share Modal
 window.openShareModal = (pid) => {
     const p = allProducts.find(x => x.id === pid);
     activeProduct = p;
@@ -650,17 +575,38 @@ window.shareVia = (platform) => {
     const url = `${APP_BASE_URL}?product=${activeProduct.id}`;
     const txt = `Check this out: ${activeProduct.name}\nPrice: ₹${activeProduct.retailPrice}`;
     
-    let link = '';
-    if(platform === 'whatsapp') link = `https://wa.me/?text=${encodeURIComponent(txt + '\n' + url)}`;
+    if(platform === 'whatsapp') window.open(`https://wa.me/?text=${encodeURIComponent(txt + '\n' + url)}`, '_blank');
     else if(platform === 'copy') {
         navigator.clipboard.writeText(txt + '\n' + url);
         showMessage("Link Copied!", 'success');
-        return;
     }
-    if(link) window.open(link, '_blank');
+    closeShareModal();
 }
 
-// Utilities
+// Account & Info
+function renderAccountPageExtras(data) {
+    const setLink = (id, url) => {
+        const el = document.getElementById(id);
+        if(el) {
+            if(url) { el.href = url; el.classList.remove('hidden'); }
+            else el.classList.add('hidden');
+        }
+    };
+    setLink('follow-whatsapp-link', data.followWhatsapp);
+    setLink('follow-instagram-link', data.followInstagram);
+    setLink('follow-facebook-link', data.followFacebook);
+    
+    const phoneEl = document.getElementById('contact-phone-link');
+    if(phoneEl && data.contactPhone) {
+        document.getElementById('contact-phone-text').textContent = data.contactPhone;
+        phoneEl.href = `tel:${data.contactPhone}`;
+        phoneEl.classList.remove('hidden');
+    }
+    document.getElementById('contact-us-section')?.classList.remove('hidden');
+    document.getElementById('follow-us-section')?.classList.remove('hidden');
+}
+
+// Utils
 function showLoading(show) { if (loadingSpinner) loadingSpinner.classList.toggle('hidden', !show); }
 function showMessage(msg, type='info') {
     if(messageModalText) {
