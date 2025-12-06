@@ -1,6 +1,5 @@
 /* ================================
-   PUBLIC PAGE STYLES - FINAL DESIGN
-   Flipkart/Amazon Style Cart & Animated Badge
+   PUBLIC PAGE STYLES - FLIPKART STYLE CART
    ================================ */
 
 /* --- BASE STYLES --- */
@@ -11,68 +10,19 @@
 }
 
 body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    background-color: #f1f3f6; /* Flipkart-like light gray background */
+    font-family: 'Inter', sans-serif;
+    background-color: #f1f3f6; /* Flipkart Light Gray */
     color: #212121;
     min-height: 100vh;
-    padding-bottom: 70px; /* Mobile Nav Space */
+    padding-bottom: 70px;
 }
 
-/* --- UTILITY CLASSES --- */
+/* --- UTILITY & ANIMATIONS --- */
 .page { display: none; }
 .page.active { display: block; }
 .hidden { display: none !important; }
 
-/* --- HEADER --- */
-header {
-    background-color: #ffffff;
-    border-bottom: 1px solid #e0e0e0;
-    position: sticky;
-    top: 0;
-    z-index: 40;
-}
-
-#shop-header-title {
-    color: #2874f0; /* Flipkart Blue */
-}
-
-/* --- MOBILE NAVIGATION --- */
-@media (max-width: 767px) {
-    .mobile-nav-bar {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: 50;
-        background-color: #ffffff;
-        height: 60px;
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        border-top: 1px solid #e0e0e0;
-        box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-    }
-
-    .mobile-nav-bar .nav-link {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        height: 100%;
-        color: #666;
-        position: relative;
-    }
-
-    .mobile-nav-bar .active-mobile-link {
-        color: #2874f0 !important;
-    }
-    
-    .mobile-nav-bar i { font-size: 1.25rem; margin-bottom: 2px; }
-    .mobile-nav-bar span { font-size: 0.7rem; }
-}
-
-/* --- ANIMATED CART BADGE (തിരികെ കൊണ്ടുവന്നു) --- */
+/* Animated Badge */
 @keyframes pulse-red {
     0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 61, 0, 0.7); }
     70% { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(255, 61, 0, 0); }
@@ -80,7 +30,7 @@ header {
 }
 
 .cart-badge {
-    background-color: #ff3d00; /* Bright Orange/Red */
+    background-color: #ff3d00;
     color: white;
     font-size: 0.7rem;
     border-radius: 9999px;
@@ -90,239 +40,166 @@ header {
     right: 15%;
     font-weight: bold;
     border: 1px solid white;
-    /* ആനിമേഷൻ ചേർത്തു */
-    animation: pulse-red 2s infinite; 
+    animation: pulse-red 2s infinite;
 }
 
-/* --- HERO SECTION --- */
-.hero-gradient {
-    background: linear-gradient(135deg, #2874f0, #548af0);
-    color: white;
-    border-radius: 0.5rem;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-@media (max-width: 640px) {
-    .hero-gradient { border-radius: 0; margin: 0 -1rem 1.5rem -1rem; }
-}
-
-/* --- SEARCH BAR --- */
-.search-bar-enhanced {
-    display: flex;
-    align-items: center;
+/* --- HEADER --- */
+header {
     background-color: #ffffff;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    padding: 0.5rem 1rem;
-    margin-bottom: 1rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border-bottom: 1px solid #e0e0e0;
+    position: sticky;
+    top: 0;
+    z-index: 40;
 }
-.search-input-modern {
-    flex: 1;
-    border: none;
-    outline: none;
-    font-size: 1rem;
-    margin-left: 0.5rem;
-    background: transparent;
-}
+#shop-header-title { color: #2874f0; }
 
-/* --- CATEGORY CHIPS --- */
-#category-filters {
-    display: flex;
-    overflow-x: auto;
-    gap: 0.5rem;
-    padding-bottom: 0.5rem;
-    scrollbar-width: none;
-}
-#category-filters::-webkit-scrollbar { display: none; }
-
-.category-chip {
-    padding: 0.5rem 1rem;
-    background-color: #ffffff;
-    border: 1px solid #e0e0e0;
-    border-radius: 50px;
-    font-size: 0.85rem;
-    white-space: nowrap;
-    cursor: pointer;
-    color: #333;
-}
-.category-chip.active {
-    background-color: #2874f0;
-    color: white;
-    border-color: #2874f0;
-    box-shadow: 0 2px 5px rgba(40, 116, 240, 0.3);
-}
-
-/* --- PRODUCT CARDS --- */
-.bg-white {
-    background-color: #ffffff;
-    border: 1px solid #f0f0f0;
-    border-radius: 4px;
-}
-#product-list-container img, #home-product-list-container img {
-    background-color: #f9f9f9;
-}
-
-/* --- CART PAGE DESIGN (Amazon/Flipkart Style) --- */
-#cart-page {
-    background-color: #f1f3f6;
-    min-height: 100vh;
-}
-
+/* --- CART PAGE SPECIFIC (Flipkart Style) --- */
 #cart-items-container {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
-/* കാർട്ട് കാർഡ് ഡിസൈൻ */
 .cart-item {
-    display: grid;
-    grid-template-columns: 100px 1fr; /* Image takes 100px, rest for content */
-    gap: 16px;
     background: #ffffff;
-    padding: 16px;
-    border-radius: 4px; /* Clean edges */
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Subtle shadow */
-    border: 1px solid #e0e0e0;
-    position: relative;
-    align-items: start;
+    padding: 12px;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+}
+
+.cart-item-top {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
 }
 
 .cart-item-img {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
     object-fit: contain;
     padding: 4px;
-    border-radius: 2px;
-    grid-row: 1 / 3; /* Image spans two rows if needed */
 }
 
-/* Product Info */
 .cart-item-details {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    justify-content: center;
 }
 
-.cart-item-details h3 {
-    font-size: 1rem;
+.cart-item-title {
+    font-size: 0.95rem;
     font-weight: 500;
     color: #212121;
+    margin-bottom: 4px;
     line-height: 1.4;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    margin: 0;
 }
 
-.cart-item-details p {
-    font-size: 1.2rem !important; /* Price size */
-    font-weight: 700 !important;
-    color: #212121 !important;
-    margin: 0;
+.cart-item-price {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #212121;
 }
 
-/* Quantity & Buttons Area */
-.cart-quantity-controls {
-    grid-column: 2; /* Aligned under details */
+/* Quantity Controls */
+.cart-actions-row {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-top: 8px;
+    gap: 20px;
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0;
 }
 
-.cart-quantity-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%; /* Round buttons like Flipkart app */
+.quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.qty-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
     border: 1px solid #c2c2c2;
     background: #fff;
     font-weight: 600;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
-    color: #212121;
 }
 
-.cart-quantity-display {
+.qty-val {
     font-weight: 600;
-    font-size: 1rem;
-    min-width: 24px;
-    text-align: center;
     border: 1px solid #f0f0f0;
-    padding: 2px 8px;
-    background: #fff;
+    padding: 2px 10px;
+    min-width: 30px;
+    text-align: center;
 }
 
-/* Remove Button - Styled as Link */
-.cart-remove-btn {
-    margin-top: 10px;
-    background: transparent;
-    border: 1px solid #e0e0e0;
-    color: #333;
-    font-weight: 600;
-    font-size: 0.85rem;
-    padding: 6px 12px;
-    border-radius: 4px;
-    width: fit-content;
-    display: inline-flex;
-    align-items: center;
-}
-.cart-remove-btn i { font-size: 0.8rem; color: #878787; }
-
-/* Cart Summary Box */
-#cart-summary-section .bg-white {
-    position: sticky;
-    top: 90px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    border-radius: 4px;
-}
-
-/* --- BUTTONS --- */
-button { cursor: pointer; }
-button:active { transform: scale(0.98); }
-
-.bg-indigo-600 { background-color: #fb641b; /* Flipkart Orange for 'Buy' buttons */ }
-.bg-green-500 { background-color: #388e3c; } /* Success Green */
-.bg-red-600 { background-color: #ff3d00; }
-
-/* --- MODALS --- */
-#comments-modal {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: white;
-    z-index: 50;
-    transform: translateY(100%);
-    transition: transform 0.3s ease-out;
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
-    max-height: 80vh;
+/* Action Buttons (Remove / Buy This Now) */
+.action-btn-container {
     display: flex;
-    flex-direction: column;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+    align-items: center;
+    width: 100%;
+    justify-content: space-between;
 }
-#comments-modal.show { transform: translateY(0); }
-.backdrop-blur { background: rgba(0, 0, 0, 0.6); }
 
-/* --- CAROUSEL (SWIPE) --- */
-.swipe-container { overflow: hidden; position: relative; background-color: #fff; }
-.swipe-track { display: flex; transition: transform 0.3s ease-out; }
-.swipe-slide { min-width: 100%; }
-.swipe-dots { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; }
-.swipe-dot { width: 6px; height: 6px; background: rgba(0,0,0,0.2); border-radius: 50%; }
-.swipe-dot.active { background: #2874f0; width: 18px; border-radius: 3px; }
-
-/* --- UTILS --- */
-.scroll-to-top-btn {
-    position: fixed; bottom: 80px; right: 20px;
-    background: #fff; color: #2874f0;
-    width: 45px; height: 45px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    z-index: 40;
-    font-size: 1.2rem;
+.cart-action-btn {
+    font-weight: 600;
+    font-size: 0.9rem;
+    background: transparent;
+    border: none;
+    padding: 8px 12px;
+    text-transform: uppercase;
+    flex: 1;
+    text-align: center;
 }
+
+.btn-remove {
+    color: #212121;
+    border-right: 1px solid #f0f0f0;
+}
+.btn-remove:hover { color: #ff3d00; }
+
+.btn-buy-now {
+    color: #2874f0; /* Flipkart Blue */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.btn-buy-now:hover { color: #0b5edd; }
+
+/* Summary Box */
+#cart-summary-section .bg-white {
+    position: sticky; top: 80px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* --- OTHER STYLES (Existing) --- */
+.hero-gradient { background: linear-gradient(135deg, #2874f0, #548af0); color: white; border-radius: 0.5rem; padding: 1.5rem; margin-bottom: 1.5rem; }
+.search-bar-enhanced { display: flex; align-items: center; background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; padding: 0.5rem 1rem; margin-bottom: 1rem; }
+.search-input-modern { flex: 1; border: none; outline: none; margin-left: 0.5rem; background: transparent; }
+.category-chip { padding: 0.5rem 1rem; background: #fff; border: 1px solid #e0e0e0; border-radius: 50px; white-space: nowrap; }
+.category-chip.active { background: #2874f0; color: white; border-color: #2874f0; }
+.bg-white { background: #fff; border: 1px solid #f0f0f0; border-radius: 4px; }
+#cart-items-container .bg-white { border: none; } /* Reset for cart items which have custom style */
+
+/* Mobile Nav */
+@media (max-width: 767px) {
+    .mobile-nav-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; background: #fff; height: 60px; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #e0e0e0; }
+    .mobile-nav-bar .nav-link { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; color: #666; }
+    .mobile-nav-bar .active-mobile-link { color: #2874f0 !important; }
+}
+
+/* Buttons */
+.bg-indigo-600 { background-color: #fb641b; } /* Orange Buy Button */
+.bg-green-500 { background-color: #388e3c; }
+.bg-red-600 { background-color: #ff3d00; }
+.scroll-to-top-btn { position: fixed; bottom: 80px; right: 20px; background: #fff; color: #2874f0; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
