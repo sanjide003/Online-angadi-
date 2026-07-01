@@ -107,20 +107,36 @@ function setupAuthListener() {
     });
 }
 
+function getLoginErrorMessage(error) {
+    const errorMessages = {
+        'auth/invalid-credential': 'Invalid email or password. Create this admin user in Firebase Authentication first.',
+        'auth/user-not-found': 'No Firebase Auth user exists for this email. Add the admin in Firebase Console > Authentication > Users.',
+        'auth/wrong-password': 'Incorrect password for this admin email.',
+        'auth/invalid-email': 'Please enter a valid email address.',
+        'auth/user-disabled': 'This admin account is disabled in Firebase Authentication.',
+        'auth/operation-not-allowed': 'Enable the Email/Password sign-in provider in Firebase Console > Authentication > Sign-in method.',
+        'auth/network-request-failed': 'Network error. Check your internet connection and Firebase project availability.'
+    };
+
+    return errorMessages[error.code] || `Login failed: ${error.message}`;
+}
+
 async function handleLogin(e) {
     e.preventDefault();
-    const email = $loginEmail.value;
+    const email = $loginEmail.value.trim();
     const password = $loginPassword.value;
     $loginErrorMsg.classList.add('hidden');
+    $loginBtn.disabled = true;
     $loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
 
     try {
         await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
-        console.error(error);
-        $loginErrorMsg.textContent = "Invalid Email or Password!";
+        console.error('Admin login failed:', error);
+        $loginErrorMsg.textContent = getLoginErrorMessage(error);
         $loginErrorMsg.classList.remove('hidden');
     } finally {
+        $loginBtn.disabled = false;
         $loginBtn.textContent = 'Sign In';
     }
 }

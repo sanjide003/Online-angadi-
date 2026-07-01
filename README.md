@@ -13,6 +13,20 @@ A lightweight Firebase-powered online shop with two static front ends:
 3. Admins can manage products, categories, shop content, and WhatsApp settings.
 4. Product images are uploaded from local files in the admin panel and saved as Data URLs in Firestore. Each selected image must be JPG, PNG, or WebP and **150 KB or smaller**.
 
+## Admin login setup
+
+The Firebase config in `firebase-config.js` is the active project config for this app. The admin page does not create an admin account automatically; it uses Firebase Authentication Email/Password sign-in.
+
+To log in to `admin.html`:
+
+1. Open Firebase Console for project `online-angadi-003`.
+2. Go to **Authentication > Sign-in method** and enable **Email/Password**.
+3. Go to **Authentication > Users** and click **Add user**.
+4. Enter the admin email and password you want to use.
+5. Open `admin.html` and sign in with that exact email and password.
+
+If login still fails, check that your Firebase API key restrictions allow your deployed domain or localhost, and confirm the browser console error code shown by Firebase Auth.
+
 ## Firebase rules
 
 - Deploy `firestore.rules` for the Firestore paths used by the public storefront and admin dashboard.
