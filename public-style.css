@@ -1162,3 +1162,52 @@ button::before {
 }
 
 /* --- END OF PUBLIC STYLES --- */
+
+/* --- REDUCED MOTION / NO LIFT HOVER OVERRIDES ---
+   Keep clean color/shadow feedback, but remove distracting pop-up,
+   scaling, rotating, and page/hero/badge animations from public UI. */
+.page {
+    animation: none;
+}
+
+.hero-decoration,
+#cart-item-count-bottom-nav,
+.loading-spinner,
+.skeleton {
+    animation: none;
+}
+
+#shop-header-title:hover,
+.nav-link:hover,
+.search-bar-enhanced:focus-within,
+.search-filter-btn:hover,
+.dot:hover,
+#home-product-list-container .bg-white:hover,
+#product-list-container .bg-white:hover,
+#product-list-container .bg-white:hover img,
+.category-chip:hover,
+.category-chip:not(.active):hover,
+.category-chip:hover i,
+.similar-product-card:hover,
+#share-modal button:hover,
+#share-modal button:hover > div,
+#comments-list > div:hover,
+.cart-item:hover,
+.cart-item:hover .cart-item-img,
+.cart-quantity-btn:hover,
+.cart-remove-btn:hover,
+.scroll-to-top-btn:hover,
+button:hover:not(:disabled),
+#account-page a.flex:hover,
+#home-product-list-container .bg-white .flex.items-center:first-child:hover,
+#home-product-list-container button:hover i,
+#product-detail-page button:hover i,
+.bg-yellow-50:hover {
+    transform: none !important;
+}
+
+#product-list-container .bg-white:hover::before,
+.category-chip:hover::before,
+.nav-link:hover::before {
+    transform: none !important;
+}

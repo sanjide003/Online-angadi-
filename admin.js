@@ -15,6 +15,8 @@ let productsCollectionRef, categoriesCollectionRef, settingsDocRef, infoDocRef;
 let unsubscribeProducts, unsubscribeCategories, unsubscribeSettings, unsubscribeInfo; 
 let confirmCallback = null; 
 let adminFilterCategoryId = 'all';
+const MAX_IMAGE_SIZE_BYTES = 150 * 1024;
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 // DOM Elements
 let $loginSection, $dashboardSection, $loginForm, $loginEmail, $loginPassword, $loginErrorMsg, $loginBtn;
@@ -105,20 +107,36 @@ function setupAuthListener() {
     });
 }
 
+function getLoginErrorMessage(error) {
+    const errorMessages = {
+        'auth/invalid-credential': 'Invalid email or password. Create this admin user in Firebase Authentication first.',
+        'auth/user-not-found': 'No Firebase Auth user exists for this email. Add the admin in Firebase Console > Authentication > Users.',
+        'auth/wrong-password': 'Incorrect password for this admin email.',
+        'auth/invalid-email': 'Please enter a valid email address.',
+        'auth/user-disabled': 'This admin account is disabled in Firebase Authentication.',
+        'auth/operation-not-allowed': 'Enable the Email/Password sign-in provider in Firebase Console > Authentication > Sign-in method.',
+        'auth/network-request-failed': 'Network error. Check your internet connection and Firebase project availability.'
+    };
+
+    return errorMessages[error.code] || `Login failed: ${error.message}`;
+}
+
 async function handleLogin(e) {
     e.preventDefault();
-    const email = $loginEmail.value;
+    const email = $loginEmail.value.trim();
     const password = $loginPassword.value;
     $loginErrorMsg.classList.add('hidden');
+    $loginBtn.disabled = true;
     $loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
 
     try {
         await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
-        console.error(error);
-        $loginErrorMsg.textContent = "Invalid Email or Password!";
+        console.error('Admin login failed:', error);
+        $loginErrorMsg.textContent = getLoginErrorMessage(error);
         $loginErrorMsg.classList.remove('hidden');
     } finally {
+        $loginBtn.disabled = false;
         $loginBtn.textContent = 'Sign In';
     }
 }
@@ -148,6 +166,7 @@ function setupEventListeners() {
     document.getElementById('admin-product-form').addEventListener('submit', handleAdminFormSubmit);
     document.getElementById('product-price').addEventListener('input', calculateDiscountDisplay);
     document.getElementById('product-retail-price').addEventListener('input', calculateDiscountDisplay);
+    document.getElementById('product-image-file').addEventListener('change', handleMainImageUpload);
     
     document.getElementById('delivery-free').addEventListener('change', toggleDeliveryChargeInput);
     document.getElementById('delivery-charge').addEventListener('change', toggleDeliveryChargeInput);
@@ -308,7 +327,13 @@ async function handleAdminFormSubmit(event) {
     const deliveryCharge = deliveryOption === 'charge' ? (parseFloat(document.getElementById('product-delivery-charge').value) || 0) : 0;
 
     // Collect Other Images
-    const otherImages = Array.from(document.querySelectorAll('#other-images-list input')).map(i => i.value.trim()).filter(u => u);
+    const otherImages = Array.from(document.querySelectorAll('#other-images-list input[type="hidden"]')).map(i => i.value.trim()).filter(u => u);
+
+    if (!document.getElementById('product-image').value) {
+        showMessage('Please upload a main product image under 150 KB.', 'error');
+        showLoading(false);
+        return;
+    }
 
     let productData = {
         name: document.getElementById('product-name').value,
@@ -396,6 +421,8 @@ window.resetAdminForm = function() {
     document.getElementById('admin-form-submit-btn').textContent = "Add Product";
     document.getElementById('admin-form-cancel-btn').classList.add('hidden');
     window.renderMainImagePreview('');
+    document.getElementById('product-image-file').value = '';
+    document.getElementById('main-image-status').textContent = 'No image selected.';
     renderOtherImageInputs([]);
     toggleDeliveryChargeInput();
 }
@@ -534,22 +561,81 @@ function prefillContentForm(d) {
 }
 
 // Image Helpers
-window.renderMainImagePreview = (u) => document.getElementById('main-image-preview').src = u || 'https://placehold.co/60x60?text=Img';
-window.addOtherImageInput = () => {
+function validateImageFile(file) {
+    if (!file) return 'Please choose an image file.';
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) return 'Only JPG, PNG, or WebP images are allowed.';
+    if (file.size > MAX_IMAGE_SIZE_BYTES) return 'Image must be 150 KB or smaller.';
+    return '';
+}
+
+function fileToDataUrl(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('Could not read image file.'));
+        reader.readAsDataURL(file);
+    });
+}
+
+async function handleMainImageUpload(event) {
+    const file = event.target.files[0];
+    const error = validateImageFile(file);
+    const status = document.getElementById('main-image-status');
+    if (error) {
+        event.target.value = '';
+        document.getElementById('product-image').value = '';
+        window.renderMainImagePreview('');
+        status.textContent = error;
+        status.className = 'text-xs text-red-600';
+        showMessage(error, 'error');
+        return;
+    }
+    const dataUrl = await fileToDataUrl(file);
+    document.getElementById('product-image').value = dataUrl;
+    window.renderMainImagePreview(dataUrl);
+    status.textContent = `${file.name} (${Math.ceil(file.size / 1024)} KB) ready to save.`;
+    status.className = 'text-xs text-green-600';
+}
+
+window.renderMainImagePreview = (u) => document.getElementById('main-image-preview').src = u || 'https://placehold.co/80x80?text=Img';
+window.addOtherImageInput = (value = '') => {
     const div = document.createElement('div');
-    div.className = "flex space-x-2";
-    div.innerHTML = `<input class="flex-grow border p-2 rounded text-sm" placeholder="Image URL"><button type="button" class="text-red-500" onclick="this.parentElement.remove()">X</button>`;
+    div.className = 'other-image-row flex items-center gap-2';
+    const hasValue = Boolean(value);
+    div.innerHTML = `
+        <input type="hidden" value="${value}">
+        <input type="file" accept="image/png,image/jpeg,image/webp" class="other-image-file text-sm">
+        <img src="${value || 'https://placehold.co/48x48?text=Img'}" class="w-12 h-12 rounded-lg object-cover border" alt="Additional preview">
+        <span class="other-image-status text-xs ${hasValue ? 'text-green-600' : 'text-gray-500'} flex-1">${hasValue ? 'Saved image' : 'Choose image ≤ 150 KB'}</span>
+        <button type="button" class="text-red-500 font-bold px-2" onclick="this.parentElement.remove()">X</button>`;
+    div.querySelector('.other-image-file').addEventListener('change', handleOtherImageUpload);
     document.getElementById('other-images-list').appendChild(div);
 }
+
+async function handleOtherImageUpload(event) {
+    const row = event.target.closest('.other-image-row');
+    const status = row.querySelector('.other-image-status');
+    const error = validateImageFile(event.target.files[0]);
+    if (error) {
+        event.target.value = '';
+        row.querySelector('input[type="hidden"]').value = '';
+        status.textContent = error;
+        status.className = 'other-image-status text-xs text-red-600 flex-1';
+        showMessage(error, 'error');
+        return;
+    }
+    const file = event.target.files[0];
+    const dataUrl = await fileToDataUrl(file);
+    row.querySelector('input[type="hidden"]').value = dataUrl;
+    row.querySelector('img').src = dataUrl;
+    status.textContent = `${file.name} (${Math.ceil(file.size / 1024)} KB)`;
+    status.className = 'other-image-status text-xs text-green-600 flex-1';
+}
+
 function renderOtherImageInputs(urls) {
     const list = document.getElementById('other-images-list');
     list.innerHTML = '';
-    urls.forEach(u => {
-        const div = document.createElement('div');
-        div.className = "flex space-x-2";
-        div.innerHTML = `<input class="flex-grow border p-2 rounded text-sm" value="${u}"><button type="button" class="text-red-500" onclick="this.parentElement.remove()">X</button>`;
-        list.appendChild(div);
-    });
+    urls.forEach(u => window.addOtherImageInput(u));
 }
 function updateIconPreview() {
     const cls = $shopIconClassInput.value;

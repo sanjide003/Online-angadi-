@@ -1,0 +1,114 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function adminSignedIn() {
+      return signedIn() && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    function publicDataPath(appId) {
+      return /databases/$(database)/documents/artifacts/$(appId)/public/data;
+    }
+
+    function validImageDataUrl(value) {
+      return value is string
+        && value.matches('^data:image/(jpeg|jpg|png|webp);base64,[A-Za-z0-9+/=]+$')
+        // 150 KB files become about 205 KB after base64/Data URL encoding.
+        && value.size() <= 220000;
+    }
+
+    function validOptionalImageList(images) {
+      // Firestore rules cannot transform uploaded files; the browser validates
+      // every additional image before writing. Keep count bounded here.
+      return images is list && images.size() <= 8;
+    }
+
+    function validProduct(data) {
+      return data.keys().hasAll(['name', 'categoryId', 'categoryName', 'price', 'retailPrice', 'imageUrl'])
+        && data.name is string
+        && data.name.size() > 0
+        && data.name.size() <= 120
+        && data.categoryId is string
+        && data.categoryName is string
+        && data.price is number
+        && data.price >= 0
+        && data.retailPrice is number
+        && data.retailPrice >= 0
+        && data.retailPrice <= data.price
+        && validImageDataUrl(data.imageUrl)
+        && (!('otherImages' in data) || validOptionalImageList(data.otherImages))
+        && (!('description' in data) || (data.description is string && data.description.size() <= 5000))
+        && (!('brand' in data) || (data.brand is string && data.brand.size() <= 80))
+        && (!('sku' in data) || (data.sku is string && data.sku.size() <= 80))
+        && (!('specifications' in data) || (data.specifications is string && data.specifications.size() <= 5000))
+        && (!('discountPercentage' in data) || (data.discountPercentage is number && data.discountPercentage >= 0 && data.discountPercentage <= 100))
+        && (!('deliveryCharge' in data) || (data.deliveryCharge is number && data.deliveryCharge >= 0))
+        && (!('freeDelivery' in data) || data.freeDelivery is bool);
+    }
+
+    function validCategory(data) {
+      return data.keys().hasAll(['name'])
+        && data.name is string
+        && data.name.size() > 0
+        && data.name.size() <= 80
+        && (!('iconClass' in data) || (data.iconClass is string && data.iconClass.size() <= 80));
+    }
+
+    function validComment(data, productId) {
+      return signedIn()
+        && data.productId == productId
+        && data.userId == request.auth.uid
+        && data.userName is string
+        && data.userName.size() > 0
+        && data.userName.size() <= 80
+        && data.feedback is string
+        && data.feedback.size() > 0
+        && data.feedback.size() <= 1000;
+    }
+
+    match /artifacts/{appId}/public/data/products/{productId} {
+      allow read: if true;
+      allow create: if adminSignedIn() && validProduct(request.resource.data);
+      allow delete: if adminSignedIn();
+      allow update: if (adminSignedIn() && validProduct(request.resource.data))
+        || (signedIn()
+          && request.resource.data.diff(resource.data).changedKeys().hasOnly(['likes'])
+          && request.resource.data.likes is list
+          && request.resource.data.likes.size() <= 10000)
+        || (signedIn()
+          && request.resource.data.diff(resource.data).changedKeys().hasOnly(['commentCount'])
+          && request.resource.data.commentCount is number
+          && request.resource.data.commentCount >= 0);
+
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if validComment(request.resource.data, productId);
+        allow update: if false;
+        allow delete: if adminSignedIn() || (signedIn() && resource.data.userId == request.auth.uid);
+      }
+    }
+
+    match /artifacts/{appId}/public/data/categories/{categoryId} {
+      allow read: if true;
+      allow create, update: if adminSignedIn() && validCategory(request.resource.data);
+      allow delete: if adminSignedIn();
+    }
+
+    match /artifacts/{appId}/public/data/settings/admin {
+      allow read: if true;
+      allow write: if adminSignedIn();
+    }
+
+    match /artifacts/{appId}/public/data/content/info {
+      allow read: if true;
+      allow write: if adminSignedIn();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
