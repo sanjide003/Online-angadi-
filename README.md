@@ -15,15 +15,24 @@ A lightweight Firebase-powered online shop with two static front ends:
 
 ## Admin login setup
 
-The Firebase config in `firebase-config.js` is the active project config for this app. The admin page does not create an admin account automatically; it uses Firebase Authentication Email/Password sign-in.
+The Firebase config in `firebase-config.js` is the active project config for this app. The admin page does **not** create an admin account from Firestore data. Admin login uses **Firebase Authentication > Email/Password**.
+
+The screenshot showing `Cloud Firestore > Database > artifacts > online-angadi-003 > public > data` is only the app data area for products, categories, content, and settings. You do not create the admin login inside that Firestore screen.
 
 To log in to `admin.html`:
 
 1. Open Firebase Console for project `online-angadi-003`.
-2. Go to **Authentication > Sign-in method** and enable **Email/Password**.
-3. Go to **Authentication > Users** and click **Add user**.
-4. Enter the admin email and password you want to use.
-5. Open `admin.html` and sign in with that exact email and password.
+2. Open **Authentication** from the left menu.
+3. Open **Sign-in method** and enable **Email/Password**.
+4. Open **Users** and click **Add user**.
+5. Enter the admin email and password you want to use.
+6. Open `admin.html` and sign in with that exact email and password.
+
+Recommended setup order:
+
+1. Create/confirm the Firebase Authentication admin user first.
+2. Deploy/publish Firestore rules from `firestore.rules`.
+3. Open `admin.html`, log in, then add categories and products from the dashboard. The Firestore collections shown in the screenshot can stay empty until the admin dashboard writes data.
 
 If login still fails, check that your Firebase API key restrictions allow your deployed domain or localhost, and confirm the browser console error code shown by Firebase Auth.
 
