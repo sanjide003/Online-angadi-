@@ -13,6 +13,12 @@ A lightweight Firebase-powered online shop with two static front ends:
 3. Admins can manage products, categories, shop content, and WhatsApp settings.
 4. Product images are uploaded from local files in the admin panel and saved as Data URLs in Firestore. Each selected image must be JPG, PNG, or WebP and **150 KB or smaller**.
 
+## Firebase rules
+
+- Deploy `firestore.rules` for the Firestore paths used by the public storefront and admin dashboard.
+- Deploy `storage.rules` if the project later moves uploaded images from Firestore Data URLs to Firebase Storage.
+- The current admin image workflow validates 150 KB files in the browser; Firestore rules also reject Data URL strings above the expected encoded limit.
+
 ## Current production-readiness notes
 
 - Configure strict Firebase Auth users and Firestore security rules before launch.
